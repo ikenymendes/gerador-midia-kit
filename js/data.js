@@ -84,6 +84,8 @@ function worldXY(lat,lng,z){ var s=256*Math.pow(2,z), sn=Math.sin(lat*Math.PI/18
 function pinDraw(c,x,y,s){ var g=c.createRadialGradient(x,y,0,x,y,s*2.4); g.addColorStop(0,'rgba(255,0,102,.28)'); g.addColorStop(1,'rgba(255,0,102,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,s*2.4,0,7); c.fill();
   c.save(); c.shadowColor='rgba(0,0,102,.35)'; c.shadowBlur=s*.5; c.shadowOffsetY=s*.18; c.fillStyle='#ff0066'; c.beginPath(); c.moveTo(x,y); c.bezierCurveTo(x-s*.95,y-s*.95,x-s*.95,y-s*2.45,x,y-s*2.45); c.bezierCurveTo(x+s*.95,y-s*2.45,x+s*.95,y-s*.95,x,y); c.fill(); c.restore();
   c.fillStyle='#fff'; c.beginPath(); c.arc(x,y-s*1.5,s*.42,0,7); c.fill(); c.fillStyle='#000066'; c.beginPath(); c.arc(x,y-s*1.5,s*.2,0,7); c.fill(); }
+/* aproxima o mapa: um nível acima do zoom cadastrado (máx. 19) */
+function zoomMapa(z){ return Math.min(19,(+z||16)+1); }
 async function renderMap(pts,W,H,zoom,big){
   var key=[pts.map(function(p){return p.lat+','+p.lng}).join(';'),W,H,zoom,big,D.mapStyle].join('|'); if(mapCache[key]) return mapCache[key];
   var st=D.mapStyle, z=zoom||16, cx, cy;
@@ -98,7 +100,10 @@ async function renderMap(pts,W,H,zoom,big){
   for(var ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++) for(var tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++) (function(tx,ty){ jobs.push(tileAny(st,z,tx,ty).then(function(im){ if(im) c.drawImage(im,tx*256-x0,ty*256-y0,256,256); })); })(tx,ty);
   await Promise.all(jobs);
   if(mapFail>before){ c.strokeStyle='#fff'; c.lineWidth=H*0.012; for(var i=0;i<6;i++){ c.beginPath(); c.moveTo(0,H*(i/5)); c.lineTo(W,H*((i*37%5)/5+0.1)); c.stroke(); } }
-  c.fillStyle='rgba(0,0,102,.05)'; c.fillRect(0,0,W,H);
+  /* paleta da marca: tira o excesso de cor do mapa e dá um tom azul-marinho suave */
+  c.globalCompositeOperation='saturation'; c.fillStyle='rgba(128,128,128,.62)'; c.fillRect(0,0,W,H);
+  c.globalCompositeOperation='multiply'; c.fillStyle='#e4e8fb'; c.fillRect(0,0,W,H);
+  c.globalCompositeOperation='source-over'; c.fillStyle='rgba(0,0,102,.05)'; c.fillRect(0,0,W,H);
   var s=Math.round(Math.min(W,H)*(pts.length>1?0.02:0.034));
   pts.forEach(function(p){ var w=worldXY(p.lat,p.lng,z); var px=w.x-x0, py=w.y-y0+(pts.length>1?0:Math.round(H*.05)); if(pts.length>1){ c.fillStyle='#fff'; c.beginPath(); c.arc(px,py,s*0.9,0,7); c.fill(); c.fillStyle='#ff0066'; c.beginPath(); c.arc(px,py,s*0.62,0,7); c.fill(); } else pinDraw(c,px,py,s); });
   if(!ONLINE){ c.font='400 '+Math.round(H*.016)+'px Poppins,Segoe UI,sans-serif'; c.textAlign='right'; var at=mapAttr(st), aw=c.measureText(at).width+16; c.fillStyle='rgba(255,255,255,.85)'; c.fillRect(W-aw-8,H-H*.045-6,aw,H*.045); c.fillStyle='#4a4a6a'; c.fillText(at,W-16,H-H*.045+H*.016*0.8-6); }
@@ -122,7 +127,7 @@ function mapaPreview(obj){
     if(!ok){ vazio('Cole o link do Google Maps (ou a latitude e a longitude) e o mapa aparece aqui sozinho.'); return; }
     var my=++seq; msg.textContent='Gerando o mapa…'; msg.className='mpmsg'; img.hidden=true;
     try{
-      var a=await renderMap([{lat:+la,lng:+ln}],1040,720,+obj.zoom||16); if(my!==seq) return;
+      var a=await renderMap([{lat:+la,lng:+ln}],1040,720,zoomMapa(obj.zoom)); if(my!==seq) return;
       img.src=a.src; img.hidden=false;
       if(a.falhou){ msg.textContent='Não consegui baixar o mapa agora (internet ou bloqueio do serviço de mapas). A posição está certa; o mapa será tentado de novo ao gerar o kit.'; msg.className='mpmsg err'; }
       else { msg.textContent=(obj.mapa&&(Array.isArray(obj.mapa)?obj.mapa.length:1)?'Este ponto tem uma imagem de mapa enviada, que tem prioridade no kit. ':'')+'Gerado a partir de '+Number(la).toFixed(6)+' , '+Number(ln).toFixed(6)+'. Ajuste o zoom se quiser mais perto ou mais longe.'; msg.className='mpmsg ok'; }
@@ -142,7 +147,7 @@ async function prepare(setStatus,mode){
   var A={photos:{},maps:{},logoW:BASE.logoW,logoC:BASE.logoC,mercN:BASE.mercN,mercW:BASE.mercW};
   var keys=usedPhotoKeys(mode); for(var i=0;i<keys.length;i++){ setStatus&&setStatus('Preparando fotos '+(i+1)+'/'+keys.length+'…'); A.photos[keys[i]]=await loadPhoto(keys[i]); }
   mapFail=0; var withLL=D.pontos.filter(function(p){return (mode!=='proposta'||p.sel)&&p.lat!=null&&p.lat!==''&&p.lng!=null&&!isNaN(p.lat)}); var done=0;
-  for(var j=0;j<withLL.length;j+=6){ await Promise.all(withLL.slice(j,j+6).map(async function(p){ A.maps[p.id]=await renderMap([{lat:+p.lat,lng:+p.lng}],1040,720,p.zoom||16); done++; setStatus&&setStatus('Gerando mapas '+done+'/'+withLL.length+'…'); })); }
+  for(var j=0;j<withLL.length;j+=6){ await Promise.all(withLL.slice(j,j+6).map(async function(p){ A.maps[p.id]=await renderMap([{lat:+p.lat,lng:+p.lng}],1040,720,zoomMapa(p.zoom)); done++; setStatus&&setStatus('Gerando mapas '+done+'/'+withLL.length+'…'); })); }
   var all=withLL.filter(function(p){return p.secao!=='df_painel'}).map(function(p){return {lat:+p.lat,lng:+p.lng}}); all.push({lat:+D.mercado.lat,lng:+D.mercado.lng}); all.push({lat:+D.guanabara.lat,lng:+D.guanabara.lng});
   setStatus&&setStatus('Gerando mapa geral…'); A.mapGeral=await renderMap(all.filter(function(p){return !isNaN(p.lat)}),1460,890,0);
   var dfl=withLL.filter(function(p){return p.secao==='df_painel'}).map(function(p){return {lat:+p.lat,lng:+p.lng}}); if(dfl.length) A.mapDF=await renderMap(dfl,1500,890,0);

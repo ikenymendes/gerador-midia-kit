@@ -172,6 +172,7 @@ async function buildPdf(slides, onProgress){
     var d=cv.toDataURL('image/jpeg',0.88);
     if(i) pdf.addPage([SW,SH],'landscape');
     pdf.addImage(d,'JPEG',0,0,SW,SH,undefined,'FAST');
+    slides[i].items.forEach(function(o){ if(o.link&&o.w&&o.h) pdf.link(o.x,o.y,o.w,o.h,{url:o.link}); });
     if(onProgress) onProgress(i+1,slides.length);
     await new Promise(function(r){setTimeout(r,0)});
   }
