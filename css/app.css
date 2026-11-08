@@ -407,3 +407,45 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .wdt{font:300 13px/1.5 var(--sans);color:#ffffff99;margin-top:6px;animation:wUp .7s .65s ease both}
 @keyframes wIn{from{opacity:0}to{opacity:1}}@keyframes wUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.welcome,.wsau,.wnome,.wbar,.wtxt,.wdt{animation:none}}
+/* ---------- tela de entrada · acabamento premium ---------- */
+#gate{background:#fbfbfe}
+.ghero{background:
+  radial-gradient(60% 45% at 42% 38%,#ff006633 0%,#ff006600 70%),
+  radial-gradient(70% 60% at 100% 0%,#1b1b8a 0%,#1b1b8a00 70%),
+  radial-gradient(90% 40% at 50% 100%,#000028 0%,#00002800 80%),
+  linear-gradient(160deg,var(--navy2),var(--navy) 70%)}
+.ghero .dots{background:#ffffff14;-webkit-mask:radial-gradient(circle,#000 1.3px,transparent 1.8px) 0 0/18px 18px;mask:radial-gradient(circle,#000 1.3px,transparent 1.8px) 0 0/18px 18px}
+.ghero::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,#00003d55,transparent 25%,transparent 70%,#00002a99);pointer-events:none}
+.ghtxt{z-index:1}
+.scene{filter:drop-shadow(0 0 46px #ff006638) drop-shadow(0 24px 30px #00001a80)}
+.gslash{background:linear-gradient(180deg,#ff3d8b 0%,var(--pink) 45%,#c8004f 100%);box-shadow:-14px 0 40px #ff006640}
+.gslash::after{content:'';position:absolute;inset:0;clip-path:polygon(calc(100% - 136px) 0,calc(100% - 132px) 0,calc(100% - 252px) 100%,calc(100% - 256px) 100%);background:#ffffff66}
+.ghlogo{height:40px;filter:drop-shadow(0 4px 14px #00000055)}
+.ghfoot{position:relative;padding-top:18px}
+.ghfoot::before{content:'';position:absolute;top:0;left:0;width:44px;height:4px;border-radius:2px;background:var(--pink);box-shadow:0 0 16px #ff006699}
+.ghfoot h1{font:300 30px/1.18 var(--sans);letter-spacing:-.025em;margin:0 0 8px;text-shadow:0 2px 20px #00003d}
+.ghfoot h1 b{font-weight:500}
+.ghfoot p{font-size:14.5px;color:#c9c9f0;max-width:46ch}
+/* lado do formulário */
+.gform{position:relative;background:
+  radial-gradient(50% 40% at 100% 0%,#ff00660d 0%,transparent 70%),
+  radial-gradient(60% 50% at 100% 100%,#0000660d 0%,transparent 70%),#fbfbfe;padding-left:40px}
+.gform::after{content:'Mega Mídia OOH · Belo Horizonte';position:absolute;left:0;right:0;bottom:26px;text-align:center;font:400 12px/1 var(--sans);color:#a4a3bb;letter-spacing:.02em}
+.gbox{width:min(420px,100%);background:#fff;border:1px solid #ecebf4;border-radius:22px;padding:40px 40px 34px;box-shadow:0 1px 0 #ffffff inset,0 30px 70px -30px #00006633,0 2px 6px #0000660a}
+.gbox h2{font:400 30px/1.15 var(--sans);letter-spacing:-.025em;margin:0 0 8px}
+.gbox h2::before{content:'';display:block;width:30px;height:4px;border-radius:2px;background:var(--pink);margin-bottom:18px}
+.gbox .hint{margin:0 0 24px;font-size:14px}
+.gbox input{height:52px;border-radius:13px;border-color:#e3e2ee;background:#fafaff;padding:0 16px;font-size:15px;margin-bottom:12px;transition:.18s}
+.gbox input:hover{background:#fff;border-color:#c9c7df}
+.gbox input:focus{background:#fff;border-color:var(--pink);box-shadow:0 0 0 4px #ff006618,0 8px 20px -10px #ff006655}
+.gbox .btn.big{height:52px;font-size:15px;margin-top:10px;background:linear-gradient(135deg,#ff2f84,#ff0066 60%,#ee005e);border:0;box-shadow:0 12px 28px -8px #ff006688,inset 0 1px 0 #ffffff40;transition:.18s}
+.gbox .btn.big:hover{transform:translateY(-1px);box-shadow:0 16px 34px -8px #ff0066aa,inset 0 1px 0 #ffffff40}
+.gbox .btn.big:active{transform:none}
+.gbox .linklike{margin-top:22px;color:var(--mid);text-decoration:none;font-weight:400}.gbox .linklike:hover{color:var(--pink-d);text-decoration:underline}
+.gbox .status{min-height:0}
+@media(max-width:900px){
+  .ghfoot h1{font-size:22px;margin-bottom:6px}.ghfoot p{font-size:13.5px}.ghfoot{padding-top:14px}.ghfoot::before{width:36px;height:3px}
+  .gslash::after{display:none}.gslash{box-shadow:none}.scene{filter:none}
+  .gform{padding:48px 18px 28px;background:#fbfbfe}.gbox{padding:26px 22px 24px;border-radius:18px}.gbox h2{font-size:26px}.gbox h2::before{margin-bottom:14px}
+  .gform::after{position:static;display:block;margin-top:24px}
+}
