@@ -25,9 +25,7 @@ function montarCabecalho(){
   var ini=String(ME.nome||ME.email||'?').trim().charAt(0).toUpperCase();
   who.appendChild(h('span',{class:'av',text:ini}));
   who.appendChild(h('div',{class:'who'},[h('b',{text:ME.nome||ME.email,title:ME.email}),h('span',{text:ME.admin?'Administrador':'Comercial'})]));
-  who.appendChild(h('button',{class:'linkhead',type:'button',text:'Sair',onclick:sairDoGerador}));
   var bell=$('#bell'); bell.hidden=!ME.admin; bell.onclick=function(){ showTab('sug'); };
-  $('#sairTop').onclick=sairDoGerador;
   $('#menu').onclick=function(){ document.body.classList.toggle('nav-open'); };
 }
 function montarAbas(){
@@ -38,6 +36,8 @@ function montarAbas(){
     b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONES[t[3]]||'')+'</svg><span class="lbl"></span><b class="cnt" hidden></b>';
     b.querySelector('.lbl').textContent=t[1]; nav.appendChild(b);
   });
+  var sep=h('div',{class:'navsep'}); nav.appendChild(sep);
+  var sb=h('button',{class:'tab sair',type:'button',onclick:sairDoGerador}); sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Sair</span>'; nav.appendChild(sb);
   montarBarraInferior();
 }
 var BN_CURTO={dash:'Início',pontos:'Pontos',sel:'Pontos',sug:'Sugestões',precos:'Preços',gerar:'Gerar',minhas:'Sugestões',hist:'Propostas'};

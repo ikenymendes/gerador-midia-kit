@@ -44,7 +44,6 @@ function cenaSvg(logo){
   estrelas()+'<g fill="#0b0b5e" opacity=".9"><rect x="268" y="430" width="50" height="100"/><rect x="322" y="405" width="40" height="125"/><rect x="500" y="440" width="34" height="90"/></g>'+mercadoCentral()+''+win+
   '<rect x="-500" y="530" width="1760" height="30" fill="#04042b"/><rect x="-500" y="530" width="1760" height="3" fill="#ff0066" opacity=".8"/>'+
   '<line class="road" x1="-500" y1="548" x2="1260" y2="548" stroke="#6b6bd6" stroke-width="2" stroke-dasharray="26 22"/>'+
-  '<g class="veh v1">'+carro('#ff0066')+'</g><g class="veh v2">'+carro('#7a7aff')+'</g><g class="veh v3">'+onibus()+'</g>'+
   '<rect x="372" y="286" width="16" height="246" fill="#2f2f9a"/><rect x="360" y="520" width="40" height="10" rx="3" fill="#1b1b78"/>'+
   '<rect x="138" y="52" width="484" height="246" rx="10" fill="#10106e" stroke="#4a4ac8" stroke-width="3"/>'+
   '<rect x="150" y="64" width="460" height="222" rx="4" fill="url(#gScr)"/>'+
@@ -59,6 +58,7 @@ function cenaSvg(logo){
   banca(150,3,'MEGA')+banca(395,9,'MEGA')+
   rodaGigante(578,385,78)+
   '<rect x="524" y="510" width="5" height="20" fill="#2f2f9a"/><rect x="628" y="510" width="5" height="20" fill="#2f2f9a"/><rect x="508" y="478" width="144" height="36" rx="5" fill="#10106e" stroke="#4a4ac8" stroke-width="2"/><rect x="514" y="484" width="132" height="26" rx="3" fill="#05052e"/><g clip-path="url(#cPol)"><g class="mq"><text x="650" y="502" textLength="330" lengthAdjust="spacingAndGlyphs" class="mqt">MERCADO CENTRAL  •  PARQUE GUANABARA  •  </text><text x="980" y="502" textLength="330" lengthAdjust="spacingAndGlyphs" class="mqt">MERCADO CENTRAL  •  PARQUE GUANABARA  •  </text></g></g><rect x="514" y="484" width="132" height="26" fill="url(#gap)"/>'+
+  '<g class="veh v1">'+carro('#ff0066')+'</g><g class="veh v2">'+carro('#7a7aff')+'</g><g class="veh v3">'+onibus()+'</g>'+
   '</svg>';
 }
 function relogio(root){

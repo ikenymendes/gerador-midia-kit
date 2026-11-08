@@ -312,3 +312,14 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
   .sair-top:active{background:var(--pink-bg);border-color:var(--pink);color:var(--pink-d)}
   .topbar{gap:10px}
 }
+
+/* ---------- Sair no fim do menu; menu aberto fica por cima da barra inferior ---------- */
+#tabs{overflow-y:auto}
+.navsep{height:1px;background:#ffffff1c;margin:12px 14px 6px}
+.tab.sair{color:#ffb3d1}.tab.sair:hover{background:#ff006626;color:#fff}
+.sair-top{display:none!important}
+@media(max-width:900px){
+  body.nav-open #bnav{display:none}
+  .side{z-index:40}
+  .tab.sair{min-height:50px}
+}
