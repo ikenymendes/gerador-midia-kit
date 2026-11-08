@@ -297,3 +297,22 @@ function viewFluxo(v,tipo){
   if(i<passos.length-1){ next.onclick=function(){ ir(i+1); }; nav.appendChild(next); if(id==='pontos'&&window.__onSel) window.__onSel(nSel()); }
   v.appendChild(nav);
 }
+
+
+/* ---------- Melhoria de fotos (admin): pontos com foto fraca ou sem foto ---------- */
+function contFotos(){ var n=fqConta(); document.querySelectorAll('.tab[data-t=fotos] .cnt').forEach(function(c){ c.textContent=n; c.hidden=!n; }); }
+function viewFotos(v){
+  v.appendChild(h('h2',{text:'Melhoria de fotos'}));
+  v.appendChild(h('p',{class:'hint',text:'Aqui aparecem os pontos com foto em baixa qualidade (menos de '+FQ_MIN_W+'×'+FQ_MIN_H+' px) ou sem foto. Troque pela foto nova: o ponto sai da lista assim que a foto estiver boa.'}));
+  var gsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(GRUPOS.map(function(g){ return h('option',{value:g.k,text:g.nome}); })));
+  var info=h('p',{class:'status'}), list=h('div',{class:'fgrid'}); v.appendChild(h('div',{class:'bar'},[gsel])); v.appendChild(info); v.appendChild(list);
+  function draw(){ list.innerHTML=''; var itens=D.pontos.filter(function(p){ return fotoAtencao(p)&&(!gsel.value||grupoDe(p).k===gsel.value); });
+    info.textContent=fqScanning?'Verificando as fotos…':(itens.length?itens.length+' ponto'+(itens.length>1?'s':'')+' para melhorar.':'Tudo certo: nenhuma foto em baixa qualidade.'); info.className='status '+(fqScanning?'':(itens.length?'':'ok'));
+    itens.forEach(function(p){ var k=fotoKey(p), q=k&&FQ[k], st=h('p',{class:'fst',text:fotoAtencao(p)==='sem'?'⚠ Sem foto':'⚠ '+q.w+'×'+q.h+' px · baixa qualidade'});
+      var th=k&&libSrc(k)?h('img',{src:libSrc(k),loading:'lazy'}):h('div',{class:'nofoto',text:'sem foto'});
+      var fi=h('input',{type:'file',accept:'image/*'}); var msg=h('span',{class:'hint'});
+      fi.addEventListener('change',async function(){ if(!fi.files.length) return; msg.textContent='Enviando…'; try{ var nk=await addPhoto(fi.files[0]); if(Array.isArray(p.foto)) p.foto[0]=nk; else p.foto=nk; dirty(); var r=await fqCheck(nk); contFotos(); document.dispatchEvent(new Event('fotochg')); if(r&&r.low) toast('Foto enviada, mas ainda está pequena ('+r.w+'×'+r.h+' px). Use uma maior.',true); else toast('Foto trocada ✓'); draw(); }catch(e){ msg.textContent=''; toast(e.message||String(e),true); } });
+      var abrir=h('button',{type:'button',class:'btn',text:'Abrir ponto',onclick:function(){ filtro=''; filtroDono=''; filtroQ=false; busca=p.endereco||''; showTab('pontos'); }});
+      list.appendChild(h('div',{class:'fcard'},[th,h('div',{class:'fbody'},[h('b',{text:p.endereco||'(sem endereço)'}),h('span',{class:'hint',text:[p.bairro,grupoDe(p).nome].filter(Boolean).join(' · ')}),st,h('div',{class:'bar'},[h('label',{class:'btn pri'},['📷 Substituir foto',fi]),abrir]),msg])])); }); }
+  gsel.addEventListener('change',draw); draw(); fqScan(function(){ contFotos(); if(curTab==='fotos') draw(); });
+}

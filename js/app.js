@@ -1,8 +1,8 @@
 /* Navegação por abas, entrada no sistema e avisos em tempo real. */
 /* [id, rótulo, grupo, ícone] */
-var TABS_ADMIN=[['dash','Dashboard','','dash'],['kit','Kit','Cadastro','kit'],['pontos','Pontos','Cadastro','pin'],['sug','Sugestões','Cadastro','chat'],['mercado','Mercado Central','Cadastro','bag'],['guanabara','Parque Guanabara','Cadastro','leaf'],['brasilia','Brasília','Cadastro','bldg'],['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['precos','Preços base','Propostas','tag'],['hist','Propostas','Propostas','clock'],['usuarios','Usuários','Administração','users']];
+var TABS_ADMIN=[['dash','Dashboard','','dash'],['kit','Kit','Cadastro','kit'],['pontos','Pontos','Cadastro','pin'],['fotos','Melhoria de fotos','Cadastro','cam'],['sug','Sugestões','Cadastro','chat'],['mercado','Mercado Central','Cadastro','bag'],['guanabara','Parque Guanabara','Cadastro','leaf'],['brasilia','Brasília','Cadastro','bldg'],['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['precos','Preços base','Propostas','tag'],['hist','Propostas','Propostas','clock'],['usuarios','Usuários','Administração','users']];
 var TABS_COM=[['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['minhas','Minhas sugestões','Meu histórico','chat'],['hist','Minhas propostas','Meu histórico','clock']];
-var ICONES={dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+var ICONES={cam:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/>',dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
  kit:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
  chat:'<path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',bag:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/>',
  leaf:'<path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.5 6-7"/>',bldg:'<path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/>',
@@ -15,7 +15,7 @@ function showTab(t){
   document.querySelectorAll('.tab,.bt').forEach(function(b){ if(b.dataset.t) b.classList.toggle('on',b.dataset.t===t); });
   var v=$('#view'); v.innerHTML='';
   var fn=({dash:viewDashboard,kit:viewKit,pontos:viewPontos,sel:viewSelecao,sug:viewSugestoes,minhas:viewMinhasSugestoes,hist:viewHistorico,usuarios:viewUsuarios,
-    mercado:function(v){viewSchema(v,'mercado',MERC)},guanabara:function(v){viewSchema(v,'guanabara',GUAN)},brasilia:function(v){viewSchema(v,'brasilia',BRAS)},
+    fotos:viewFotos,mercado:function(v){viewSchema(v,'mercado',MERC)},guanabara:function(v){viewSchema(v,'guanabara',GUAN)},brasilia:function(v){viewSchema(v,'brasilia',BRAS)},
     precos:viewPrecos,gerar:viewGerar,kitp:function(v){viewFluxo(v,'kitp')},prop:function(v){viewFluxo(v,'prop')}})[t];
   if(!fn) return; try{ fn(v); }catch(e){ console.error(e); v.appendChild(h('p',{class:'status err',text:'Erro ao abrir a aba: '+erroMsg(e)})); } window.scrollTo(0,0);
 }
@@ -83,7 +83,7 @@ async function enterApp(){
     catch(e){ gate('Não foi possível carregar os dados',[erroMsg(e),'Verifique a conexão. Nada foi alterado.'],[h('div',{class:'bar'},[h('button',{class:'btn pri',text:'Tentar de novo',onclick:enterApp}),h('button',{class:'btn',text:'Sair',onclick:sairDoGerador})])]); return; }
   }
   $('#gate').hidden=true; $('#banner').hidden=true;
-  iniciarTempoReal(); atualizarPendentes();
+  iniciarTempoReal(); atualizarPendentes(); if(ME.admin) fqScan(contFotos);
   setSaved(ME.admin?'conectado':'seleção guardada neste navegador');
   showTab(TABS[0][0]);
 }
