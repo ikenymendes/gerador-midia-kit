@@ -1,7 +1,20 @@
 /* Dados do kit: estado padrão, preços, fotos, mapas e geração (PPTX/PDF/prévia). */
 var ONLINE=false; /* false = mapas reais (Esri/OSM) com a internet */
-var INS_DEF={led_bh:500,led_rm:500,banca_led:500,mercado:220,guanabara:250,df_painel:420};
-function migPrecos(D){ (D.precos||[]).forEach(function(r){ if(r.nome==='Bancas de revista') r.nome='Bancas Estáticas'; if(!r.v2){ r.v2=1; var d=INS_DEF[r.auto]; r.insPor=d!=null?d:(parseInt(r.insercoes,10)||''); delete r.modo; } }); }
+var INS_DEF={led_mega:500,led_r2:500,banca_mega:500,banca_r2:500,led_bh:500,led_rm:500,banca_led:500,mercado:220,guanabara:250,df_painel:420};
+var PRECO_ORD=['mercado','led_mega','banca_mega','led_r2','banca_r2','guanabara','empena','front','mensal','revista','metro','df_painel'];
+function migPrecos(D){ if(!D.precos) return;
+  if(D.precos.some(function(r){return /led_bh|led_rm|banca_led/.test(r.auto||'')})||!D.precos.some(function(r){return r.auto==='led_r2'})){
+    var rs=D.precos, bh=rs.filter(function(r){return r.auto==='led_bh'})[0], rm=rs.filter(function(r){return r.auto==='led_rm'})[0], bl=rs.filter(function(r){return r.auto==='banca_led'})[0];
+    if(bh){ bh.auto='led_mega'; bh.nome='Painéis de LED'; if(rm&&!String(bh.tabela||'').trim()&&String(rm.tabela||'').trim()){ bh.tabela=rm.tabela; bh.desc=rm.desc; } }
+    if(rm) rs.splice(rs.indexOf(rm),1);
+    if(bl){ bl.auto='banca_mega'; bl.nome='Bancas de LED'; }
+    rs.forEach(function(r){ if(r.auto&&/led_bh|led_rm|banca_led/.test(r.auto)) r.auto=r.auto.split(',').map(function(k){return k==='led_bh'?'led_mega':k==='banca_led'?'banca_mega':k==='led_rm'?'':k;}).filter(Boolean).join(','); });
+    var tem=function(k){ return rs.some(function(r){return r.auto===k}); };
+    [['led_r2','Painéis de LED','4 semanas'],['banca_r2','Bancas de LED','4 semanas'],['led_mega','Painéis de LED','4 semanas'],['banca_mega','Bancas de LED','4 semanas'],['mercado','Circuito Mercado Central','4 semanas']].forEach(function(n){ if(!tem(n[0])) rs.push({nome:n[1],auto:n[0],pontos:'',periodo:n[2],insercoes:'',tabela:'',desc:'',modo:'geral'}); });
+    var ix=function(r){ var i=PRECO_ORD.indexOf(r.auto); return i<0?99:i; };
+    D.precos=rs.map(function(r,i){return [r,i]}).sort(function(a,b){ return (ix(a[0])-ix(b[0]))||(a[1]-b[1]); }).map(function(x){return x[0]});
+  }
+  (D.precos||[]).forEach(function(r){ if(r.nome==='Bancas de revista') r.nome='Bancas Estáticas'; if(!r.v2){ r.v2=1; var d=INS_DEF[r.auto]; r.insPor=d!=null?d:(parseInt(r.insercoes,10)||''); delete r.modo; } }); }
 var ESTATICOS=['empena','front','mensal','revista','metro'];
 function ehEstatico(r){ return !!r.auto&&ESTATICOS.indexOf(r.auto)>=0; }
 function selEstaticos(D,k){ return ptsOf(D,k).filter(function(p){ return p.sel; }); }
@@ -38,7 +51,7 @@ var DEF=function(){ return {
   specs:[['Totens Guanabara','1,00 x 2,00 m','239 x 479'],['Painel de LED','4,00 x 2,00 m','768 x 320']],caption:'Totem (1 x 2 m) e painel de LED (4 x 2 m).',chips:[['MP4','Extensão do arquivo'],['10 s','Duração do VT'],['250','Veiculações por dia'],['20 MB','Tamanho máximo']]},
  brasilia:{tiles:[['3.854.278','usuários por mês'],['160 mil','usuários por dia'],['68%','usam o metrô todos os dias'],['59%','têm entre 21 e 40 anos'],['81%','com ensino médio completo'],['~20%','com nível superior completo']],genero:[53.4,45.4],generoNota:'1,2% se declararam com outra identidade.',fonte:'Pesquisa Ser Desenvolvimento Humano e Empresarial.',texto:'O Metrô-DF transporta por mês 3.854.278 usuários, sendo público A, B e C. A faixa etária é majoritariamente jovem, economicamente ativa e receptiva a novas tendências: mais de 59% dos passageiros têm entre 21 e 40 anos.',formatos:[['Envelopamento externo','Envelopamento externo de vagões'],['Cabeceira de vagão','Mídia na cabeceira do vagão'],['Mídia interna','Painéis dentro dos vagões'],['Interna em cabeceira','Mídia interna na cabeceira do vagão'],['Mídia nas estações','Painéis de 6,00 x 2,00 m (tamanhos variam por estação)']],dims:['1,92 m','2,88 m'],veic:'420',caption:'Painel de LED de 1,92 x 2,88 m (640 x 960 px).',painelChips:[['MP4','Extensão do arquivo'],['10 s','Duração do VT · sem animação'],['420','Inserções por dia'],['6 MB','Tamanho máximo']]},
  comissao:20, bv:0, modoGeral:'bruto',
- precos:[['Painéis de LED · Belo Horizonte','led_bh','4 semanas','500'],['Painéis de LED · Região Metropolitana','led_rm','4 semanas','500'],['Bancas de LED','banca_led','4 semanas','500'],['Circuito Mercado Central','mercado','4 semanas','220'],['Circuito Parque Guanabara','guanabara','4 semanas','250'],['Empenas','empena','Mensal','—'],['Painéis frontlight','front','Mensal','—'],['Painéis mensais · mega painéis e outdoors','mensal','Mensal','—'],['Bancas Estáticas','revista','Mensal','—'],['Metrô-DF · mídia no metrô','metro','Mensal','—'],['Painéis de LED · Brasília','df_painel','4 semanas','420']].map(function(r){ return {nome:r[0],auto:r[1],pontos:'',periodo:r[2],insercoes:r[3],tabela:'',desc:'',modo:'geral'}; })
+ precos:[['Circuito Mercado Central','mercado','4 semanas','220'],['Painéis de LED','led_mega','4 semanas','500'],['Bancas de LED','banca_mega','4 semanas','500'],['Painéis de LED','led_r2','4 semanas','500'],['Bancas de LED','banca_r2','4 semanas','500'],['Circuito Parque Guanabara','guanabara','4 semanas','250'],['Empenas','empena','Mensal','—'],['Painéis frontlight','front','Mensal','—'],['Painéis mensais · mega painéis e outdoors','mensal','Mensal','—'],['Bancas Estáticas','revista','Mensal','—'],['Metrô-DF · mídia no metrô','metro','Mensal','—'],['Painéis de LED · Brasília','df_painel','4 semanas','420']].map(function(r){ return {nome:r[0],auto:r[1],pontos:'',periodo:r[2],insercoes:r[3],tabela:'',desc:'',modo:'geral'}; })
 };};
 var D=DEF(), uid=0;
 function newId(){ return 'p'+Date.now().toString(36)+(uid++); }

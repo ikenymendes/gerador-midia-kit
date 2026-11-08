@@ -1,9 +1,10 @@
 /* Sugestões: o comercial sugere adicionar/alterar pontos; o administrador confere e aplica. */
-var SUG_CAMPOS=[['secao','Seção'],['endereco','Endereço'],['bairro','Bairro'],['cidade','Cidade'],['lat','Latitude'],['lng','Longitude'],['zoom','Zoom do mapa'],['tamanho','Tamanho'],['pixels','Pixels'],['veic','Veic./dia'],['publico','Público'],['fluxo','Fluxo/dia'],['impacto','Impacto semanal'],['sentido','Sentido'],['foto','Foto'],['mapa','Imagem do mapa']];
+var SUG_CAMPOS=[['secao','Seção'],['dono','Propriedade'],['endereco','Endereço'],['bairro','Bairro'],['cidade','Cidade'],['lat','Latitude'],['lng','Longitude'],['zoom','Zoom do mapa'],['tamanho','Tamanho'],['pixels','Pixels'],['veic','Veic./dia'],['publico','Público'],['fluxo','Fluxo/dia'],['impacto','Impacto semanal'],['sentido','Sentido'],['foto','Foto'],['mapa','Imagem do mapa']];
 function sugCopia(p){ var o=JSON.parse(JSON.stringify(p||{})); delete o.id; delete o.ord; delete o.sel; return o; }
 function sugVal(k,v){
   if(v==null||v==='') return '—';
   if(k==='secao') return secLabel(v);
+  if(k==='dono') return donoNome(v);
   if(k==='foto'||k==='mapa'){ var a=Array.isArray(v)?v:[v]; return a.length+' imagem(ns)'; }
   return String(v);
 }
@@ -13,9 +14,9 @@ function sugDiff(antes,depois){ var d={}; SUG_CAMPOS.forEach(function(c){ var k=
 /* campos do ponto (mesmos da ficha do administrador) */
 function formPonto(obj,semFoto){
   var g=h('div',{class:'grid'});
-  var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(obj.secao===k) o.selected=true; return o; }));
-  sel.addEventListener('change',function(){ obj.secao=sel.value; if((obj.secao==='metro'||obj.secao==='df_painel')&&!obj.cidade){ obj.cidade='Brasília-DF'; cid.value=obj.cidade; } });
-  g.appendChild(field('Seção / formato do ponto',sel));
+  var sel=grupoSelect(obj);
+  sel.addEventListener('change',function(){ if((obj.secao==='metro'||obj.secao==='df_painel')&&!obj.cidade){ obj.cidade='Brasília-DF'; cid.value=obj.cidade; } });
+  g.appendChild(field('Grupo / formato do ponto',sel));
   var ed=inp(obj,'endereco'), ba=inp(obj,'bairro'), cid=inp(obj,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(obj,'lat',{num:true}), lng=inp(obj,'lng',{num:true}), res=h('small',{text:''});
@@ -32,7 +33,7 @@ function formPonto(obj,semFoto){
 function abrirFormSugestao(tipo,ponto){
   var alterar=tipo==='alterar';
   var antes=alterar?sugCopia(ponto):null;
-  var obj=alterar?sugCopia(ponto):{secao:filtro||'led_bh',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
+  var obj=alterar?sugCopia(ponto):{secao:(grupoPorK(filtro||'')||GRUPOS[1]).sec[0],dono:(grupoPorK(filtro||'')||{}).r2?'mega_r2':'padrao',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
   var motivo=h('textarea',{rows:2,placeholder:alterar?'O que mudou e por quê? (ex.: tela trocada, endereço corrigido)':'De onde vem este ponto? (ex.: novo contrato, ponto do parceiro X)'});
   var st=h('p',{class:'status'});
   var corpo=[h('p',{class:'hint',text:alterar?'Altere só o que precisa. O administrador vai ver o antes e o depois e decidir.':'Preencha os dados do novo ponto. O administrador recebe o aviso, confere e cadastra.'}),formPonto(obj,alterar),field('Observação para o administrador',motivo,null,'wide'),st];

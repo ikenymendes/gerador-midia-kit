@@ -317,7 +317,7 @@ function metroDraw(S,x,y,w,h,o){ o=o||{}; var dk=o.dark, k=o.kind||'ext', fc=dk?
 /* ===== Estrutura do kit ===== */
 var SEC = {
   led_bh:{nome:'Painéis de LED',praca:'Belo Horizonte',tipo:'Painel de LED',sep:2,cidade:'Belo Horizonte'},
-  led_rm:{nome:'Painéis de LED',praca:'Região Metropolitana',tipo:'Painel de LED',sep:3},
+  led_rm:{nome:'Painéis de LED',praca:'Região Metropolitana',tipo:'Painel de LED',sep:2},
   banca_led:{nome:'Bancas de LED',praca:'BH e região',tipo:'Banca de LED',sep:4},
   empena:{nome:'Empenas',praca:'',tipo:'Empena',sep:7},
   front:{nome:'Painéis frontlight',praca:'',tipo:'Painel frontlight',sep:8},
@@ -336,7 +336,31 @@ function donoNome(k){ var r=DONOS.filter(function(d){return d[0]===k})[0]; retur
 function setCircuito(D,sec,val){ ptsOf(D,sec).forEach(function(p){ p.sel=val; }); }
 function sincCircuitos(D){ CIRCUITOS.forEach(function(k){ var a=ptsOf(D,k); if(a.some(function(p){return p.sel;})) a.forEach(function(p){ p.sel=true; }); }); }
 function vlr(v){ return typeof v==='number'?v:num(v); }
-function ptsOf(D,sec){ return D.pontos.filter(function(p){return p.secao===sec;}); }
+/* Grupos na ordem fixa do sistema (dono MEGA/R2/Terceiros é só interno) */
+var GRUPOS=[
+ {k:'mercado',nome:'Circuito Mercado Central',sec:['mercado']},
+ {k:'led_mega',nome:'Painéis de LED MEGA',sec:['led_bh','led_rm'],r2:false},
+ {k:'banca_mega',nome:'Bancas de LED MEGA',sec:['banca_led'],r2:false},
+ {k:'led_r2',nome:'Painéis MEGA/R2',sec:['led_bh','led_rm'],r2:true},
+ {k:'banca_r2',nome:'Bancas MEGA/R2',sec:['banca_led'],r2:true},
+ {k:'guanabara',nome:'Parque Guanabara',sec:['guanabara']},
+ {k:'empena',nome:'Empenas',sec:['empena']},
+ {k:'front',nome:'Painéis Frontlight',sec:['front']},
+ {k:'mensal',nome:'Painéis Mensais',sec:['mensal']},
+ {k:'revista',nome:'Bancas Estáticas',sec:['revista']},
+ {k:'metro',nome:'Metrô-DF',sec:['metro']},
+ {k:'df_painel',nome:'Painéis de LED Brasília',sec:['df_painel']}
+];
+var GRUPO_NOVOS={led_mega:1,banca_mega:1,led_r2:1,banca_r2:1};
+function grupoDe(p){ var r2=(p&&p.dono)==='mega_r2'; for(var i=0;i<GRUPOS.length;i++){ var g=GRUPOS[i]; if(g.sec.indexOf(p.secao)>=0&&(g.r2===undefined||g.r2===r2)) return g; } return GRUPOS[GRUPOS.length-1]; }
+function grupoIdx(p){ return GRUPOS.indexOf(grupoDe(p)); }
+function grupoPorK(k){ return GRUPOS.filter(function(g){return g.k===k})[0]; }
+function ordenaPts(D){ D.pontos=D.pontos.map(function(p,i){return [p,i]}).sort(function(a,b){ return (grupoIdx(a[0])-grupoIdx(b[0]))||(a[1]-b[1]); }).map(function(x){return x[0]}); }
+function aplicaGrupo(p,k){ var g=grupoPorK(k); if(!g) return;
+  if(g.r2===true) p.dono='mega_r2'; else if(g.r2===false&&p.dono==='mega_r2') p.dono='padrao';
+  if(g.sec.indexOf(p.secao)<0) p.secao=g.sec[0];
+  if(g.sec.length>1) p.secao=(!p.cidade||/belo horizonte/i.test(p.cidade))?'led_bh':'led_rm'; }
+function ptsOf(D,sec){ if(GRUPO_NOVOS[sec]) return D.pontos.filter(function(p){return grupoDe(p).k===sec;}); return D.pontos.filter(function(p){return p.secao===sec;}); }
 function num(v){ v=parseFloat(String(v).replace(/\./g,'').replace(',','.')); return isNaN(v)?0:v; }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function logoAt(S,asset,x,y,h){ if(!asset) return 0; var w=h*asset.w/asset.h; S.img(x,y,w,h,asset,{contain:true}); return w; }
@@ -367,11 +391,14 @@ function edge(S,A,x0,d,key,nomotif){
   S.poly([[x0+d-0.42,0],[x0+d-0.34,0],[x0-0.34,SH],[x0-0.42,SH]],{fill:C.WHITE,a:55});
 }
 
+/* ordem de exibição das capas no kit (os números i são estáveis; a posição vem daqui) */
+var SEQ=[5,2,4,6,7,8,9,10,11,12];
+function NP(i){ var n=SEQ.indexOf(i)+1; return (n<10?'0':'')+n; }
 var SEPS=[
- {i:1,title:'Belo\nHorizonte',kick:'Praça',sub:'Painéis, bancas, empenas e mais',hero:function(S){skyline(S,0.35,1.3,4.0,2.1,{dark:true});},secs:['led_bh','banca_led']},
- {i:2,title:'Painéis\nde LED',kick:'Formato',sub:'Belo Horizonte',hero:function(S){ledPanel(S,0.8,1.35,3.3,2.1,{dark:true,ratio:2.7});},secs:['led_bh']},
- {i:3,title:'Região\nMetropolitana',kick:'Praça',sub:'Painéis de LED',hero:function(S){ledPanel(S,0.8,1.45,3.3,2.0,{dark:true,ratio:2.7});pinIcon(S,3.3,1.25,0.45);},secs:['led_rm']},
- {i:4,title:'Bancas\nde LED',kick:'Formato',sub:'Belo Horizonte e região metropolitana',hero:function(S){bancaDraw(S,0.9,1.35,3.0,2.1,{dark:true});},secs:['banca_led']},
+ {i:1,off:true,title:'Belo\nHorizonte',kick:'Praça',sub:'Painéis, bancas, empenas e mais',hero:function(S){skyline(S,0.35,1.3,4.0,2.1,{dark:true});},secs:['led_bh','banca_led']},
+ {i:2,title:'Painéis\nde LED',kick:'Formato',sub:'Belo Horizonte e região metropolitana',hero:function(S){ledPanel(S,0.8,1.35,3.3,2.1,{dark:true,ratio:2.7});},secs:['led_mega','led_r2']},
+ {i:3,off:true,title:'Região\nMetropolitana',kick:'Praça',sub:'Painéis de LED',hero:function(S){ledPanel(S,0.8,1.45,3.3,2.0,{dark:true,ratio:2.7});pinIcon(S,3.3,1.25,0.45);},secs:['led_rm']},
+ {i:4,title:'Bancas\nde LED',kick:'Formato',sub:'Belo Horizonte e região metropolitana',hero:function(S){bancaDraw(S,0.9,1.35,3.0,2.1,{dark:true});},secs:['banca_mega','banca_r2']},
  {i:5,title:'Mercado\nCentral',kick:'Ponto especial',sub:'',hero:function(S,A){ if(A.mercW) S.img(1.0,1.2,2.8,2.2,A.mercW,{contain:true}); },secs:[],photo:'mercado_foto'},
  {i:6,title:'Parque\nGuanabara',kick:'Ponto especial',sub:'',hero:function(S){wheelDraw(S,1.0,1.15,2.4,{dark:true});},secs:[],photo:'guanabara_foto2'},
  {i:7,title:'Empenas',kick:'Formato',sub:'Mídia estática de grande formato',hero:function(S){buildingDraw(S,0.8,1.2,3.2,2.25,{dark:true});},secs:['empena']},
@@ -383,7 +410,7 @@ var SEPS=[
 ];
 var SEPINFO={
  1:{texto:'Capital de Minas Gerais, com mais de 2,3 milhões de habitantes e centro de uma região metropolitana de cerca de 6 milhões de pessoas. Principal polo econômico, cultural e de serviços do estado, concentra grandes avenidas, corredores de trânsito intenso e bairros de alto consumo: cenário ideal para mídia exterior de alto impacto.',stats:[['auto','pontos na capital'],['2,3 mi','habitantes'],['6 mi','na região metropolitana']],bullets:['Painéis de LED nos principais corredores viários','Bancas de LED no centro e nos bairros','Empenas, frontlight, painéis mensais e bancas de revista']},
- 2:{texto:'Mídia digital em movimento: vídeos de 10 segundos, em loop, com 500 inserções por dia em cada painel. Alta visibilidade dia e noite, troca de campanha rápida e flexibilidade para comunicar no momento certo.',stats:[['auto','painéis na capital'],['500','inserções por dia / painel'],['10 s','duração do VT']],bullets:['Instalados em avenidas de grande circulação','Arquivo em MP4, até 20 MB','Ideal para awareness e ações de curto prazo']},
+ 2:{texto:'Mídia digital em movimento: vídeos de 10 segundos, em loop, com 500 inserções por dia em cada painel. Alta visibilidade dia e noite, troca de campanha rápida e flexibilidade para comunicar no momento certo.',stats:[['auto','painéis de LED'],['500','inserções por dia / painel'],['10 s','duração do VT']],bullets:['Instalados em avenidas de grande circulação','Arquivo em MP4, até 20 MB','Ideal para awareness e ações de curto prazo']},
  3:{texto:'Painéis de LED nos principais acessos e avenidas das cidades da região metropolitana, levando a campanha para além da capital e alcançando quem circula todos os dias entre os municípios.',stats:[['auto','painéis na região'],['500','inserções por dia / painel'],['10 s','duração do VT']],bullets:['Cobertura dos grandes eixos de ligação com BH','Mesmo formato e regras dos painéis da capital','Complementa a campanha com alcance regional']},
  4:{texto:'Bancas transformadas em painéis digitais de LED, espalhadas pelo centro e pelos bairros. Mídia na altura do olhar, que conversa com pedestres e motoristas e aproxima a marca do consumidor no dia a dia da cidade.',stats:[['auto','bancas de LED'],['500','inserções por dia / banca'],['10 s','duração do VT']],bullets:['Presença em ruas de grande fluxo de pedestres','Comunicação próxima e de alta frequência','Arquivo em MP4, até 20 MB']},
  5:{texto:'Maior mercado da América Latina e um dos principais pontos turísticos e gastronômicos de BH, recebendo visitantes do mundo todo.',stats:[['400+','lojas'],['15 mi','pessoas por ano'],['40 mil','pessoas por dia']],bullets:['Circuito de 8 telas de LED','Estacionamento com 420 vagas rotativas','Espaço monitorado por 90 câmeras']},
@@ -401,7 +428,7 @@ function separator(D,A,sp){
   slantMotif(S,9.6,-0.5,6.2,10);
   S.rect(X-0.35,0,0.07,SH,{fill:C.PINK,a:100}); S.rect(X-0.55,0,0.04,SH,{fill:C.WHITE,a:35});
   logoAt(S,A.logoW,0.7,0.45,0.7); sp.hero(S,A);
-  S.text(0.7,3.62,3.9,0.3,(sp.i<10?'0':'')+sp.i+'  ·  '+sp.kick.toUpperCase(),{size:9.5,f:'B',color:C.PINK,spc:200});
+  S.text(0.7,3.62,3.9,0.3,NP(sp.i)+'  ·  '+sp.kick.toUpperCase(),{size:9.5,f:'B',color:C.PINK,spc:200});
   S.text(0.7,3.95,4.0,1.5,sp.title,{size:32,f:'M',color:C.WHITE,ls:0.92});
   var sub=sp.sub; if(sp.i===5) sub=D.mercado.circuito; if(sp.i===6) sub=D.guanabara.circuito; if(sub) S.text(0.7,5.35,3.7,0.8,sub,{size:12,f:'L',color:'CCCCE0',ls:1.0});
   // direita: informação
@@ -416,13 +443,13 @@ function separator(D,A,sp){
     S.text(x+0.2,4.3,sw-0.35,0.7,val,{size:String(val).length>6?24:32,f:'M',color:C.WHITE,valign:'m'});
     S.text(x+0.2,4.98,sw-0.35,0.45,st[1]||'',{size:9.5,f:'L',color:k===1?C.WHITE:'CCCCE0',ls:1.0}); });
   (info.bullets||[]).slice(0,3).forEach(function(b,k){ var y=5.8+k*0.36; S.oval(RX+0.02,y+0.09,0.12,0.12,{fill:C.PINK}); S.text(RX+0.3,y,RW-0.3,0.32,b,{size:11,f:'L',color:'E6E6F2'}); });
-  var xx=0.75; for(var i=1;i<=SEPS.length;i++){ var cur=i===sp.i, w=cur?0.42:0.15; S.rect(xx,6.8,w,0.07,{fill:cur?C.PINK:'5A5A9A',r:0.035}); xx+=w+0.05; }
+  var xx=0.75; for(var i=0;i<SEQ.length;i++){ var cur=SEQ[i]===sp.i, w=cur?0.42:0.15; S.rect(xx,6.8,w,0.07,{fill:cur?C.PINK:'5A5A9A',r:0.035}); xx+=w+0.05; }
   return S;
 }
 
 function gmapsStreet(p){ return 'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+p.lat+','+p.lng; }
 function ficha(D,A,p){
-  var sec=SEC[p.secao], S=frame(null,A,(sec.sep<10?'0':'')+sec.sep+' · '+sec.nome+'  ·  Ficha de ponto',p.endereco||'Endereço',[p.bairro,p.cidade].filter(Boolean).join(' · '));
+  var sec=SEC[p.secao], S=frame(null,A,NP(sec.sep)+' · '+sec.nome+'  ·  Ficha de ponto',p.endereco||'Endereço',[p.bairro,p.cidade].filter(Boolean).join(' · '));
   photoSlot(S,A,p.foto,0.6,1.95,6.5,4.85,0.22);
   var tipoVal=p.tipoTxt||sec.tipo, tl=Math.max(1.4,Math.min(3.6,tipoVal.length*0.12+0.5));
   var cx=7.4, cw=5.33, tiles=sec.tiles||[['FLUXO DE CARROS/DIA','fluxo'],['IMPACTO SEMANAL','impacto']];
@@ -466,7 +493,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   var full=(mode!=='proposta'), D=Object.assign({},D0); if(!full) D.pontos=D0.pontos.filter(function(p){return p.sel;});
   function has(k){ return ptsOf(D,k).length>0; }
   A.D=D; var out=[], K=D.kit, R=K.resp;
-  function push(S){ out.push(S); return S; }
+  var CG=0; function push(S){ S.__g=CG; out.push(S); return S; }
 
   // 1 CAPA
   var S=new Slide({g:[C.NAVY_D,C.NAVY]}); edge(S,A,7.2,1.2,K.fotoCapa,true);
@@ -503,7 +530,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   push(S);
 
   // 4 BH
-  S=frame(null,A,'01 · Belo Horizonte','Nossos formatos na capital','Pontos ativos por formato');
+  S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Pontos ativos por formato');
   skyline(S,7.3,0.95,5.43,0.95,{dark:false});
   [['led_bh','Painéis de LED'],['banca_led','Bancas de LED'],['empena','Empenas'],['front','Painéis frontlight'],['mensal','Painéis mensais'],['revista','Bancas Estáticas']].forEach(function(t,i){
     var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*2.45, big=String(ptsOf(D,t[0]).length), first=i===0;
@@ -513,21 +540,21 @@ function buildSlides(D0,A,mode){ migKit(D0);
 
   // separadores + fichas
   var order=[1,2]; 
-  function sepAndFichas(i,secs){ var chk=(i===1)?['led_bh','banca_led','empena','front','mensal','revista']:secs; if(full||chk.some(has)) push(separator(D,A,SEPS[i-1])); secs.forEach(function(s){ ptsOf(D,s).forEach(function(p){ push(ficha(D,A,p)); }); }); }
-  sepAndFichas(1,[]); sepAndFichas(2,['led_bh']);
+  function sepAndFichas(i,secs,g){ CG=g; if(full||secs.some(has)) push(separator(D,A,SEPS[i-1])); secs.forEach(function(s){ ptsOf(D,s).forEach(function(p){ push(ficha(D,A,p)); }); }); }
+  sepAndFichas(2,['led_mega','led_r2'],2);
   // especificações LED
-  var ledRows=groupSpec(ptsOf(D,'led_bh').concat(ptsOf(D,'led_rm')),false);
-  for(var li=0,nch=Math.ceil(ledRows.length/6);li<ledRows.length;li+=6) push(specSlide(A,'02 · Painéis de LED','Especificações técnicas'+(nch>1?' · '+(li/6+1)+'/'+nch:''),'Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)']].concat(ledRows.slice(li,li+6)),[4.4,1.5,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.4,dims:['Largura','Altura']});},'Tamanho em metros · formato em pixels (resolução do arquivo).',D.specChips.led,{rowH:0.6}));
-  sepAndFichas(3,['led_rm']); sepAndFichas(4,['banca_led']);
-  var bRows=groupSpec(ptsOf(D,'banca_led'),true);
-  if(bRows.length) push(specSlide(A,'04 · Bancas de LED','Especificações técnicas','Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)','Veic./dia']].concat(bRows),[3.7,1.5,1.4,1.2],function(S,x,y,w,h){bancaDraw(S,x,y,w,h,{dark:false,dims:['Largura','Altura']});},'Banca com tela de LED na frente e na lateral.',D.specChips.banca,{rowH:0.64}));
+  var ledRows=groupSpec(ptsOf(D,'led_mega').concat(ptsOf(D,'led_r2')),false);
+  for(var li=0,nch=Math.ceil(ledRows.length/6);li<ledRows.length;li+=6) push(specSlide(A,NP(2)+' · Painéis de LED','Especificações técnicas'+(nch>1?' · '+(li/6+1)+'/'+nch:''),'Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)']].concat(ledRows.slice(li,li+6)),[4.4,1.5,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.4,dims:['Largura','Altura']});},'Tamanho em metros · formato em pixels (resolução do arquivo).',D.specChips.led,{rowH:0.6}));
+  sepAndFichas(4,['banca_mega','banca_r2'],3);
+  var bRows=groupSpec(ptsOf(D,'banca_mega').concat(ptsOf(D,'banca_r2')),true);
+  if(bRows.length) push(specSlide(A,NP(4)+' · Bancas de LED','Especificações técnicas','Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)','Veic./dia']].concat(bRows),[3.7,1.5,1.4,1.2],function(S,x,y,w,h){bancaDraw(S,x,y,w,h,{dark:false,dims:['Largura','Altura']});},'Banca com tela de LED na frente e na lateral.',D.specChips.banca,{rowH:0.64}));
 
   // MERCADO
-  var M=D.mercado; if(full||has('mercado')){ push(separator(D,A,SEPS[4]));
+  var M=D.mercado; CG=1; if(full||has('mercado')){ push(separator(D,A,SEPS[4]));
   S=new Slide({c:C.BG}); photoSlot(S,A,M.fotos[0],0.6,0.6,5.0,6.3,0.24);
   S.rect(0.85,0.85,2.75,0.8,{fill:C.WHITE,r:0.18,a:95}); if(A.mercN){ var mw=0.64*A.mercN.w/A.mercN.h; S.img(1.0,0.93,mw,0.64,A.mercN,{contain:true}); }
   S.text(1.72,0.85,1.85,0.8,['MERCADO','CENTRAL'],{size:10.5,f:'M',color:C.NAVY,valign:'m',ls:0.95,spc:100});
-  S.text(6.0,0.5,4.5,0.3,'05 · MERCADO CENTRAL',{size:10,f:'B',color:C.PINK,spc:220});
+  S.text(6.0,0.5,4.5,0.3,NP(5)+' · MERCADO CENTRAL',{size:10,f:'B',color:C.PINK,spc:220});
   var lw2=0.5*A.logoC.w/A.logoC.h; S.img(SW-0.6-lw2,0.4,lw2,0.5,A.logoC,{contain:true});
   S.text(6.0,0.95,6.75,1.1,'Mercado Central\nde Belo Horizonte',{size:26,f:'M',color:C.NAVY,ls:0.95}); S.text(6.0,2.05,6.7,0.8,M.texto,{size:11.5,f:'L',color:C.INK,ls:1.2});
   M.tiles.forEach(function(t,i){ tile(S,6.0+(i%3)*2.28,2.95+Math.floor(i/3)*1.38,2.18,1.25,t[0],t[1],i===0?'navy':'white',22,9); });
@@ -535,35 +562,35 @@ function buildSlides(D0,A,mode){ migKit(D0);
   gcard(S,6.0,6.28,6.73,0.78,C.PINK,0.18); S.text(6.2,6.3,2.4,0.74,M.destaque[0],{size:12.5,f:'M',color:C.WHITE,valign:'m'}); S.text(8.55,6.3,4.1,0.74,M.destaque[1],{size:9.5,f:'L',color:C.WHITE,valign:'m',ls:1.0}); push(S);
   ptsOf(D,'mercado').forEach(function(p){ push(ficha(D,A,p)); });
   var md=M.demo;
-  S=frame(null,A,'05 · Mercado Central','Perfil demográfico','Perfil da vizinhança · dados IBGE',  'mercado');
+  S=frame(null,A,NP(5)+' · Mercado Central','Perfil demográfico','Perfil da vizinhança · dados IBGE',  'mercado');
   md.tiles.forEach(function(t,i){ tile(S,0.6+i*3.06,1.95,2.9,1.2,t[0],t[1],i===0?'navy':'white',20,9); });
   card(S,0.6,3.35,7.4,3.5,0.2); cardTitle(S,0.85,3.55,'Faixa etária','Distribuição da população por idade'); S.bars(0.8,4.1,7.0,2.65,md.faixaCats,md.faixa,{hi:md.faixa.indexOf(Math.max.apply(null,md.faixa))});
   card(S,8.2,3.35,4.53,3.5,0.2); cardTitle(S,8.45,3.55,'Gênero','Média da vizinhança'); S.donut(8.55,4.0,2.4,md.genero,['Feminino','Masculino']);
   S.text(8.55,4.75,2.4,0.5,md.genero[0]+'%',{size:22,f:'M',color:C.NAVY,align:'c'}); S.text(8.55,5.2,2.4,0.3,'Feminino',{size:9,f:'L',color:C.MID,align:'c'});
   legendDot(S,11.15,4.85,C.PINK,'Feminino',md.genero[0]+'%'); legendDot(S,11.15,5.25,C.NAVY,'Masculino',md.genero[1]+'%'); push(S);
-  S=frame(null,A,'05 · Mercado Central','Perfil demográfico · página 2','Classe social, renda e pontos de interesse da região','mercado');
+  S=frame(null,A,NP(5)+' · Mercado Central','Perfil demográfico · página 2','Classe social, renda e pontos de interesse da região','mercado');
   var cw3=3.88; [['Classe social','Média da vizinhança'],['Renda média mensal','Por classe social'],['Top 5 pontos de interesse','Nº de estabelecimentos']].forEach(function(t,i){ var x=0.6+i*(cw3+0.245); card(S,x,1.95,cw3,4.85,0.2); cardTitle(S,x+0.25,2.15,t[0],t[1]); });
   var cl=['Classe A','Classe B','Classe C','Classe D','Classe E'];
   S.bars(0.75,2.85,3.6,3.8,cl,md.classes,{hi:md.classes.indexOf(Math.max.apply(null,md.classes))}); S.bars(4.72,2.85,3.6,3.8,cl,md.renda,{color:C.NAVY,fmt:'brl',hi:0}); S.bars(8.69,2.85,3.9,3.8,md.intCats,md.intVals,{color:C.PINK,fmt:'num',hi:0}); push(S);
-  push(specSlide(A,'05 · Mercado Central','Especificações técnicas',M.circuito,[['Ponto','Qtd.','Tamanho','Formato (px)']].concat(M.specs),[3.6,0.8,1.6,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.5,dims:M.dims||['Largura','Altura']});},M.caption,M.chips,{rowH:0.8,partner:'mercado'}));
+  push(specSlide(A,NP(5)+' · Mercado Central','Especificações técnicas',M.circuito,[['Ponto','Qtd.','Tamanho','Formato (px)']].concat(M.specs),[3.6,0.8,1.6,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.5,dims:M.dims||['Largura','Altura']});},M.caption,M.chips,{rowH:0.8,partner:'mercado'}));
   }
 
   // GUANABARA
-  var G=D.guanabara; if(full||has('guanabara')){ push(separator(D,A,SEPS[5]));
+  var G=D.guanabara; CG=4; if(full||has('guanabara')){ push(separator(D,A,SEPS[5]));
   S=new Slide({c:C.BG});
   if(G.fotoParque&&G.fotoParque.length&&A.photos[G.fotoParque[0]]) photoSlot(S,A,G.fotoParque[0],7.95,0.6,4.78,6.3,0.24);
   else { S.rect(7.95,0.6,4.78,6.3,{fill:C.NAVY,r:0.24}); slantMotif(S,9.2,-0.6,5.6,9); wheelDraw(S,8.75,0.95,3.2,{dark:true});
     S.text(8.3,4.35,3.9,0.3,'LAGOA DA PAMPULHA  ·  BELO HORIZONTE',{size:8.5,f:'B',color:C.PINK,spc:140,align:'c'});
     S.text(8.3,4.7,3.9,0.5,'Diversão, tradição e memória afetiva',{size:13,f:'M',color:C.WHITE,align:'c'});
     if(A.mapG) S.img(8.2,5.3,4.28,1.35,A.mapG,{r:0.16}); }
-  S.text(0.6,0.45,6,0.3,'06 · PARQUE GUANABARA',{size:10,f:'B',color:C.PINK,spc:220}); S.text(0.6,0.78,7,0.7,'Parque Guanabara',{size:28,f:'M',color:C.NAVY});
+  S.text(0.6,0.45,6,0.3,NP(6)+' · PARQUE GUANABARA',{size:10,f:'B',color:C.PINK,spc:220}); S.text(0.6,0.78,7,0.7,'Parque Guanabara',{size:28,f:'M',color:C.NAVY});
   S.text(0.6,1.62,7.0,1.6,G.texto,{size:11.5,f:'L',color:C.INK,ls:1.25});
   G.tiles.forEach(function(t,i){ tile(S,0.6+i*2.38,3.35,2.25,1.25,t[0],t[1],i===0?'navy':'white',22,9); });
   S.text(0.6,4.85,5,0.3,'QUEM VISITA',{size:9,f:'B',color:C.PINK,spc:200});
   var px=0.6, py=5.2; G.quem.forEach(function(t){ var w=t.length*0.095+0.45; if(px+w>7.6){px=0.6;py+=0.45;} pill(S,px,py,w,0.34,t,{fill:C.WHITE,color:C.NAVY,size:8.5,line:C.LINE,f:'M',spc:0}); px+=w+0.12; });
   gcard(S,0.6,6.15,7.05,0.8,C.NAVY,0.18); S.text(0.8,6.15,1.9,0.8,'Por que anunciar?',{size:11,f:'M',color:C.WHITE,valign:'m'}); S.text(2.75,6.15,4.8,0.8,G.porque,{size:9,f:'L',color:C.WHITE,valign:'m',ls:1.0}); push(S);
   var gd=G.demo;
-  S=frame(null,A,'06 · Parque Guanabara','Perfil demográfico',G.endereco,'guanabara');
+  S=frame(null,A,NP(6)+' · Parque Guanabara','Perfil demográfico',G.endereco,'guanabara');
   if(A.mapG2) S.img(0.6,1.95,4.2,4.85,A.mapG2,{r:0.2}); else S.rect(0.6,1.95,4.2,4.85,{fill:'EEF0F8',r:0.2});
   card(S,5.0,1.95,3.8,2.6,0.2); cardTitle(S,5.2,2.12,'Faixa etária'); S.bars(5.1,2.55,3.6,1.95,gd.faixaCats,gd.faixa,{hi:gd.faixa.indexOf(Math.max.apply(null,gd.faixa))});
   card(S,8.95,1.95,3.78,2.6,0.2); cardTitle(S,9.15,2.12,'Classe social'); S.bars(9.05,2.55,3.6,1.95,['A','B','C','D','E'],gd.classes,{color:C.NAVY,hi:gd.classes.indexOf(Math.max.apply(null,gd.classes))});
@@ -572,22 +599,22 @@ function buildSlides(D0,A,mode){ migKit(D0);
   gcard(S,8.95,4.75,3.78,2.05,C.NAVY,0.2); S.text(9.2,4.9,3.3,0.3,'AUDIÊNCIA',{size:8.5,f:'B',color:C.PINK,spc:200});
   gd.audiencia.forEach(function(kv,i){ var yy=5.28+i*0.5; S.text(9.2,yy,1.6,0.4,kv[0],{size:10.5,f:'L',color:'DDDDEE',valign:'m'}); S.text(10.6,yy,1.95,0.4,kv[1],{size:16,f:'M',color:C.WHITE,align:'r',valign:'m'}); if(i<2) S.line(9.2,yy+0.44,12.5,yy+0.44,{c:C.WHITE,lw:0.75,a:25}); }); push(S);
   ptsOf(D,'guanabara').forEach(function(p){ push(ficha(D,A,p)); });
-  push(specSlide(A,'06 · Parque Guanabara','Especificações técnicas',G.circuito,[['Ponto','Tamanho','Formato (px)']].concat(G.specs),[3.4,1.8,1.6],function(S,x,y,w,h){ totemDraw(S,x,y,w*0.34,h,{dark:false,dims:['1,00 m','2,00 m']}); ledPanel(S,x+w*0.36,y,w*0.64,h,{dark:false,ratio:2.0,dims:['4,00 m','2,00 m']}); },G.caption,G.chips,{rowH:0.9,partner:'guanabara'}));
+  push(specSlide(A,NP(6)+' · Parque Guanabara','Especificações técnicas',G.circuito,[['Ponto','Tamanho','Formato (px)']].concat(G.specs),[3.4,1.8,1.6],function(S,x,y,w,h){ totemDraw(S,x,y,w*0.34,h,{dark:false,dims:['1,00 m','2,00 m']}); ledPanel(S,x+w*0.36,y,w*0.64,h,{dark:false,ratio:2.0,dims:['4,00 m','2,00 m']}); },G.caption,G.chips,{rowH:0.9,partner:'guanabara'}));
   }
 
-  sepAndFichas(7,['empena']); sepAndFichas(8,['front']); sepAndFichas(9,['mensal']); sepAndFichas(10,['revista']);
+  sepAndFichas(7,['empena'],5); sepAndFichas(8,['front'],6); sepAndFichas(9,['mensal'],7); sepAndFichas(10,['revista'],8);
 
 
   // BRASÍLIA
-  var B=D.brasilia; if(full||has('metro')||has('df_painel')) push(separator(D,A,SEPS[10]));
+  var B=D.brasilia; CG=9; if(full||has('metro')||has('df_painel')) push(separator(D,A,SEPS[10]));
   if(full||has('metro')){
-  S=frame(null,A,'11 · Brasília','Metrô-DF','Brasília · Distrito Federal · público A, B e C');
+  S=frame(null,A,NP(11)+' · Brasília','Metrô-DF','Brasília · Distrito Federal · público A, B e C');
   B.tiles.forEach(function(t,i){ tile(S,0.6+(i%3)*2.7,1.95+Math.floor(i/3)*1.45,2.55,1.3,t[0],t[1],i===0?'navy':'white',22,9); });
   card(S,0.6,4.9,8.05,1.9,0.2); S.text(0.85,5.05,5.3,0.3,'Quem usa o metrô',{size:12,f:'M',color:C.NAVY}); S.text(0.85,5.4,5.4,1.35,B.texto,{size:10,f:'L',color:C.INK,ls:1.15}); congresso(S,6.45,5.1,2.0,1.45,{dark:false});
   card(S,8.9,1.95,3.83,4.85,0.2); cardTitle(S,9.15,2.15,'Gênero','Perfil dos usuários'); S.donut(9.65,2.85,2.4,B.genero,['Feminino','Masculino']);
   S.text(9.65,3.6,2.4,0.5,B.genero[0]+'%',{size:22,f:'M',color:C.NAVY,align:'c'}); S.text(9.65,4.05,2.4,0.3,'Feminino',{size:9,f:'L',color:C.MID,align:'c'});
   legendDot(S,9.3,5.45,C.PINK,'Feminino',B.genero[0]+'%'); legendDot(S,9.3,5.82,C.NAVY,'Masculino',B.genero[1]+'%'); S.text(9.15,6.2,3.4,0.5,B.generoNota+'\n'+B.fonte,{size:7.5,f:'L',color:C.MID,ls:1.0}); push(S);
-  S=frame(null,A,'11 · Brasília','Formatos de mídia no Metrô-DF','Alcance de '+B.tiles[1][0]+' usuários por dia');
+  S=frame(null,A,NP(11)+' · Brasília','Formatos de mídia no Metrô-DF','Alcance de '+B.tiles[1][0]+' usuários por dia');
   B.formatos.forEach(function(f,i){ var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*2.45; card(S,x,y,3.85,2.25,0.2); S.rect(x+0.15,y+0.15,3.55,1.15,{fill:C.NAVY,r:0.14}); metroDraw(S,x+0.3,y+0.18,3.25,1.1,{dark:true,kind:['ext','cab','int','int','est'][i]||'ext'});
     S.text(x+0.25,y+1.4,3.4,0.35,f[0],{size:13,f:'M',color:C.NAVY}); S.text(x+0.25,y+1.75,3.4,0.45,f[1],{size:9,f:'L',color:C.MID,ls:1.0}); });
   if(B.formatos.length<6){ var xx=0.6+(B.formatos.length%3)*4.06, yy=1.95+Math.floor(B.formatos.length/3)*2.45; gcard(S,xx,yy,3.85,2.25,C.PINK,0.2); S.text(xx+0.3,yy+0.3,3.3,0.3,'ALCANCE DIÁRIO',{size:8.5,f:'B',color:C.WHITE,spc:140}); S.text(xx+0.3,yy+0.65,3.3,0.8,B.tiles[1][0],{size:34,f:'M',color:C.WHITE,valign:'m'}); S.text(xx+0.3,yy+1.5,3.3,0.6,'usuários · público A, B e C',{size:10,f:'L',color:C.WHITE}); }
@@ -597,16 +624,20 @@ function buildSlides(D0,A,mode){ migKit(D0);
   var dfp=ptsOf(D,'df_painel');
   if(full||dfp.length){
   push(separator(D,A,SEPS[11]));
-  S=frame(null,A,'12 · Painéis de LED · Brasília','Onde estão os painéis',dfp.length+' painéis de LED no Distrito Federal');
+  S=frame(null,A,NP(12)+' · Painéis de LED · Brasília','Onde estão os painéis',dfp.length+' painéis de LED no Distrito Federal');
   card(S,0.6,1.95,7.9,4.85,0.2); if(A.mapDF) S.img(0.8,2.15,7.5,4.45,A.mapDF,{r:0.18}); else S.rect(0.8,2.15,7.5,4.45,{fill:'EEF0F8',r:0.18});
   [[String(dfp.length),'painéis de LED em Brasília','navy'],[B.dims[0]+' x '+B.dims[1],'medida de cada painel','white'],[B.veic,'inserções por dia','pink']].forEach(function(t,i){ tile(S,8.7,1.95+i*1.65,4.03,1.5,t[0],t[1],t[2],26,10); });
   push(S);
-  push(specSlide(A,'12 · Painéis de LED · Brasília','Especificações técnicas','Distrito Federal',[['Local','Tamanho','Formato (px)']].concat(groupSpec(dfp,false)),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips,{rowH:0.7}));
+  push(specSlide(A,NP(12)+' · Painéis de LED · Brasília','Especificações técnicas','Distrito Federal',[['Local','Tamanho','Formato (px)']].concat(groupSpec(dfp,false)),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips,{rowH:0.7}));
   dfp.forEach(function(p){ push(ficha(D,A,p)); });
   }
 
   // PREÇOS
-  var rows=D.precos.filter(function(r){ return full||!r.auto||r.auto.split(',').some(function(k){return has(k);}); }).map(function(r){ return calcPreco(D,r); }); window.LAST_ROWS=rows;
+  CG=99;
+  var rows=D.precos.filter(function(r){ return full||!r.auto||r.auto.split(',').some(function(k){return has(k);}); }).map(function(r){ return calcPreco(D,r); });
+  /* linhas com o mesmo nome (ex.: Painéis MEGA + MEGA/R2) viram uma só na proposta: o dono é informação interna */
+  if(!full){ var mg=[]; rows.forEach(function(r){ var o=mg.filter(function(x){return x.nome===r.nome})[0]; if(!o) mg.push(Object.assign({},r)); else { o.pontos+=r.pontos; o.insN+=r.insN; o.tabela+=r.tabela; o.neg+=r.neg; o.final+=r.final; o.desc=o.tabela?Math.round((1-o.neg/o.tabela)*10000)/100:0; o.insercoes=o.insN?String(o.insN).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—'; } }); rows=mg; }
+  window.LAST_ROWS=rows;
   if(!full){
   S=frame(null,A,'Investimento','Tabela de preços','Valor de tabela, desconto e valor negociado ('+(D.modoGeral==='liquido'?'líquido de comissão':'bruto')+')');
   card(S,0.6,1.95,12.13,4.85,0.2);
@@ -634,7 +665,8 @@ function buildSlides(D0,A,mode){ migKit(D0);
   S.rect(0.8,4.35,5.6,2.35,{fill:C.WHITE,r:0.2,a:9}); S.text(1.05,4.5,5.2,0.5,R.nome||'',{size:20,f:'M',color:C.WHITE}); S.text(1.05,5.0,5.2,0.3,String(R.cargo||'').toUpperCase(),{size:9,f:'B',color:C.PINK,spc:160});
   S.text(1.05,5.45,5.2,1.2,[R.email||'',[R.tel1,R.tel2].filter(Boolean).join('  ·  '),R.site||''],{size:11,f:'L',color:C.WHITE,after:4}); push(S);
 
-  // numeração
+  // ordem fixa dos grupos (estável) e numeração
+  out=out.map(function(s,i){return [s,i]}).sort(function(a,b){ return ((a[0].__g||0)-(b[0].__g||0))||(a[1]-b[1]); }).map(function(x){return x[0]});
   out.forEach(function(s,i){ if(s.pn) s.pn.str=(i+1<10?'0':'')+(i+1); });
   return out;
 }

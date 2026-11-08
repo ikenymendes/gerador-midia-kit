@@ -6,7 +6,7 @@ async function logProposta(formato,mode){
     var prop=(mode==='proposta');
     var rows=prop?(window.LAST_ROWS||[]):[];
     var pts=prop?D.pontos.filter(function(p){ return p.sel; }):[];
-    var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:secLabel(p.secao),endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||'',dono:donoDe(p),valor_tabela:p.preco==null||p.preco===''?null:vlr(p.preco)}; });
+    var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:grupoDe(p).nome,endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||'',dono:donoDe(p),valor_tabela:p.preco==null||p.preco===''?null:vlr(p.preco)}; });
     var tt=0,tn=0;
     var valores=rows.map(function(c){ tt+=c.tabela; tn+=c.final; return {nome:c.nome,pontos:c.pontos,periodo:c.periodo,insercoes_por_ativo:c.insPor,insercoes_total:c.insN,tabela:c.tabela,desconto:c.desc,negociado:c.neg,final:c.final}; });
     await Store.salvarProposta({tipo:prop?'proposta':'kit_completo',formato:formato,cliente:D.kit.cliente||null,titulo:D.kit.titulo||null,n_locais:prop?pts.length:D.pontos.length,modo_valor:D.modoGeral,comissao:num(D.comissao),bv:num(D.bv),total_tabela:tt,total_negociado:tn,locais:locais,valores:valores});
