@@ -54,6 +54,7 @@ function schemaField(obj,s){
   return field(label,i,s[4],'wide');
 }
 /* ajuste do enquadramento da foto na ficha (foco, zoom ou foto inteira) com prévia ao vivo (sem canvas: usa a própria foto) */
+var cropRect=window.cropRect||function(aw,ah,aspect,aj){ var z=Math.max(100,Math.min(300,+aj.z||100))/100, sw,sh; if(aw/ah>aspect){ sh=ah; sw=sh*aspect; } else { sw=aw; sh=sw/aspect; } sw/=z; sh/=z; var fx=aj.x==null?50:+aj.x, fy=aj.y==null?50:+aj.y; return {sx:(aw-sw)*fx/100,sy:(ah-sh)*fy/100,sw:sw,sh:sh}; };
 function fotoAjuste(p){
   var AR=6.5/4.85, w=h('div',{class:'fajuste'}), box=h('div',{class:'fprev'}), im=h('img',{alt:'Prévia do enquadramento'}), aviso=h('span',{class:'faviso',text:'Carregando a foto…'});
   box.appendChild(im); box.appendChild(aviso);

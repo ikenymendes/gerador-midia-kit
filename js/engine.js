@@ -382,6 +382,17 @@ function frame(S0,A,kicker,title,sub,partner){
   return S;
 }
 
+/* enquadramento da foto: x,y (0-100) = foco; z (100-300) = zoom; inteira = mostra a foto toda */
+function cropRect(aw,ah,aspect,aj){ var z=Math.max(100,Math.min(300,+aj.z||100))/100, sw,sh; if(aw/ah>aspect){ sh=ah; sw=sh*aspect; } else { sw=aw; sh=sw/aspect; } sw/=z; sh/=z;
+  var fx=aj.x==null?50:+aj.x, fy=aj.y==null?50:+aj.y; return {sx:(aw-sw)*fx/100,sy:(ah-sh)*fy/100,sw:sw,sh:sh}; }
+var cropCache={};
+function fotoAjustada(a,key,aspect,aj){ var ck=key+'|'+aspect.toFixed(3)+'|'+[aj.x,aj.y,aj.z].join(','); if(cropCache[ck]) return cropCache[ck];
+  var W=1600, H=Math.round(W/aspect), cv=document.createElement('canvas'); cv.width=W; cv.height=H; var c=cv.getContext('2d'), r=cropRect(a.w,a.h,aspect,aj);
+  c.drawImage(a.el,r.sx,r.sy,r.sw,r.sh,0,0,W,H); var o={src:cv.toDataURL('image/jpeg',0.92),w:W,h:H,el:cv}; cropCache[ck]=o; return o; }
+function photoSlotP(S,A,p,x,y,w,h,r){ var key=Array.isArray(p.foto)?p.foto[0]:p.foto, a=A.photos[key], aj=p.fotoAj;
+  if(!a||!aj||(!aj.inteira&&(aj.x==null||aj.x==50)&&(aj.y==null||aj.y==50)&&(!aj.z||aj.z==100))) return photoSlot(S,A,key,x,y,w,h,r);
+  if(aj.inteira){ S.rect(x,y,w,h,{fill:C.NAVY,r:r||0}); S.img(x,y,w,h,a,{contain:true,r:r}); return; }
+  S.img(x,y,w,h,fotoAjustada(a,key,w/h,aj),{r:r}); }
 function photoSlot(S,A,key,x,y,w,h,r){ var a=A.photos[key]; if(a) S.img(x,y,w,h,a,{r:r}); else { S.rect(x,y,w,h,{fill:C.NAVY_L,a:100,r:r||0}); slantMotif(S,x+w/2-0.7,y+h/2-0.9,1.8,18); } }
 
 function edge(S,A,x0,d,key,nomotif){
@@ -451,7 +462,7 @@ function separator(D,A,sp){
 function gmapsStreet(p){ return 'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint='+p.lat+','+p.lng; }
 function ficha(D,A,p){
   var sec=SEC[p.secao], S=frame(null,A,NP(sec.sep)+' · '+sec.nome+'  ·  Ficha de ponto',p.endereco||'Endereço',[p.bairro,p.cidade].filter(Boolean).join(' · '));
-  photoSlot(S,A,p.foto,0.6,1.95,6.5,4.85,0.22);
+  photoSlotP(S,A,p,0.6,1.95,6.5,4.85,0.22);
   var tipoVal=p.tipoTxt||sec.tipo, tl=Math.max(1.4,Math.min(3.6,tipoVal.length*0.12+0.5));
   var cx=7.4, cw=5.33, tiles=sec.tiles||[['FLUXO DE CARROS/DIA','fluxo'],['IMPACTO SEMANAL','impacto']];
   [['Tipo',tipoVal],['Formato',p.tamanho||'—'],['Público',p.publico||'—']].forEach(function(kv,i){ var w=(cw-0.4)/3, x=cx+i*(w+0.2);
@@ -466,11 +477,12 @@ function ficha(D,A,p){
     return S; }
   if(m) S.img(cx+0.15,4.85,2.6,1.8,m,{r:0.18}); else S.rect(cx+0.15,4.85,2.6,1.8,{fill:'EEF0F8',r:0.18});
   var long=(p.sentido||'').length>26;
-  S.text(cx+2.95,4.85,2.3,0.25,'SENTIDO',{size:8,f:'B',color:C.PINK,spc:100}); S.text(cx+2.95,5.08,2.3,long?0.62:0.3,p.sentido||'—',{size:long?8.5:11,f:'M',color:C.NAVY,ls:long?0.95:1});
-  var ly=long?5.72:5.45;
+  var temSent=String(p.sentido||'').trim()!=='';
+  if(temSent){ S.text(cx+2.95,4.85,2.3,0.25,'SENTIDO',{size:8,f:'B',color:C.PINK,spc:100}); S.text(cx+2.95,5.08,2.3,long?0.62:0.3,p.sentido,{size:long?8.5:11,f:'M',color:C.NAVY,ls:long?0.95:1}); }
+  var ly=temSent?(long?5.72:5.45):4.85;
   S.text(cx+2.95,ly,2.3,0.25,'LAT. / LONG.',{size:8,f:'B',color:C.PINK,spc:100});
   S.text(cx+2.95,ly+0.23,2.3,long?0.25:0.5,long?Number(p.lat).toFixed(5)+' , '+Number(p.lng).toFixed(5):[Number(p.lat).toFixed(7),Number(p.lng).toFixed(7)],{size:long?9:10.5,f:'L',color:C.INK,ls:1.0});
-  pill(S,cx+2.97,long?6.32:6.2,2.2,0.38,'LINK STREET VIEW  ↗',{fill:C.NAVY,size:8.5,link:gmapsStreet(p)});
+  pill(S,cx+2.97,temSent?(long?6.32:6.2):(ly+(long?0.78:1.08)),2.2,0.38,'LINK STREET VIEW  ↗',{fill:C.NAVY,size:8.5,link:gmapsStreet(p)});
   return S;
 }
 
@@ -575,7 +587,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   S=frame(null,A,NP(5)+' · Mercado Central','Perfil demográfico · página 2','Classe social, renda e pontos de interesse da região','mercado');
   var cw3=3.88; [['Classe social','Média da vizinhança'],['Renda média mensal','Por classe social'],['Top 5 pontos de interesse','Nº de estabelecimentos']].forEach(function(t,i){ var x=0.6+i*(cw3+0.245); card(S,x,1.95,cw3,4.85,0.2); cardTitle(S,x+0.25,2.15,t[0],t[1]); });
   var cl=['Classe A','Classe B','Classe C','Classe D','Classe E'];
-  S.bars(0.75,2.85,3.6,3.8,cl,md.classes,{hi:md.classes.indexOf(Math.max.apply(null,md.classes))}); S.bars(4.72,2.85,3.6,3.8,cl,md.renda,{color:C.NAVY,fmt:'brl',hi:0}); S.bars(8.69,2.85,3.9,3.8,md.intCats,md.intVals,{color:C.PINK,fmt:'num',hi:0}); push(S);
+  var bx0=function(i){ return 0.6+i*(cw3+0.245)+0.25; }, bw0=cw3-0.5; S.bars(bx0(0),2.85,bw0,3.8,cl,md.classes,{hi:md.classes.indexOf(Math.max.apply(null,md.classes))}); S.bars(bx0(1),2.85,bw0,3.8,cl,md.renda,{color:C.NAVY,fmt:'brl',hi:0}); S.bars(bx0(2),2.85,bw0,3.8,md.intCats,md.intVals,{color:C.PINK,fmt:'num',hi:0}); push(S);
   push(specSlide(A,NP(5)+' · Mercado Central','Especificações técnicas',M.circuito,[['Ponto','Qtd.','Tamanho','Formato (px)']].concat(M.specs),[3.6,0.8,1.6,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.5,dims:M.dims||['Largura','Altura']});},M.caption,M.chips,{rowH:0.8,partner:'mercado'}));
   }
 
