@@ -56,14 +56,16 @@ function schemaField(obj,s){
 /* ajuste do enquadramento da foto na ficha (foco, zoom ou foto inteira) com prévia ao vivo (sem canvas: usa a própria foto) */
 var cropRect=window.cropRect||function(aw,ah,aspect,aj){ var z=Math.max(100,Math.min(300,+aj.z||100))/100, sw,sh; if(aw/ah>aspect){ sh=ah; sw=sh*aspect; } else { sw=aw; sh=sw/aspect; } sw/=z; sh/=z; var fx=aj.x==null?50:+aj.x, fy=aj.y==null?50:+aj.y; return {sx:(aw-sw)*fx/100,sy:(ah-sh)*fy/100,sw:sw,sh:sh}; };
 function fotoAjuste(p){
-  var AR=6.5/4.85, w=h('div',{class:'fajuste'}), box=h('div',{class:'fprev'}), im=h('img',{alt:'Prévia do enquadramento'}), aviso=h('span',{class:'faviso',text:'Carregando a foto…'});
-  box.appendChild(im); box.appendChild(aviso);
+  var AR=6.5/4.85, w=h('div',{class:'fajuste'}), box=h('div',{class:'fprev'}), aviso=h('span',{class:'faviso',text:'Carregando a foto…'}), nat=null, im=new Image();
+  box.appendChild(aviso);
   function aj(){ if(!p.fotoAj) p.fotoAj={x:50,y:50,z:100,inteira:false}; return p.fotoAj; }
-  function draw(){ var a=aj(); var nw=im.naturalWidth, nh=im.naturalHeight; if(!nw||!nh) return; aviso.hidden=true;
-    if(a.inteira){ im.style.cssText='width:100%;height:100%;left:0;top:0;object-fit:contain'; return; }
-    var r=cropRect(nw,nh,AR,a); im.style.cssText='object-fit:fill;width:'+(nw/r.sw*100)+'%;height:'+(nh/r.sh*100)+'%;left:'+(-r.sx/r.sw*100)+'%;top:'+(-r.sy/r.sh*100)+'%'; }
-  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); if(!src){ im.removeAttribute('src'); aviso.hidden=false; aviso.textContent='Este ponto não tem foto.'; return; } aviso.hidden=false; aviso.textContent='Carregando a foto…'; im.onload=draw; im.onerror=function(){ aviso.hidden=false; aviso.textContent='Não foi possível carregar a foto.'; }; im.src=src; if(im.complete&&im.naturalWidth) draw(); }
-  function sl(rot,key,min,max){ var s=h('input',{type:'range',step:1}); s.min=min; s.max=max; s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; s.addEventListener('input',function(){ aj()[key]=+s.value; draw(); dirty(); }); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
+  /* a foto é o fundo da caixa: tamanho e posição em %, igual ao recorte que vai para o PowerPoint/PDF */
+  function draw(){ if(!nat) return; var a=aj(), st=box.style; aviso.hidden=true; st.backgroundRepeat='no-repeat';
+    if(a.inteira){ st.backgroundSize='contain'; st.backgroundPosition='center'; return; }
+    var r=cropRect(nat.w,nat.h,AR,a); st.backgroundSize=(nat.w/r.sw*100)+'% '+(nat.h/r.sh*100)+'%'; st.backgroundPosition=(a.x==null?50:a.x)+'% '+(a.y==null?50:a.y)+'%'; }
+  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); nat=null; box.style.backgroundImage='none'; if(!src){ aviso.hidden=false; aviso.textContent='Este ponto não tem foto.'; return; } aviso.hidden=false; aviso.textContent='Carregando a foto…';
+    im=new Image(); im.onload=function(){ nat={w:im.naturalWidth,h:im.naturalHeight}; box.style.backgroundImage='url("'+src+'")'; draw(); }; im.onerror=function(){ aviso.hidden=false; aviso.textContent='Não foi possível carregar a foto.'; }; im.src=src; }
+  function sl(rot,key,min,max){ var s=h('input',{type:'range',step:1}); s.min=min; s.max=max; s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; var f=function(){ aj()[key]=+s.value; draw(); dirty(); }; s.addEventListener('input',f); s.addEventListener('change',f); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
   var inteira=h('input',{type:'checkbox'}); inteira.checked=!!(p.fotoAj&&p.fotoAj.inteira); inteira.addEventListener('change',function(){ aj().inteira=inteira.checked; draw(); dirty(); });
   var reset=h('button',{type:'button',class:'btn',text:'Restaurar',onclick:function(){ delete p.fotoAj; dirty(); var par=wr.parentNode; if(par) par.replaceChild(fotoAjuste(p),wr); }});
   w.appendChild(box); w.appendChild(h('div',{class:'fctl'},[sl('← Esquerda · Direita →','x',0,100),sl('↑ Cima · Baixo ↓','y',0,100),sl('Zoom','z',100,300),h('label',{class:'chk'},[inteira,h('span',{text:'Mostrar a foto inteira (sem cortar)'})]),reset]));
