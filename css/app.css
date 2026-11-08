@@ -285,3 +285,21 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
   .dica-longa{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .ptab tbody tr:hover td,.ptab tbody td{background:transparent}.ptab tbody td.val{background:var(--pink-bg)}
 }
+
+/* ---------- circuito e preço por endereço ---------- */
+.srow.circ{border-color:#ffb3d1;background:linear-gradient(90deg,var(--pink-bg),#fff 60%)}.srow.circ .t b{color:var(--pink-d)}
+.endpr{margin-top:28px}.endpr h3{margin:0 0 4px}
+.endgrp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 16px 10px;margin:12px 0}.endgrp h4{margin:10px 0 4px;font:600 14px var(--sans);color:var(--navy)}
+.endrow{display:flex;align-items:center;gap:14px;padding:8px 0;border-top:1px solid #efeef6}.endrow:first-of-type{border-top:0}
+.endrow .t{flex:1;min-width:0;font-size:14px;color:var(--navy)}.endrow input{width:160px;flex:none;text-align:right}.endrow b{color:var(--navy);white-space:nowrap}.endrow b.sem{color:var(--pink-d);font-weight:500}
+.endrow.on .t::after{content:' · na proposta';color:var(--pink-d);font-size:12px}
+@media(max-width:900px){.endrow{flex-wrap:wrap}.endrow .t{flex:1 1 100%}.endrow input{width:100%;text-align:left}}
+
+/* ---------- circuito e preço por endereço ---------- */
+.srow.circ{border-color:#ffb3d1;background:linear-gradient(90deg,var(--pink-bg),#fff 60%)}.srow.circ .t b{color:var(--pink-d)}
+.endpr{margin-top:28px}.endpr h3{margin:0 0 4px}
+.endgrp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 16px 10px;margin:12px 0}.endgrp h4{margin:10px 0 4px;font:600 14px var(--sans);color:var(--navy)}
+.endrow{display:flex;align-items:center;gap:14px;padding:8px 0;border-top:1px solid #efeef6}.endrow:first-of-type{border-top:0}
+.endrow .t{flex:1;min-width:0;font-size:14px;color:var(--navy)}.endrow input{width:160px;flex:none;text-align:right}.endrow b{color:var(--navy);white-space:nowrap}.endrow b.sem{color:var(--pink-d);font-weight:500}
+.endrow.on .t::after{content:' · na proposta';color:var(--pink-d);font-size:12px}
+@media(max-width:900px){.endrow{flex-wrap:wrap}.endrow .t{flex:1 1 100%}.endrow input{width:100%;text-align:left}}

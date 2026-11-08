@@ -2,8 +2,12 @@
 var ONLINE=true;
 var INS_DEF={led_bh:500,led_rm:500,banca_led:500,mercado:220,guanabara:250,df_painel:420};
 function migPrecos(D){ (D.precos||[]).forEach(function(r){ if(r.nome==='Bancas de revista') r.nome='Bancas Estáticas'; if(!r.v2){ r.v2=1; var d=INS_DEF[r.auto]; r.insPor=d!=null?d:(parseInt(r.insercoes,10)||''); delete r.modo; } }); }
+var ESTATICOS=['empena','front','mensal','revista','metro'];
+function ehEstatico(r){ return !!r.auto&&ESTATICOS.indexOf(r.auto)>=0; }
+function selEstaticos(D,k){ return ptsOf(D,k).filter(function(p){ return p.sel; }); }
 function calcPreco(D,r){
   migPrecos(D);
+  if(ehEstatico(r)){ var sp=selEstaticos(D,r.auto); r=Object.assign({},r,{tabela:sp.reduce(function(a,p){ return a+vlr(p.preco); },0).toFixed(2).replace('.',','),pontos:r.pontos!==''&&r.pontos!=null?r.pontos:sp.length}); }
   var pontos=r.pontos!==''&&r.pontos!=null?num(r.pontos):(r.auto?(r.auto.split(',').reduce(function(a,k){ return a+(k==='mercado'?(D.mercado.nTelas||0):k==='guanabara'?(D.guanabara.nTelas||0):ptsOf(D,k).length);},0)):0);
   var tab=num(r.tabela), desc=num(r.desc), neg=tab*(1-desc/100), modo=D.modoGeral, fin=modo==='liquido'?neg*(1-num(D.comissao)/100)*(1-num(D.bv)/100):neg;
   var ip=num(r.insPor), ins=ip?ip*pontos:0;

@@ -329,6 +329,8 @@ var SEC = {
   df_painel:{nome:'Painéis de LED · Brasília',praca:'',tipo:'Painel de LED',sep:12,tiles:[['INSERÇÕES POR DIA','veic'],['FORMATO (PX)','pixels']]}
 };
 var SEC_ORDER=['led_bh','led_rm','banca_led','empena','front','mensal','revista','mercado','guanabara','metro','df_painel'];
+var CIRCUITOS=['mercado'];
+function vlr(v){ return typeof v==='number'?v:num(v); }
 function ptsOf(D,sec){ return D.pontos.filter(function(p){return p.secao===sec;}); }
 function num(v){ v=parseFloat(String(v).replace(/\./g,'').replace(',','.')); return isNaN(v)?0:v; }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
