@@ -385,3 +385,6 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .fbody{display:flex;flex-direction:column;gap:4px;min-width:0}.fbody b{color:var(--navy);font-size:14px}
 .fst{margin:0;color:#8a5a00;font-weight:600;font-size:12.5px}.fbody .bar{margin-top:6px}.fbody .btn{font-size:13px;padding:8px 12px}
 @media(max-width:900px){.fgrid{grid-template-columns:1fr}.fcard img,.fcard .nofoto{width:96px;height:72px}}
+
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap}.segb{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font:600 13px/1 Poppins,sans-serif;color:var(--mid);cursor:pointer}
+.segb.on{background:var(--navy);border-color:var(--navy);color:#fff}

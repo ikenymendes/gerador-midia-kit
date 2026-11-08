@@ -1,6 +1,6 @@
 /* Navegação por abas, entrada no sistema e avisos em tempo real. */
 /* [id, rótulo, grupo, ícone] */
-var TABS_ADMIN=[['dash','Dashboard','','dash'],['kit','Kit','Cadastro','kit'],['pontos','Pontos','Cadastro','pin'],['fotos','Melhoria de fotos','Cadastro','cam'],['sug','Sugestões','Cadastro','chat'],['mercado','Mercado Central','Cadastro','bag'],['guanabara','Parque Guanabara','Cadastro','leaf'],['brasilia','Brasília','Cadastro','bldg'],['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['precos','Preços base','Propostas','tag'],['hist','Propostas','Propostas','clock'],['usuarios','Usuários','Administração','users']];
+var TABS_ADMIN=[['kit','Kit','Cadastro','kit'],['pontos','Pontos','Cadastro','pin'],['fotos','Melhoria de fotos','Cadastro','cam'],['sug','Sugestões','Cadastro','chat'],['mercado','Mercado Central','Cadastro','bag'],['guanabara','Parque Guanabara','Cadastro','leaf'],['brasilia','Brasília','Cadastro','bldg'],['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['precos','Preços base','Propostas','tag'],['hist','Propostas','Propostas','clock'],['usuarios','Usuários','Administração','users']];
 var TABS_COM=[['kitp','Mídia Kit personalizado','Gerar','kit'],['prop','Proposta','Gerar','tag'],['minhas','Minhas sugestões','Meu histórico','chat'],['hist','Minhas propostas','Meu histórico','clock']];
 var ICONES={cam:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/>',dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
  kit:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
@@ -40,9 +40,9 @@ function montarAbas(){
   var sb=h('button',{class:'tab sair',type:'button',onclick:sairDoGerador}); sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="lbl">Sair</span>'; nav.appendChild(sb);
   montarBarraInferior();
 }
-var BN_CURTO={kitp:'Mídia Kit',prop:'Proposta',dash:'Início',pontos:'Pontos',sel:'Pontos',sug:'Sugestões',precos:'Preços',gerar:'Gerar',minhas:'Sugestões',hist:'Propostas'};
+var BN_CURTO={fotos:'Fotos',kitp:'Mídia Kit',prop:'Proposta',dash:'Início',pontos:'Pontos',sel:'Pontos',sug:'Sugestões',precos:'Preços',gerar:'Gerar',minhas:'Sugestões',hist:'Propostas'};
 function montarBarraInferior(){
-  var bn=$('#bnav'); bn.innerHTML=''; var ids=ME.admin?['dash','pontos','sug','kitp','prop']:['kitp','prop','minhas','hist'];
+  var bn=$('#bnav'); bn.innerHTML=''; var ids=ME.admin?['pontos','fotos','kitp','prop']:['kitp','prop','minhas','hist'];
   ids.forEach(function(id){ var t=TABS.filter(function(x){return x[0]===id})[0]; if(!t) return; var b=h('button',{type:'button',class:'bt',onclick:function(){ showTab(id); }}); b.dataset.t=id; b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONES[t[3]]||'')+'</svg><span></span><b class="cnt" hidden></b>'; b.querySelector('span').textContent=BN_CURTO[id]||t[1]; bn.appendChild(b); });
   if(ME.admin){ var m=h('button',{type:'button',class:'bt',onclick:function(){ document.body.classList.toggle('nav-open'); }}); m.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Mais</span>'; bn.appendChild(m); }
 }
@@ -85,7 +85,7 @@ async function enterApp(){
   $('#gate').hidden=true; $('#banner').hidden=true;
   iniciarTempoReal(); atualizarPendentes(); if(ME.admin) fqScan(contFotos);
   setSaved(ME.admin?'conectado':'seleção guardada neste navegador');
-  showTab(TABS[0][0]);
+  showTab(ME.admin?'pontos':TABS[0][0]);
 }
 
 /* ---- janelas auxiliares ---- */

@@ -60,12 +60,15 @@ function fotoAjuste(p){
   function draw(){ c.fillStyle='#000066'; c.fillRect(0,0,cv.width,cv.height); if(!ok){ c.fillStyle='#fff'; c.font='14px Poppins,sans-serif'; c.fillText('Envie uma foto para ajustar o enquadramento.',20,40); return; }
     var a=aj(); if(a.inteira){ var s=Math.min(cv.width/im.naturalWidth,cv.height/im.naturalHeight), dw=im.naturalWidth*s, dh=im.naturalHeight*s; c.drawImage(im,(cv.width-dw)/2,(cv.height-dh)/2,dw,dh); return; }
     var r=cropRect(im.naturalWidth,im.naturalHeight,AR,a); c.drawImage(im,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height); }
-  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); ok=false; if(!src){ draw(); return; } im.onload=function(){ ok=true; draw(); }; im.src=src; }
+  function msgc(t){ c.fillStyle='#000066'; c.fillRect(0,0,cv.width,cv.height); c.fillStyle='#fff'; c.font='15px Poppins,sans-serif'; c.fillText(t,20,40); }
+  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); ok=false; if(!src){ draw(); return; } msgc('Carregando a foto…'); im.onload=function(){ ok=true; draw(); }; im.onerror=function(){ msgc('Não foi possível carregar a foto.'); }; im.src=src; }
   function sl(rot,key,min,max){ var s=h('input',{type:'range',min:min,max:max,step:1}); s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; s.addEventListener('input',function(){ aj()[key]=+s.value; draw(); dirty(); }); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
   var inteira=h('input',{type:'checkbox'}); inteira.checked=!!(p.fotoAj&&p.fotoAj.inteira); inteira.addEventListener('change',function(){ aj().inteira=inteira.checked; draw(); dirty(); });
   var reset=h('button',{type:'button',class:'btn',text:'Restaurar',onclick:function(){ delete p.fotoAj; dirty(); var par=w.parentNode; if(par) par.replaceChild(fotoAjuste(p),w); }});
   w.appendChild(cv); w.appendChild(h('div',{class:'fctl'},[sl('← Esquerda · Direita →','x',0,100),sl('↑ Cima · Baixo ↓','y',0,100),sl('Zoom','z',100,300),h('label',{class:'chk'},[inteira,h('span',{text:'Mostrar a foto inteira (sem cortar)'})]),reset]));
-  load(); return h('div',{class:'f wide'},[h('span',{text:'Enquadramento da foto no kit'}),w,h('small',{text:'Mexa nos controles até o painel aparecer inteiro. Vale para a ficha deste ponto no PowerPoint e no PDF.'})]); }
+  msgc('Carregando a foto…'); try{ var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ io.disconnect(); load(); } }); io.observe(cv); }catch(e){ load(); }
+  document.addEventListener('fotochg',function f(){ if(!cv.isConnected){ document.removeEventListener('fotochg',f); return; } if(cv.offsetParent) load(); });
+  return h('div',{class:'f wide'},[h('span',{text:'Enquadramento da foto no kit'}),w,h('small',{text:'Mexa nos controles até o painel aparecer inteiro. Vale para a ficha deste ponto no PowerPoint e no PDF.'})]); }
 function photosField(label,obj,path){
   var wrap=h('div',{class:'photos'}), fi=h('input',{type:'file',accept:'image/*',multiple:'multiple'}); 
   function draw(){ wrap.innerHTML=''; var arr=getp(obj,path); if(!Array.isArray(arr)){ arr=arr?[arr]:[]; }
@@ -142,8 +145,7 @@ function viewPontos(v){
   var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(GRUPOS.map(function(g){ var o=h('option',{value:g.k,text:g.nome}); if(filtro===g.k) o.selected=true; return o; })));
   fsel.addEventListener('change',function(){ filtro=fsel.value; showTab('pontos'); });
   bar.appendChild(fsel); bar.appendChild(filtroDonoSel(function(){ showTab('pontos'); }));
-  var qchip=h('button',{type:'button',class:'btn qchip'+(filtroQ?' on':''),text:'⚠ Fotos com atenção',onclick:function(){ filtroQ=!filtroQ; showTab('pontos'); }}); bar.appendChild(qchip);
-  function qchipUpd(){ var n=fqConta(); qchip.textContent='⚠ Fotos com atenção ('+n+')'; qchip.hidden=!n&&!filtroQ; } qchipUpd(); fqScan(function(){ qchipUpd(); if(window.drawList&&curTab==='pontos') window.drawList(); });
+  fqScan(function(){ contFotos(); });
   var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca; bs.addEventListener('input',function(){ busca=bs.value; if(window.drawList) window.drawList(); }); bar.appendChild(bs);
   function setSel(v){ D.pontos.forEach(function(p){ if(!filtro||grupoDe(p).k===filtro) p.sel=v; }); dirty(); showTab('pontos'); }
   bar.appendChild(h('button',{class:'btn',text:'✓ Marcar todos'+(filtro?' desta seção':''),onclick:function(){ setSel(true); }}));
@@ -305,8 +307,10 @@ function viewFotos(v){
   v.appendChild(h('h2',{text:'Melhoria de fotos'}));
   v.appendChild(h('p',{class:'hint',text:'Aqui aparecem os pontos com foto em baixa qualidade (menos de '+FQ_MIN_W+'×'+FQ_MIN_H+' px) ou sem foto. Troque pela foto nova: o ponto sai da lista assim que a foto estiver boa.'}));
   var gsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(GRUPOS.map(function(g){ return h('option',{value:g.k,text:g.nome}); })));
-  var info=h('p',{class:'status'}), list=h('div',{class:'fgrid'}); v.appendChild(h('div',{class:'bar'},[gsel])); v.appendChild(info); v.appendChild(list);
-  function draw(){ list.innerHTML=''; var itens=D.pontos.filter(function(p){ return fotoAtencao(p)&&(!gsel.value||grupoDe(p).k===gsel.value); });
+  var tipo='', segs=h('div',{class:'seg'}), info=h('p',{class:'status'}), list=h('div',{class:'fgrid'}); v.appendChild(h('div',{class:'bar'},[segs,gsel])); v.appendChild(info); v.appendChild(list);
+  function drawSegs(){ segs.innerHTML=''; var nb=D.pontos.filter(function(p){return fotoAtencao(p)==='baixa'}).length, ns=D.pontos.filter(function(p){return fotoAtencao(p)==='sem'}).length;
+    [['','Todos ('+(nb+ns)+')'],['baixa','Baixa qualidade ('+nb+')'],['sem','Sem foto ('+ns+')']].forEach(function(o){ segs.appendChild(h('button',{type:'button',class:'segb'+(tipo===o[0]?' on':''),text:o[1],onclick:function(){ tipo=o[0]; draw(); }})); }); }
+  function draw(){ list.innerHTML=''; drawSegs(); var itens=D.pontos.filter(function(p){ var a=fotoAtencao(p); return a&&(!tipo||a===tipo)&&(!gsel.value||grupoDe(p).k===gsel.value); });
     info.textContent=fqScanning?'Verificando as fotos…':(itens.length?itens.length+' ponto'+(itens.length>1?'s':'')+' para melhorar.':'Tudo certo: nenhuma foto em baixa qualidade.'); info.className='status '+(fqScanning?'':(itens.length?'':'ok'));
     itens.forEach(function(p){ var k=fotoKey(p), q=k&&FQ[k], st=h('p',{class:'fst',text:fotoAtencao(p)==='sem'?'⚠ Sem foto':'⚠ '+q.w+'×'+q.h+' px · baixa qualidade'});
       var th=k&&libSrc(k)?h('img',{src:libSrc(k),loading:'lazy'}):h('div',{class:'nofoto',text:'sem foto'});
