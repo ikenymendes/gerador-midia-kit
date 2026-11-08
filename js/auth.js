@@ -67,6 +67,9 @@ async function boot(){
   if(!Store.configurado()){
     gate('Falta configurar o Supabase',['Abra o arquivo js/config.js e cole a "Project URL" e a "anon key" do seu projeto Supabase (Project Settings > API).','Veja o passo a passo no README.md.']); return;
   }
+  if(!Store.configOk()){
+    gate('O endereço do Supabase está errado',['A "Project URL" em js/config.js precisa ser exatamente assim: https://xxxxxxxx.supabase.co (começa com https://, termina em .supabase.co, sem espaços e sem nada depois).','Valor lido agora: '+JSON.stringify(String((window.MEGAKIT_CONFIG||{}).SUPABASE_URL||'').slice(0,80))]); return;
+  }
   if(!Store.init()){ gate('Não foi possível iniciar','A biblioteca do Supabase não carregou. Recarregue a página.'); return; }
   try{ var s=await Store.sessao(); if(s){ await iniciarSessao(); return; } }catch(e){ console.warn(e); }
   telaLogin('entrar');

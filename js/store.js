@@ -3,10 +3,12 @@ var Store = (function(){
   var sb = null;
   var CFG = window.MEGAKIT_CONFIG || {};
 
+  function urlValida(u){ try{ var x=new URL(String(u||'').trim()); return x.protocol==='https:'&&/\.supabase\.(co|in)$/.test(x.hostname); }catch(e){ return false; } }
   function configurado(){ return !!CFG.SUPABASE_URL && !/COLE_AQUI/.test(CFG.SUPABASE_URL) && !!CFG.SUPABASE_ANON_KEY && !/COLE_AQUI/.test(CFG.SUPABASE_ANON_KEY); }
+  function configOk(){ return configurado() && urlValida(CFG.SUPABASE_URL); }
   function init(){
     if(!configurado() || !window.supabase) return false;
-    sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } });
+    sb = window.supabase.createClient(String(CFG.SUPABASE_URL).trim(), String(CFG.SUPABASE_ANON_KEY).trim(), { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } });
     return true;
   }
   function must(r){ if(r.error) throw r.error; return r.data; }
@@ -62,7 +64,7 @@ var Store = (function(){
     return function(){ try{ sb.removeChannel(ch); }catch(e){} };
   }
 
-  return { init:init, configurado:configurado, sessao:sessao, entrar:entrar, cadastrar:cadastrar, sair:sair, meuPerfil:meuPerfil,
+  return { init:init, configurado:configurado, configOk:configOk, sessao:sessao, entrar:entrar, cadastrar:cadastrar, sair:sair, meuPerfil:meuPerfil,
     lerConfig:lerConfig, gravarConfig:gravarConfig, lerPontos:lerPontos, gravarPontos:gravarPontos, apagarPontos:apagarPontos,
     uploadPhoto:enviarFoto, photoUrl:urlFoto,
     criarSugestao:criarSugestao, listarSugestoes:listarSugestoes, contarPendentes:contarPendentes, resolverSugestao:resolverSugestao,
