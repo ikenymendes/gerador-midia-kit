@@ -1,5 +1,13 @@
 /* Tela de acesso: login, primeiro cadastro, espera de liberação e saída. */
-function gate(title,msg,actions){ var g=$('#gate'); g.hidden=false; g.innerHTML=''; var box=h('div',{class:'gbox'}); box.appendChild(h('img',{src:ASSETS.logoC,alt:'MEGA OOH',class:'glogo'})); box.appendChild(h('h2',{text:title})); (Array.isArray(msg)?msg:[msg]).forEach(function(m){ if(m) box.appendChild(h('p',{class:'hint',text:m})); }); (actions||[]).forEach(function(a){ box.appendChild(a); }); g.appendChild(box); return box; }
+function gate(title,msg,actions){
+  var g=$('#gate'); g.hidden=false; g.innerHTML='';
+  var split=h('div',{class:'gsplit'});
+  split.appendChild(h('div',{class:'gslash'}));
+  var hero=h('div',{class:'ghero'},[h('div',{class:'dots'}),h('div',{class:'led'}),h('div',{class:'ghtxt'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'ghlogo'}),h('h1',{text:'Propostas de mídia exterior, do ponto ao PDF.'}),h('p',{text:'Escolha os pontos, ajuste os valores e gere o PowerPoint ou o PDF da Mega Mídia OOH.'})])]);
+  split.appendChild(hero);
+  var box=h('div',{class:'gbox'}); box.appendChild(h('h2',{text:title})); (Array.isArray(msg)?msg:[msg]).forEach(function(m){ if(m) box.appendChild(h('p',{class:'hint',text:m})); }); (actions||[]).forEach(function(a){ box.appendChild(a); });
+  split.appendChild(h('div',{class:'gform'},[box])); g.appendChild(split); return box;
+}
 
 function msgAuth(e){
   var m=erroMsg(e), l=String(m).toLowerCase();

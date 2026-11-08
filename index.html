@@ -8,16 +8,23 @@
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-<header>
-  <img id="hl" alt="MEGA OOH">
-  <div><h1>Gerador de Mídia Kit</h1><small>Pontos, propostas e mídia kit da Mega Mídia OOH</small></div>
-  <span id="who"></span>
-  <button id="bell" class="bell" type="button" title="Sugestões pendentes" hidden>🔔 <b id="bellN">0</b></button>
-  <span id="saved"></span>
-</header>
-<div id="banner" hidden></div>
-<nav id="tabs"></nav>
-<main id="view"></main>
+<div class="app">
+  <aside class="side" aria-label="Menu">
+    <div class="brand"><img id="hl" alt="MEGA OOH"><small>Gerador de mídia kit</small></div>
+    <nav id="tabs"></nav>
+    <div class="me" id="who"></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <button id="menu" type="button" aria-label="Abrir menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <span class="sp"></span>
+      <span id="saved"></span>
+      <button id="bell" class="bell" type="button" title="Sugestões pendentes" hidden><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>Sugestões <b id="bellN">0</b></button>
+    </div>
+    <div id="banner" hidden></div>
+    <main id="view"></main>
+  </div>
+</div>
 <div id="gate"></div>
 <div id="toast" class="toast"></div>
 

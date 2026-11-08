@@ -1,10 +1,17 @@
 /* Navegação por abas, entrada no sistema e avisos em tempo real. */
-var TABS_ADMIN=[['dash','Dashboard'],['kit','Kit'],['pontos','Pontos'],['sug','Sugestões'],['mercado','Mercado Central'],['guanabara','Parque Guanabara'],['brasilia','Brasília'],['precos','Preços'],['gerar','Gerar'],['hist','Propostas'],['usuarios','Usuários']];
-var TABS_COM=[['sel','Pontos da proposta'],['precos','Preços'],['gerar','Gerar'],['minhas','Minhas sugestões'],['hist','Minhas propostas']];
+/* [id, rótulo, grupo, ícone] */
+var TABS_ADMIN=[['dash','Dashboard','','dash'],['kit','Kit','Cadastro','kit'],['pontos','Pontos','Cadastro','pin'],['sug','Sugestões','Cadastro','chat'],['mercado','Mercado Central','Cadastro','bag'],['guanabara','Parque Guanabara','Cadastro','leaf'],['brasilia','Brasília','Cadastro','bldg'],['precos','Preços','Propostas','tag'],['gerar','Gerar','Propostas','down'],['hist','Propostas','Propostas','clock'],['usuarios','Usuários','Administração','users']];
+var TABS_COM=[['sel','Pontos da proposta','Montar proposta','pin'],['precos','Preços','Montar proposta','tag'],['gerar','Gerar','Montar proposta','down'],['minhas','Minhas sugestões','Meu histórico','chat'],['hist','Minhas propostas','Meu histórico','clock']];
+var ICONES={dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+ kit:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/>',pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+ chat:'<path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',bag:'<path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/>',
+ leaf:'<path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.5 6-7"/>',bldg:'<path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/>',
+ tag:'<path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>',down:'<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',users:'<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/>'};
 var TABS=TABS_ADMIN, uSub=[], unsubs=[], pendentes=0, ignorarRt=0, pollTimer=null;
 
 function showTab(t){
-  curTab=t; uSub.forEach(function(f){ try{f();}catch(e){} }); uSub=[];
+  curTab=t; document.body.classList.remove('nav-open'); uSub.forEach(function(f){ try{f();}catch(e){} }); uSub=[];
   document.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('on',b.dataset.t===t); });
   var v=$('#view'); v.innerHTML='';
   var fn=({dash:viewDashboard,kit:viewKit,pontos:viewPontos,sel:viewSelecao,sug:viewSugestoes,minhas:viewMinhasSugestoes,hist:viewHistorico,usuarios:viewUsuarios,
@@ -15,20 +22,28 @@ function showTab(t){
 
 function montarCabecalho(){
   var who=$('#who'); who.innerHTML='';
-  who.appendChild(h('span',{text:ME.nome+' · '+(ME.admin?'administrador':'comercial')}));
+  var ini=String(ME.nome||ME.email||'?').trim().charAt(0).toUpperCase();
+  who.appendChild(h('span',{class:'av',text:ini}));
+  who.appendChild(h('div',{class:'who'},[h('b',{text:ME.nome||ME.email,title:ME.email}),h('span',{text:ME.admin?'Administrador':'Comercial'})]));
   who.appendChild(h('button',{class:'linkhead',type:'button',text:'Sair',onclick:sairDoGerador}));
   var bell=$('#bell'); bell.hidden=!ME.admin; bell.onclick=function(){ showTab('sug'); };
+  $('#menu').onclick=function(){ document.body.classList.toggle('nav-open'); };
 }
 function montarAbas(){
-  var nav=$('#tabs'); nav.innerHTML='';
-  TABS.forEach(function(t){ var b=h('button',{class:'tab',text:t[1],onclick:function(){ showTab(t[0]); }}); b.dataset.t=t[0]; nav.appendChild(b); });
+  var nav=$('#tabs'); nav.innerHTML=''; var ult=null;
+  TABS.forEach(function(t){
+    if(t[2]&&t[2]!==ult){ nav.appendChild(h('div',{class:'grp',text:t[2]})); } ult=t[2];
+    var b=h('button',{class:'tab',type:'button',onclick:function(){ showTab(t[0]); }}); b.dataset.t=t[0];
+    b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONES[t[3]]||'')+'</svg><span class="lbl"></span><b class="cnt" hidden></b>';
+    b.querySelector('.lbl').textContent=t[1]; nav.appendChild(b);
+  });
 }
 
 async function atualizarPendentes(){
   if(!ME.admin) return;
   try{ pendentes=await Store.contarPendentes(); }catch(e){ return; }
   var bn=$('#bellN'); if(bn){ bn.textContent=pendentes; $('#bell').classList.toggle('on',pendentes>0); }
-  var tab=document.querySelector('.tab[data-t=sug]'); if(tab){ tab.textContent='Sugestões'+(pendentes?' ('+pendentes+')':''); tab.classList.toggle('alert',pendentes>0); }
+  var cnt=document.querySelector('.tab[data-t=sug] .cnt'); if(cnt){ cnt.textContent=pendentes; cnt.hidden=!pendentes; }
   document.title=(pendentes?'('+pendentes+') ':'')+'Gerador de Mídia Kit · Mega Mídia OOH';
 }
 
