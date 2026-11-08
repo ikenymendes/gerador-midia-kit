@@ -1,5 +1,5 @@
 /* Sugestões: o comercial sugere adicionar/alterar pontos; o administrador confere e aplica. */
-var SUG_CAMPOS=[['secao','Seção'],['dono','Propriedade'],['endereco','Endereço'],['bairro','Bairro'],['cidade','Cidade'],['lat','Latitude'],['lng','Longitude'],['zoom','Zoom do mapa'],['tamanho','Tamanho'],['pixels','Pixels'],['veic','Veic./dia'],['publico','Público'],['fluxo','Fluxo/dia'],['impacto','Impacto semanal'],['sentido','Sentido'],['foto','Foto'],['mapa','Imagem do mapa']];
+var SUG_CAMPOS=[['secao','Seção'],['dono','Propriedade'],['tipoTxt','Tipo exibido'],['endereco','Endereço'],['bairro','Bairro'],['cidade','Cidade'],['lat','Latitude'],['lng','Longitude'],['zoom','Zoom do mapa'],['tamanho','Tamanho'],['pixels','Pixels'],['veic','Veic./dia'],['publico','Público'],['fluxo','Fluxo/dia'],['impacto','Impacto semanal'],['sentido','Sentido'],['foto','Foto'],['mapa','Imagem do mapa']];
 function sugCopia(p){ var o=JSON.parse(JSON.stringify(p||{})); delete o.id; delete o.ord; delete o.sel; return o; }
 function sugVal(k,v){
   if(v==null||v==='') return '—';
@@ -16,7 +16,7 @@ function formPonto(obj,semFoto){
   var g=h('div',{class:'grid'});
   var sel=grupoSelect(obj);
   sel.addEventListener('change',function(){ if((obj.secao==='metro'||obj.secao==='df_painel')&&!obj.cidade){ obj.cidade='Brasília-DF'; cid.value=obj.cidade; } });
-  g.appendChild(field('Grupo / formato do ponto',sel));
+  g.appendChild(field('Grupo / formato do ponto',sel)); g.appendChild(field('Tipo exibido no kit',tipoSelect(obj)));
   var ed=inp(obj,'endereco'), ba=inp(obj,'bairro'), cid=inp(obj,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(obj,'lat',{num:true}), lng=inp(obj,'lng',{num:true}), res=h('small',{text:''});

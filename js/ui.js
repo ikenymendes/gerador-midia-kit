@@ -118,6 +118,8 @@ var fqScanning=false;
 function fqScan(done){ if(fqScanning) return; fqScanning=true; var ks=D.pontos.map(fotoKey).filter(function(k,i,a){ return k&&!FQ[k]&&a.indexOf(k)===i; }), i=0;
   function next(){ if(i>=ks.length){ fqScanning=false; if(done) done(); return; } var k=ks[i++]; fqCheck(k).then(next); } for(var c=0;c<4;c++) next(); if(!ks.length){ fqScanning=false; if(done) done(); } }
 function fqConta(pts){ return (pts||D.pontos).filter(function(p){ return fotoAtencao(p); }).length; }
+var TIPOS_KIT=['Outdoor','Mega Painel','Front Light','Empena','Painel de LED','Banca de LED','Banca estática','Painel digital'];
+function tipoSelect(p,after){ var s=h('select',{},[h('option',{value:'',text:'Automático (pelo grupo)'})].concat(TIPOS_KIT.map(function(t){return h('option',{value:t,text:t});}))); if(p.tipoTxt&&TIPOS_KIT.indexOf(p.tipoTxt)<0) s.appendChild(h('option',{value:p.tipoTxt,text:p.tipoTxt})); s.value=p.tipoTxt||''; s.addEventListener('change',function(){ if(s.value) p.tipoTxt=s.value; else delete p.tipoTxt; if(after) after(); }); return s; }
 function grupoSelect(p,after){ var cur=grupoDe(p).k; var s=h('select',{},GRUPOS.map(function(g){ var o=h('option',{value:g.k,text:g.nome}); if(g.k===cur) o.selected=true; return o; })); s.addEventListener('change',function(){ aplicaGrupo(p,s.value); if(after) after(); }); return s; }
 function matchP(p){ if(filtro&&grupoDe(p).k!==filtro) return false; if(filtroQ&&!fotoAtencao(p)) return false; if(filtroDono&&donoDe(p)!==filtroDono) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
 function secLabel(k){ return SEC[k]?SEC[k].nome+(SEC[k].praca?' · '+SEC[k].praca:''):k; }
@@ -126,7 +128,7 @@ function novoPontoPanel(){
   var d=h('details',{class:'pt novo',id:'novoponto'}); d.open=true; d.appendChild(h('summary',{},[h('span',{class:'t',text:'➕ Adicionar novo ponto'})]));
   var g=h('div',{class:'grid'}), msg=h('p',{class:'status'});
   var sel=grupoSelect(np); sel.addEventListener('change',function(){ if(np.secao==='metro'||np.secao==='df_painel'){ np.cidade='Brasília-DF'; cid.value=np.cidade; } });
-  g.appendChild(field('Seção / formato do ponto',sel,'Painel de LED, banca de LED, empena, frontlight, painel mensal, banca estática, Metrô-DF…')); g.appendChild(donoField(np));
+  g.appendChild(field('Seção / formato do ponto',sel,'Painel de LED, banca de LED, empena, frontlight, painel mensal, banca estática, Metrô-DF…')); g.appendChild(field('Tipo exibido no kit',tipoSelect(np))); g.appendChild(donoField(np));
   var ed=inp(np,'endereco'), ba=inp(np,'bairro'), cid=inp(np,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(np,'lat',{num:true}), lng=inp(np,'lng',{num:true}), res=h('small',{text:''});
@@ -173,7 +175,7 @@ function viewPontos(v){
   function drawList(){ list.innerHTML=''; var n=0; D.pontos.forEach(function(p,ix){ if(!matchP(p)) return; n++; list.appendChild(pointCard(p,ix)); }); if(!n) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); if(window.refMaster) window.refMaster(); }
   drawList(); v.appendChild(list); window.drawList=drawList;
 }
-function normSec(s){ s=String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); if(/rm|metropol/.test(s)&&/led|painel/.test(s)) return 'led_rm'; if(/banca/.test(s)&&/(revista|estatic)/.test(s)) return 'revista'; if(/revista/.test(s)) return 'revista'; if(/banca/.test(s)) return 'banca_led'; if(/empena/.test(s)) return 'empena'; if(/front/.test(s)) return 'front'; if(/mensal|outdoor|mega/.test(s)) return 'mensal'; return 'led_bh'; }
+function normSec(s){ s=String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); if(/rm|metropol/.test(s)&&/led|painel/.test(s)) return 'led_rm'; if(/banca/.test(s)&&/(revista|estatic)/.test(s)) return 'revista'; if(/revista/.test(s)) return 'revista'; if(/banca/.test(s)) return 'banca_led'; if(/empena/.test(s)) return 'empena'; if(/front/.test(s)) return 'front'; if(/outdoor/.test(s)) return 'outdoor'; if(/mensal|mega/.test(s)) return 'mensal'; return 'led_bh'; }
 function importText(t){ var n=0; t.split(/\r?\n/).forEach(function(line){ if(!line.trim()) return; var c=line.indexOf('\t')>=0?line.split('\t'):line.split(';'); c=c.map(function(x){return x.trim()}); if(/^se[cç][aã]o$/i.test(c[0])) return; var ll=parseMapsText(c[4]||'');
   D.pontos.push({id:newId(),sel:true,secao:normSec(c[0]),endereco:c[1]||'',bairro:c[2]||'',cidade:c[3]||'',lat:ll?ll.lat:null,lng:ll?ll.lng:null,zoom:16,tamanho:c[5]||'',pixels:c[6]||'',veic:c[7]||'',publico:c[8]||'',fluxo:c[9]||'',impacto:c[10]||'',sentido:c[11]||'',foto:(c[12]&&libSrc(c[12]))?(D.libMap&&D.libMap[c[12]]||c[12]):null}); n++; }); return n; }
 function pointCard(p,ix){
@@ -185,7 +187,7 @@ function pointCard(p,ix){
   var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; if(fk&&libSrc(fk)) sm.insertBefore(h('img',{class:'sth',src:libSrc(fk)}),sm.firstChild);
   d.appendChild(sm);
   var g=h('div',{class:'grid'});
-  var sel=grupoSelect(p,function(){ upd(); dirty(); }); g.appendChild(field('Grupo / formato',sel)); g.appendChild(donoField(p,function(){ sel.value=grupoDe(p).k; upd(); }));
+  var sel=grupoSelect(p,function(){ upd(); dirty(); }); g.appendChild(field('Grupo / formato',sel)); g.appendChild(field('Tipo exibido no kit',tipoSelect(p,function(){ dirty(); }),'Aparece como "Tipo" na ficha do ponto. Automático usa o padrão do grupo.')); g.appendChild(donoField(p,function(){ sel.value=grupoDe(p).k; upd(); }));
   function I(path,label,o){ o=o||{}; o.onchange=upd; return field(label,inp(p,path,o),o.hint); }
   g.appendChild(I('endereco','Endereço (título da ficha)')); g.appendChild(I('bairro','Bairro')); g.appendChild(I('cidade','Cidade'));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}); var lat=inp(p,'lat',{num:true,onchange:upd}), lng=inp(p,'lng',{num:true,onchange:upd});

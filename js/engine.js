@@ -322,7 +322,8 @@ var SEC = {
   banca_led:{nome:'Bancas de LED',praca:'BH e região',tipo:'Banca de LED',sep:4},
   empena:{nome:'Empenas',praca:'',tipo:'Empena',sep:7},
   front:{nome:'Painéis frontlight',praca:'',tipo:'Painel frontlight',sep:8},
-  mensal:{nome:'Painéis mensais',praca:'',tipo:'Painel mensal',sep:9},
+  mensal:{nome:'Painéis mensais',praca:'',tipo:'Mega painel',sep:9},
+  outdoor:{nome:'Painéis outdoor',praca:'',tipo:'Outdoor',sep:13},
   revista:{nome:'Bancas Estáticas',praca:'',tipo:'Banca Estática',sep:10},
   mercado:{nome:'Mercado Central',praca:'',tipo:'Painel de LED',sep:5,tiles:[['FLUXO DE PESSOAS/MÊS','fluxo'],['VEICULAÇÕES/DIA','veic']]},
   guanabara:{nome:'Parque Guanabara',praca:'',tipo:'Circuito de LED',sep:6,tiles:[['VISITANTES POR MÊS','fluxo'],['VEICULAÇÕES/DIA','veic']]},
@@ -348,6 +349,7 @@ var GRUPOS=[
  {k:'empena',nome:'Empenas',sec:['empena']},
  {k:'front',nome:'Painéis Frontlight',sec:['front']},
  {k:'mensal',nome:'Painéis Mensais',sec:['mensal']},
+ {k:'outdoor',nome:'Painéis Outdoor',sec:['outdoor']},
  {k:'revista',nome:'Bancas Estáticas',sec:['revista']},
  {k:'metro',nome:'Metrô-DF',sec:['metro']},
  {k:'df_painel',nome:'Painéis de LED Brasília',sec:['df_painel']}
@@ -404,7 +406,7 @@ function edge(S,A,x0,d,key,nomotif){
 }
 
 /* ordem de exibição das capas no kit (os números i são estáveis; a posição vem daqui) */
-var SEQ=[5,2,4,6,7,8,9,10,11,12];
+var SEQ=[5,2,4,6,7,8,9,13,10,11,12];
 function NP(i){ var n=SEQ.indexOf(i)+1; return (n<10?'0':'')+n; }
 var SEPS=[
  {i:1,off:true,title:'Belo\nHorizonte',kick:'Praça',sub:'Painéis, bancas, empenas e mais',hero:function(S){skyline(S,0.35,1.3,4.0,2.1,{dark:true});},secs:['led_bh','banca_led']},
@@ -415,10 +417,11 @@ var SEPS=[
  {i:6,title:'Parque\nGuanabara',kick:'Ponto especial',sub:'',hero:function(S){wheelDraw(S,1.0,1.15,2.4,{dark:true});},secs:[],photo:'guanabara_foto2'},
  {i:7,title:'Empenas',kick:'Formato',sub:'Mídia estática de grande formato',hero:function(S){buildingDraw(S,0.8,1.2,3.2,2.25,{dark:true});},secs:['empena']},
  {i:8,title:'Painéis\nfrontlight',kick:'Formato',sub:'',hero:function(S){billboard(S,0.5,1.15,3.7,2.3,{dark:true,lamps:true,ratio:2.8});},secs:['front']},
- {i:9,title:'Painéis\nmensais',kick:'Formato',sub:'Mega painéis e outdoors',hero:function(S){billboard(S,0.5,1.4,3.7,2.0,{dark:true,ratio:3.4});},secs:['mensal']},
+ {i:9,title:'Painéis\nmensais',kick:'Formato',sub:'Mega painéis em pontos estratégicos',hero:function(S){billboard(S,0.5,1.4,3.7,2.0,{dark:true,ratio:3.4});},secs:['mensal']},
  {i:10,title:'Bancas\nEstáticas',kick:'Formato',sub:'Mídia estática em bancas de revista',hero:function(S){bancaDraw(S,0.9,1.35,3.0,2.1,{dark:true,kind:'revista'});},secs:['revista']},
  {i:11,title:'Brasília',kick:'Praça',sub:'Metrô-DF e painéis de LED',hero:function(S){congresso(S,0.6,1.3,3.7,2.1,{dark:true});},secs:['metro','df_painel']},
- {i:12,title:'Painéis de LED\nBrasília',kick:'Formato',sub:'Distrito Federal',hero:function(S){ledPanel(S,1.2,1.1,2.6,2.4,{dark:true,ratio:0.67});pinIcon(S,3.4,1.1,0.45);},secs:['df_painel']}
+ {i:12,title:'Painéis de LED\nBrasília',kick:'Formato',sub:'Distrito Federal',hero:function(S){ledPanel(S,1.2,1.1,2.6,2.4,{dark:true,ratio:0.67});pinIcon(S,3.4,1.1,0.45);},secs:['df_painel']},
+ {i:13,title:'Painéis\noutdoor',kick:'Formato',sub:'Outdoors em vias de grande circulação',hero:function(S){billboard(S,0.5,1.4,3.7,2.0,{dark:true,ratio:3.0});},secs:['outdoor']}
 ];
 var SEPINFO={
  1:{texto:'Capital de Minas Gerais, com mais de 2,3 milhões de habitantes e centro de uma região metropolitana de cerca de 6 milhões de pessoas. Principal polo econômico, cultural e de serviços do estado, concentra grandes avenidas, corredores de trânsito intenso e bairros de alto consumo: cenário ideal para mídia exterior de alto impacto.',stats:[['auto','pontos na capital'],['2,3 mi','habitantes'],['6 mi','na região metropolitana']],bullets:['Painéis de LED nos principais corredores viários','Bancas de LED no centro e nos bairros','Empenas, frontlight, painéis mensais e bancas de revista']},
@@ -432,6 +435,7 @@ var SEPINFO={
  9:{texto:'Mega painéis e outdoors em pontos estratégicos, com exposição contínua durante todo o mês e grande impacto visual.',stats:[['auto','painéis mensais'],['Mega','formatos de impacto'],['Mensal','período de exposição']],bullets:['Pontos estratégicos de grande fluxo','Mídia de massa com alto alcance','Exposição contínua durante o mês']},
  10:{texto:'Bancas estáticas tradicionais da cidade, com comunicação impressa próxima ao pedestre, em pontos de grande circulação.',stats:[['auto','bancas estáticas'],['Rua','mídia na altura do olhar'],['Mensal','período de exposição']],bullets:['Localização em regiões de grande fluxo','Presença local e contato próximo','Boa opção para ações de proximidade']},
  11:{texto:'Capital federal, Patrimônio Cultural da Humanidade pela UNESCO e sede dos poderes da República. Com mais de 2,8 milhões de habitantes e uma das maiores rendas do país, reúne um público qualificado, que se desloca pelas grandes vias e pelo Metrô-DF.',stats:[['auto','pontos em Brasília'],['2,8 mi','habitantes'],['160 mil','usuários por dia no Metrô-DF']],bullets:['Mídia no Metrô-DF: vagões e estações','Painéis de LED nas principais vias','Público A, B e C']},
+ 13:{texto:'Outdoors em vias de grande circulação: formato tradicional da mídia exterior, com exposição contínua durante o mês e ótimo custo-benefício para construir presença de marca.',stats:[['auto','painéis outdoor'],['Mensal','período de exposição']],bullets:['Pontos de grande fluxo de pessoas e veículos','Visibilidade contínua, dia após dia','Ótimo custo-benefício']},
  12:{texto:'Painéis de LED nos eixos e rodovias que ligam o Plano Piloto ao restante do Distrito Federal, falando com quem se desloca todos os dias de carro.',stats:[['auto','painéis de LED'],['420','inserções por dia'],['10 s','duração do VT']],bullets:['Eixos e rodovias de grande fluxo','Vídeos de 10 segundos em MP4','Alta frequência e repetição de marca']}
 };
 function sepInfo(D,i){ D.sepInfo=D.sepInfo||{}; if(!D.sepInfo[i]) D.sepInfo[i]=JSON.parse(JSON.stringify(SEPINFO[i])); return D.sepInfo[i]; }
@@ -540,7 +544,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   pill(S,6.3,6.5,4.2,0.4,'Atendimento exclusivo e personalizado',{fill:C.PINK_S,color:C.PINK_D,size:9.5}); push(S);
 
   // 3 MAPA GERAL
-  var bhCount=['led_bh','banca_led','empena','front','mensal','revista'].reduce(function(a,s){return a+ptsOf(D,s).length;},0);
+  var bhCount=['led_bh','banca_led','empena','front','mensal','outdoor','revista'].reduce(function(a,s){return a+ptsOf(D,s).length;},0);
   S=frame(null,A,'Cobertura','Onde estamos','Mega Mídia OOH em Belo Horizonte, região metropolitana e Brasília');
   card(S,0.6,1.95,7.7,4.85,0.2); if(A.mapGeral) S.img(0.8,2.15,7.3,4.45,A.mapGeral,{r:0.18}); else S.rect(0.8,2.15,7.3,4.45,{fill:'EEF0F8',r:0.18});
   [['Belo Horizonte','LED, bancas, empenas, frontlight e mensais','01'],['Região Metropolitana','Painéis de LED','02'],['Mercado Central',D.mercado.circuito,'03'],['Parque Guanabara',D.guanabara.circuito,'04'],['Brasília · DF','Painéis de LED e mídia no Metrô-DF','05']].forEach(function(t,i){ var y=1.95+i*1.0;
@@ -551,10 +555,11 @@ function buildSlides(D0,A,mode){ migKit(D0);
   if(full||bhCount>0){
   S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Formatos disponíveis');
   skyline(S,7.3,0.95,5.43,0.95,{dark:false});
-  var fmts=[['led_bh','Painéis de LED','Mídia digital em movimento'],['banca_led','Bancas de LED','Telas de LED na altura do olhar'],['empena','Empenas','Grande formato em edifícios'],['front','Painéis frontlight','Iluminados, visíveis dia e noite'],['mensal','Painéis mensais','Mega painéis e outdoors'],['revista','Bancas Estáticas','Mídia estática em bancas']].filter(function(t){ return full||ptsOf(D,t[0]).length; });
-  fmts.forEach(function(t,i){ var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*2.45, first=i===0;
-    if(first) gcard(S,x,y,3.85,2.25,C.NAVY,0.2); else card(S,x,y,3.85,2.25,0.2);
-    S.rect(x+0.3,y+0.35,0.4,0.05,{fill:C.PINK}); S.text(x+0.28,y+0.6,3.3,1.0,t[1],{size:24,f:'M',color:first?C.WHITE:C.NAVY,valign:'m',ls:0.95}); S.text(x+0.28,y+1.55,3.3,0.5,t[2],{size:12,f:'L',color:first?'DDDDEE':C.MID,ls:1.0}); });
+  var fmts=[['led_bh','Painéis de LED','Mídia digital em movimento'],['banca_led','Bancas de LED','Telas de LED na altura do olhar'],['empena','Empenas','Grande formato em edifícios'],['front','Painéis frontlight','Iluminados, visíveis dia e noite'],['mensal','Painéis mensais','Mega painéis em pontos estratégicos'],['outdoor','Painéis outdoor','Outdoors em vias de grande circulação'],['revista','Bancas Estáticas','Mídia estática em bancas']].filter(function(t){ return full||ptsOf(D,t[0]).length; });
+  var cp=fmts.length>6, th=cp?1.55:2.25, ts=cp?1.75:2.45;
+  fmts.forEach(function(t,i){ var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*ts, first=i===0;
+    if(first) gcard(S,x,y,3.85,th,C.NAVY,0.2); else card(S,x,y,3.85,th,0.2);
+    S.rect(x+0.3,y+(cp?0.25:0.35),0.4,0.05,{fill:C.PINK}); S.text(x+0.28,y+(cp?0.35:0.6),3.3,cp?0.6:1.0,t[1],{size:cp?20:24,f:'M',color:first?C.WHITE:C.NAVY,valign:'m',ls:0.95}); S.text(x+0.28,y+(cp?1.0:1.55),3.3,0.45,t[2],{size:cp?11:12,f:'L',color:first?'DDDDEE':C.MID,ls:1.0}); });
   push(S);
 
   }
@@ -622,7 +627,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   push(specSlide(A,NP(6)+' · Parque Guanabara','Especificações técnicas',G.circuito,[['Ponto','Tamanho','Formato (px)']].concat(G.specs),[3.4,1.8,1.6],function(S,x,y,w,h){ totemDraw(S,x,y,w*0.34,h,{dark:false,dims:['1,00 m','2,00 m']}); ledPanel(S,x+w*0.36,y,w*0.64,h,{dark:false,ratio:2.0,dims:['4,00 m','2,00 m']}); },G.caption,G.chips,{rowH:0.9,partner:'guanabara'}));
   }
 
-  sepAndFichas(7,['empena'],5); sepAndFichas(8,['front'],6); sepAndFichas(9,['mensal'],7); sepAndFichas(10,['revista'],8);
+  sepAndFichas(7,['empena'],5); sepAndFichas(8,['front'],6); sepAndFichas(9,['mensal'],7); sepAndFichas(13,['outdoor'],7.5); sepAndFichas(10,['revista'],8);
 
 
   // BRASÍLIA
