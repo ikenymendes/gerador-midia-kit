@@ -225,8 +225,8 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .cena .big{font-weight:600;font-size:46px;fill:#fff}.cena .pk{fill:#ff4d94}.cena .mid{font-weight:600;font-size:22px;fill:#fff}.cena .sm{font-size:13px;fill:#bcbcf5;font-weight:500}
 .cena .clk{font-weight:600;font-size:72px;fill:#fff;font-variant-numeric:tabular-nums}.cena .dt{font-size:14px;fill:#fff;font-weight:500}.cena .hr{font-size:20px;font-weight:600;fill:#ff4d94;font-variant-numeric:tabular-nums}
 .cena .cl{animation:blink 1s steps(1) infinite}
-.cena .bt{font-size:14px;font-weight:700;fill:#fff}.cena .bt.s{font-size:11px;fill:#ffd1e3}.cena .mq{font-size:16px;font-weight:600;fill:#ff6aa3;animation:marq 9s linear infinite}
-.cena .sl{opacity:0;animation:slide 15s infinite}.cena .s2{animation-delay:5s}.cena .s3{animation-delay:10s}
+.cena .bt{font-size:14px;font-weight:700;fill:#fff}.cena .bt.s{font-size:11px;fill:#ffd1e3}.cena .mq{animation:marq 7s linear infinite}.cena .mqt{font-size:13px;font-weight:700;fill:#ff6aa3}.cena .h2{font-weight:600;font-size:40px;fill:#fff}
+.cena .sl{opacity:0;animation:slide 20s infinite}.cena .s2{animation-delay:5s}.cena .s3{animation-delay:10s}.cena .s4{animation-delay:15s}
 .cena .scan{animation:scan 5s linear infinite}
 .cena .bnr{animation:bnr 8s linear infinite}
 .cena .tw{fill:#ffd96a;opacity:.1;animation:twk 6s ease-in-out infinite}
@@ -234,10 +234,10 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .cena .veh{animation:drive 7s linear infinite;transform:translateX(-200px)}.cena .v2{animation-duration:11s;animation-delay:-4s}.cena .v3{animation-duration:16s;animation-delay:-9s}
 .cena .bustxt{animation:pulse 2.2s ease-in-out infinite}.cena .st{animation:twk 4s ease-in-out infinite}
 .cena .big,.cena .clk{animation:glow 3s ease-in-out infinite}
-@keyframes slide{0%{opacity:0;transform:translateY(8px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+@keyframes slide{0%{opacity:0;transform:translateY(8px)}4%,22%{opacity:1;transform:none}27%,100%{opacity:0}}
 @keyframes scan{from{transform:translateX(-120px)}to{transform:translateX(560px)}}
-@keyframes bnr{from{transform:translateY(0)}to{transform:translateY(-144px)}}
-@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-520px)}}
+@keyframes bnr{from{transform:translateX(0)}to{transform:translateX(-100px)}}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-330px)}}
 @keyframes blink{50%{opacity:.2}}@keyframes twk{50%{opacity:.85}}
 @keyframes road{to{stroke-dashoffset:-48}}@keyframes drive{from{transform:translateX(-200px)}to{transform:translateX(1000px)}}@keyframes pulse{50%{opacity:.35}}@keyframes glow{50%{filter:brightness(1.35)}}
 @media(max-width:900px){.ghtxt{display:block;padding:26px 20px 40px}.scene{margin:14px 0}.cena{height:auto}.ghfoot h1{font-size:20px}}
