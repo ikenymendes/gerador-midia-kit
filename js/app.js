@@ -83,6 +83,7 @@ async function enterApp(){
     catch(e){ gate('Não foi possível carregar os dados',[erroMsg(e),'Verifique a conexão. Nada foi alterado.'],[h('div',{class:'bar'},[h('button',{class:'btn pri',text:'Tentar de novo',onclick:enterApp}),h('button',{class:'btn',text:'Sair',onclick:sairDoGerador})])]); return; }
   }
   $('#gate').hidden=true; $('#banner').hidden=true;
+  await boasVindas();
   iniciarTempoReal(); atualizarPendentes(); if(ME.admin) fqScan(contFotos);
   setSaved(ME.admin?'conectado':'seleção guardada neste navegador');
   showTab(ME.admin?'pontos':TABS[0][0]);

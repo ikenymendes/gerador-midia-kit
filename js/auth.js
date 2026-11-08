@@ -73,12 +73,12 @@ function relogio(root){
 }
 
 /* Tela de acesso: login, primeiro cadastro, espera de liberação e saída. */
-function gate(title,msg,actions){
+function gate(title,msg,actions,hero){ hero=hero||{};
   var g=$('#gate'); g.hidden=false; g.innerHTML='';
   var split=h('div',{class:'gsplit'});
   split.appendChild(h('div',{class:'gslash'}));
   var cena=h('div',{class:'scene'}); cena.innerHTML=cenaSvg(ASSETS.logoW);
-  var hero=h('div',{class:'ghero'},[h('div',{class:'dots'}),h('div',{class:'ghtxt'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'ghlogo'}),cena,h('div',{class:'ghfoot'},[h('h1',{text:'Propostas de mídia exterior, do ponto ao PDF.'}),h('p',{text:'Circuitos de LED no Mercado Central e no Parque Guanabara: o diferencial da Mega.'})])])]);
+  var hero=h('div',{class:'ghero'},[h('div',{class:'dots'}),h('div',{class:'ghtxt'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'ghlogo'}),cena,h('div',{class:'ghfoot'},[h('h1',{text:hero.h1||'Propostas de mídia exterior, do ponto ao PDF.'}),h('p',{text:hero.p||'Circuitos de LED no Mercado Central e no Parque Guanabara: o diferencial da Mega.'})])])]);
   split.appendChild(hero);
   var box=h('div',{class:'gbox'}); box.appendChild(h('h2',{text:title})); (Array.isArray(msg)?msg:[msg]).forEach(function(m){ if(m) box.appendChild(h('p',{class:'hint',text:m})); }); (actions||[]).forEach(function(a){ box.appendChild(a); });
   split.appendChild(h('div',{class:'gform'},[box])); g.appendChild(split); relogio(cena); return box;
@@ -156,4 +156,28 @@ async function boot(){
   if(!Store.init()){ gate('Não foi possível iniciar','A biblioteca do Supabase não carregou. Recarregue a página.'); return; }
   try{ var s=await Store.sessao(); if(s){ await iniciarSessao(); return; } }catch(e){ console.warn(e); }
   telaLogin('entrar');
+}
+
+
+/* ---- tela de boas-vindas (após o login) ---- */
+function boasVindas(){
+  return new Promise(function(res){
+    try{ if(sessionStorage.getItem('mk_bv')===ME.uid){ res(); return; } }catch(e){}
+    var h0=new Date().getHours(), sau=h0<12?'Bom dia':h0<18?'Boa tarde':'Boa noite', nome=String(ME.nome||ME.email||'').split(/[ @]/)[0]; nome=nome.replace(/^./,function(c){return c.toUpperCase();});
+    var box=gate(sau+', '+nome+'!','Bem-vindo(a) ao software de propostas da Mega OOH.',[],{h1:'Bem-vindo ao software de propostas da Mega OOH.',p:'Monte mídia kits e propostas com os pontos, preços e circuitos sempre atualizados.'});
+    box.classList.add('wide');
+    var lista=(D.noticias||[]).filter(function(n){ return n&&String(n.titulo||'').trim(); }).slice(0,3);
+    if(lista.length){
+      box.appendChild(h('h3',{class:'nt',text:'Mercado OOH em destaque'}));
+      var ul=h('div',{class:'news'});
+      lista.forEach(function(n){
+        var meta=[n.fonte,n.data].filter(Boolean).join(' · ');
+        var c=h(n.link?'a':'div',{class:'ncard'}); if(n.link){ c.href=n.link; c.target='_blank'; c.rel='noopener'; }
+        c.appendChild(h('b',{text:n.titulo})); if(n.resumo) c.appendChild(h('span',{class:'nr',text:n.resumo})); if(meta) c.appendChild(h('small',{text:meta}));
+        ul.appendChild(c);
+      });
+      box.appendChild(ul);
+    }
+    box.appendChild(h('button',{class:'btn pri big',type:'button',text:'Começar',onclick:function(){ try{ sessionStorage.setItem('mk_bv',ME.uid); }catch(e){} $('#gate').hidden=true; res(); }}));
+  });
 }
