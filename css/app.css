@@ -303,3 +303,12 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .endrow .t{flex:1;min-width:0;font-size:14px;color:var(--navy)}.endrow input{width:160px;flex:none;text-align:right}.endrow b{color:var(--navy);white-space:nowrap}.endrow b.sem{color:var(--pink-d);font-weight:500}
 .endrow.on .t::after{content:' · na proposta';color:var(--pink-d);font-size:12px}
 @media(max-width:900px){.endrow{flex-wrap:wrap}.endrow .t{flex:1 1 100%}.endrow input{width:100%;text-align:left}}
+
+/* ---------- botão Sair sempre à vista no celular ---------- */
+.sair-top{display:none}
+@media(max-width:900px){
+  #saved{display:none}
+  .sair-top{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:99px;border:1.5px solid var(--line2);background:#fff;color:var(--navy);font:600 14px var(--sans);cursor:pointer}
+  .sair-top:active{background:var(--pink-bg);border-color:var(--pink);color:var(--pink-d)}
+  .topbar{gap:10px}
+}

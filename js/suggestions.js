@@ -11,7 +11,7 @@ function sugIgual(a,b){ return stable(a==null?'':a)===stable(b==null?'':b); }
 function sugDiff(antes,depois){ var d={}; SUG_CAMPOS.forEach(function(c){ var k=c[0]; if(!sugIgual(antes&&antes[k],depois[k])) d[k]=depois[k]==null?null:depois[k]; }); return d; }
 
 /* campos do ponto (mesmos da ficha do administrador) */
-function formPonto(obj){
+function formPonto(obj,semFoto){
   var g=h('div',{class:'grid'});
   var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(obj.secao===k) o.selected=true; return o; }));
   sel.addEventListener('change',function(){ obj.secao=sel.value; if((obj.secao==='metro'||obj.secao==='df_painel')&&!obj.cidade){ obj.cidade='Brasília-DF'; cid.value=obj.cidade; } });
@@ -23,7 +23,7 @@ function formPonto(obj){
   g.appendChild(field('Link do Google Maps (preenche lat/long)',h('div',{},[lk,res]),null,'wide'));
   g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng));
   [['tamanho','Tamanho (ex.: 9,00 x 3,00 m)'],['pixels','Formato em pixels (ex.: 2308 x 577)'],['veic','Veiculações/dia (bancas)'],['publico','Público (ex.: A, B, C e D)'],['fluxo','Fluxo de carros/dia'],['impacto','Impacto semanal'],['sentido','Sentido (ex.: Centro / Bairro)']].forEach(function(f){ g.appendChild(field(f[1],inp(obj,f[0]))); });
-  g.appendChild(photosField('Foto do ponto',obj,'foto'));
+  if(semFoto) g.appendChild(h('p',{class:'hint wide',text:'A foto e a imagem do mapa do ponto só o administrador altera.'})); else g.appendChild(photosField('Foto do ponto',obj,'foto'));
   return g;
 }
 
@@ -34,10 +34,10 @@ function abrirFormSugestao(tipo,ponto){
   var obj=alterar?sugCopia(ponto):{secao:filtro||'led_bh',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
   var motivo=h('textarea',{rows:2,placeholder:alterar?'O que mudou e por quê? (ex.: tela trocada, endereço corrigido)':'De onde vem este ponto? (ex.: novo contrato, ponto do parceiro X)'});
   var st=h('p',{class:'status'});
-  var corpo=[h('p',{class:'hint',text:alterar?'Altere só o que precisa. O administrador vai ver o antes e o depois e decidir.':'Preencha os dados do novo ponto. O administrador recebe o aviso, confere e cadastra.'}),formPonto(obj),field('Observação para o administrador',motivo,null,'wide'),st];
+  var corpo=[h('p',{class:'hint',text:alterar?'Altere só o que precisa. O administrador vai ver o antes e o depois e decidir.':'Preencha os dados do novo ponto. O administrador recebe o aviso, confere e cadastra.'}),formPonto(obj,alterar),field('Observação para o administrador',motivo,null,'wide'),st];
   abrirModal(alterar?'Sugerir alteração · '+(ponto.endereco||'ponto'):'Sugerir novo ponto',corpo,[
     function(fechar){ var b=h('button',{class:'btn pri',type:'button',text:'Enviar sugestão'}); b.addEventListener('click',async function(){
-      var payload; if(alterar){ payload=sugDiff(antes,obj); if(!Object.keys(payload).length){ st.textContent='Você não alterou nada.'; st.className='status err'; return; } }
+      var payload; if(alterar){ payload=sugDiff(antes,obj); delete payload.foto; delete payload.mapa; if(!Object.keys(payload).length){ st.textContent='Você não alterou nada.'; st.className='status err'; return; } }
       else { if(!String(obj.endereco||'').trim()){ st.textContent='Preencha o endereço.'; st.className='status err'; return; } payload=sugCopia(obj); }
       b.disabled=true; st.textContent='Enviando…'; st.className='status';
       try{ await Store.criarSugestao({tipo:alterar?'alterar':'adicionar',ponto_id:alterar?ponto.id:null,payload:payload,antes:alterar?antes:null,motivo:motivo.value.trim()}); fechar(); toast('Sugestão enviada. O administrador foi avisado.'); if(curTab==='minhas') showTab('minhas'); }

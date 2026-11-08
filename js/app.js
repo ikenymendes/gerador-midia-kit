@@ -27,6 +27,7 @@ function montarCabecalho(){
   who.appendChild(h('div',{class:'who'},[h('b',{text:ME.nome||ME.email,title:ME.email}),h('span',{text:ME.admin?'Administrador':'Comercial'})]));
   who.appendChild(h('button',{class:'linkhead',type:'button',text:'Sair',onclick:sairDoGerador}));
   var bell=$('#bell'); bell.hidden=!ME.admin; bell.onclick=function(){ showTab('sug'); };
+  $('#sairTop').onclick=sairDoGerador;
   $('#menu').onclick=function(){ document.body.classList.toggle('nav-open'); };
 }
 function montarAbas(){
