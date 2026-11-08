@@ -613,7 +613,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   S=new Slide({g:[C.NAVY_D,C.NAVY]}); slantMotif(S,8.4,-0.4,8.6,10);
   logoAt(S,A.logoW,0.75,0.55,0.75); S.text(0.75,1.95,7,0.3,'INVESTIMENTO TOTAL',{size:10,f:'B',color:C.PINK,spc:240}); S.text(0.75,2.3,7.5,0.9,D.kit.investTitulo||'Plataforma de mídia OOH',{size:28,f:'L',color:C.WHITE});
   S.text(0.75,3.2,8,1.5,brl(totN),{size:60,f:'M',color:C.WHITE}); S.rect(0.85,4.8,1.3,0.07,{fill:C.PINK});
-  var modoTxt=D.modoGeral==='liquido'?'Valor líquido negociado (descontada comissão de '+D.comissao+'%)':'Valor bruto negociado'; 
+  var modoTxt=D.modoGeral==='liquido'?'Valor líquido negociado (descontados comissão de '+D.comissao+'%'+(num(D.bv)?' e BV de '+D.bv+'%':'')+')':'Valor bruto negociado'; 
   S.text(0.75,5.0,7.5,0.35,modoTxt,{size:12,f:'L',color:'CCCCE0'});
   S.rect(9.0,1.7,3.73,5.1,{fill:C.WHITE,r:0.2,a:8}); S.text(9.25,1.9,3.3,0.3,'COMPOSIÇÃO DO INVESTIMENTO',{size:8.5,f:'B',color:C.PINK,spc:160});
   var n=rows.length, rh=Math.min(0.52,4.2/n);

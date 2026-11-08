@@ -1,12 +1,61 @@
 /* Tela de acesso: login, primeiro cadastro, espera de liberação e saída. */
+function cenaSvg(logo){
+  var win=''; for(var i=0;i<46;i++){ var x=18+((i*53)%700), y=330+((i*37)%170); win+='<rect class="tw" style="animation-delay:'+((i*0.7)%6).toFixed(1)+'s" x="'+x+'" y="'+y+'" width="5" height="7" rx="1"/>'; }
+  function banca(x,d,tit){ return '<g transform="translate('+x+',0)"><rect x="4" y="522" width="104" height="8" rx="3" fill="#06063a"/>'+
+    '<rect x="14" y="372" width="5" height="150" fill="#3a3aa6"/><rect x="97" y="372" width="5" height="150" fill="#3a3aa6"/>'+
+    '<path d="M0 372 L116 372 L108 356 L8 356 Z" fill="#14146e"/><rect x="0" y="372" width="116" height="5" fill="#ff0066"/>'+
+    '<rect x="26" y="384" width="64" height="118" rx="4" fill="#05052e" stroke="#4a4ac8" stroke-width="2"/>'+
+    '<clipPath id="cb'+d+'"><rect x="29" y="387" width="58" height="112" rx="2"/></clipPath><g clip-path="url(#cb'+d+')">'+
+    '<g class="bnr" style="animation-delay:-'+d+'s"><rect x="29" y="387" width="58" height="72" fill="url(#gBan)"/><rect x="29" y="459" width="58" height="72" fill="#ff0066"/><rect x="29" y="531" width="58" height="72" fill="url(#gBan)"/><rect x="29" y="603" width="58" height="72" fill="#ff0066"/></g>'+
+    '<text x="58" y="418" text-anchor="middle" class="bt">'+tit+'</text><text x="58" y="436" text-anchor="middle" class="bt s">OOH</text></g>'+
+    '<rect x="29" y="387" width="58" height="112" fill="url(#gap)"/>'+
+    '<rect x="22" y="506" width="72" height="5" rx="2" fill="#2c2c92"/></g>'; }
+  return '<svg class="cena" viewBox="0 0 760 560" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Painel de LED e bancas de LED com horário e data">'+
+  '<defs><pattern id="gap" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="none" stroke="#02021f" stroke-opacity=".55" stroke-width="1.3"/></pattern>'+
+  '<linearGradient id="gBan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2de0"/><stop offset="1" stop-color="#ff0066"/></linearGradient>'+
+  '<linearGradient id="gScr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a0a62"/><stop offset="1" stop-color="#1a1ab0"/></linearGradient>'+
+  '<linearGradient id="gTr" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>'+
+  '<clipPath id="cScr"><rect x="150" y="64" width="460" height="222" rx="4"/></clipPath><clipPath id="cPol"><rect x="572" y="338" width="96" height="46" rx="3"/></clipPath></defs>'+
+  '<g fill="#0b0b5e" opacity=".9"><rect x="0" y="330" width="70" height="200"/><rect x="82" y="290" width="54" height="240"/><rect x="146" y="350" width="40" height="180"/><rect x="580" y="300" width="60" height="230"/><rect x="650" y="340" width="52" height="190"/><rect x="712" y="310" width="48" height="220"/></g>'+win+
+  '<rect x="-500" y="530" width="1760" height="30" fill="#04042b"/><rect x="-500" y="530" width="1760" height="3" fill="#ff0066" opacity=".8"/>'+
+  '<line class="road" x1="-500" y1="548" x2="1260" y2="548" stroke="#6b6bd6" stroke-width="2" stroke-dasharray="26 22"/>'+
+  '<rect class="car c1" x="-160" y="539" width="130" height="4" rx="2" fill="url(#gTr)"/><rect class="car c2" x="-160" y="553" width="90" height="3" rx="2" fill="url(#gTr)"/>'+
+  '<rect x="372" y="286" width="16" height="246" fill="#2f2f9a"/><rect x="360" y="520" width="40" height="10" rx="3" fill="#1b1b78"/>'+
+  '<rect x="138" y="52" width="484" height="246" rx="10" fill="#10106e" stroke="#4a4ac8" stroke-width="3"/>'+
+  '<rect x="150" y="64" width="460" height="222" rx="4" fill="url(#gScr)"/>'+
+  '<g clip-path="url(#cScr)">'+
+    '<g class="sl s1"><text x="380" y="140" text-anchor="middle" class="big">Pense grande.</text><text x="380" y="196" text-anchor="middle" class="big pk">Pense MEGA.</text></g>'+
+    '<g class="sl s2"><image href="'+logo+'" x="290" y="96" width="180" height="46" preserveAspectRatio="xMidYMid meet"/><text x="380" y="184" text-anchor="middle" class="mid">Painéis de LED · Bancas de LED</text><text x="380" y="212" text-anchor="middle" class="sm">Belo Horizonte · Região Metropolitana · Brasília</text></g>'+
+    '<g class="sl s3"><text x="380" y="132" text-anchor="middle" class="sm">AGORA</text><text class="clk" x="380" y="196" text-anchor="middle"><tspan class="hh">00</tspan><tspan class="cl">:</tspan><tspan class="mm">00</tspan></text></g>'+
+    '<rect x="150" y="250" width="460" height="36" fill="#05052e" opacity=".82"/><text class="dt" x="168" y="274"></text><text class="hr" x="592" y="275" text-anchor="end"><tspan class="hh">00</tspan><tspan class="cl">:</tspan><tspan class="mm">00</tspan></text>'+
+    '<rect class="scan" x="150" y="64" width="90" height="222" fill="#fff" opacity=".13"/></g>'+
+  '<rect x="150" y="64" width="460" height="222" rx="4" fill="url(#gap)"/>'+
+  banca(40,3,'MEGA')+banca(440,9,'MEGA')+
+  '<rect x="616" y="384" width="6" height="146" fill="#2f2f9a"/><rect x="568" y="334" width="104" height="54" rx="5" fill="#10106e" stroke="#4a4ac8" stroke-width="2"/>'+
+  '<rect x="572" y="338" width="96" height="46" rx="3" fill="#05052e"/><g clip-path="url(#cPol)"><text class="mq" x="680" y="368">ANUNCIE AQUI  •  MEGA OOH  •  ANUNCIE AQUI  •  MEGA OOH</text></g><rect x="572" y="338" width="96" height="46" fill="url(#gap)"/>'+
+  '</svg>';
+}
+function relogio(root){
+  var dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'], meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  function tick(){
+    if(!document.body.contains(root)){ clearInterval(t); return; }
+    var d=new Date(), hh=('0'+d.getHours()).slice(-2), mm=('0'+d.getMinutes()).slice(-2);
+    root.querySelectorAll('.hh').forEach(function(e){ e.textContent=hh; }); root.querySelectorAll('.mm').forEach(function(e){ e.textContent=mm; });
+    var dt=root.querySelector('.dt'); if(dt) dt.textContent=dias[d.getDay()].replace(/^./,function(c){return c.toUpperCase();})+', '+d.getDate()+' de '+meses[d.getMonth()];
+  }
+  var t=setInterval(tick,1000); tick();
+}
+
+/* Tela de acesso: login, primeiro cadastro, espera de liberação e saída. */
 function gate(title,msg,actions){
   var g=$('#gate'); g.hidden=false; g.innerHTML='';
   var split=h('div',{class:'gsplit'});
   split.appendChild(h('div',{class:'gslash'}));
-  var hero=h('div',{class:'ghero'},[h('div',{class:'dots'}),h('div',{class:'led'}),h('div',{class:'ghtxt'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'ghlogo'}),h('h1',{text:'Propostas de mídia exterior, do ponto ao PDF.'}),h('p',{text:'Escolha os pontos, ajuste os valores e gere o PowerPoint ou o PDF da Mega Mídia OOH.'})])]);
+  var cena=h('div',{class:'scene'}); cena.innerHTML=cenaSvg(ASSETS.logoW);
+  var hero=h('div',{class:'ghero'},[h('div',{class:'dots'}),h('div',{class:'ghtxt'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'ghlogo'}),cena,h('div',{class:'ghfoot'},[h('h1',{text:'Propostas de mídia exterior, do ponto ao PDF.'}),h('p',{text:'Escolha os pontos, ajuste os valores e gere o PowerPoint ou o PDF.'})])])]);
   split.appendChild(hero);
   var box=h('div',{class:'gbox'}); box.appendChild(h('h2',{text:title})); (Array.isArray(msg)?msg:[msg]).forEach(function(m){ if(m) box.appendChild(h('p',{class:'hint',text:m})); }); (actions||[]).forEach(function(a){ box.appendChild(a); });
-  split.appendChild(h('div',{class:'gform'},[box])); g.appendChild(split); return box;
+  split.appendChild(h('div',{class:'gform'},[box])); g.appendChild(split); relogio(cena); return box;
 }
 
 function msgAuth(e){

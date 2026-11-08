@@ -175,8 +175,8 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .ghero .dots{background:#ffffff1c}
 .ghero .led{background:linear-gradient(105deg,transparent 30%,#ff3d8b 48%,#fff 50%,#ff3d8b 52%,transparent 70%) 0 0/260% 100%;animation:sweep 9s linear infinite}
 @keyframes sweep{from{background-position:140% 0}to{background-position:-40% 0}}
-.ghtxt{position:relative;padding:48px 150px 48px 64px;max-width:640px}
-.ghlogo{height:40px;display:block;margin-bottom:56px}
+.ghtxt{position:relative;width:100%;height:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:38px 96px 30px 44px}
+.ghlogo{height:38px;display:block;align-self:flex-start;flex:none}
 .ghtxt h1{font:500 40px/1.15 var(--sans);letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
 .ghtxt p{font-size:16px;line-height:1.65;color:#ffffffc4;margin:0;max-width:44ch}
 .gform{grid-column:2;display:flex;align-items:center;justify-content:center;padding:40px 48px 40px 20px;min-height:100vh}
@@ -215,3 +215,31 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 }
 .ptab td:nth-child(2) input{min-width:0;width:72px}
 .ptab td:nth-child(n+4) input{min-width:0}
+
+/* ---------- cena do login: painel de LED, bancas de LED, hora e data ---------- */
+.ghero{align-items:stretch}
+.scene{flex:1;min-height:0;display:flex;align-items:center;margin:8px -44px 14px -44px}
+.cena{width:100%;height:100%;max-height:100%;display:block;overflow:visible}
+.ghfoot h1{font:500 24px/1.2 var(--sans);letter-spacing:-.02em;margin:0 0 6px}.ghfoot p{margin:0;font-size:14px;color:#ffffffb0}
+.cena text{font-family:var(--sans)}
+.cena .big{font-weight:600;font-size:46px;fill:#fff}.cena .pk{fill:#ff4d94}.cena .mid{font-weight:600;font-size:22px;fill:#fff}.cena .sm{font-size:13px;fill:#bcbcf5;font-weight:500}
+.cena .clk{font-weight:600;font-size:72px;fill:#fff;font-variant-numeric:tabular-nums}.cena .dt{font-size:14px;fill:#fff;font-weight:500}.cena .hr{font-size:20px;font-weight:600;fill:#ff4d94;font-variant-numeric:tabular-nums}
+.cena .cl{animation:blink 1s steps(1) infinite}
+.cena .bt{font-size:14px;font-weight:700;fill:#fff}.cena .bt.s{font-size:11px;fill:#ffd1e3}.cena .mq{font-size:16px;font-weight:600;fill:#ff6aa3;animation:marq 9s linear infinite}
+.cena .sl{opacity:0;animation:slide 15s infinite}.cena .s2{animation-delay:5s}.cena .s3{animation-delay:10s}
+.cena .scan{animation:scan 5s linear infinite}
+.cena .bnr{animation:bnr 8s linear infinite}
+.cena .tw{fill:#ffd96a;opacity:.1;animation:twk 6s ease-in-out infinite}
+.cena .road{animation:road 1s linear infinite}
+.cena .car{animation:car 5s linear infinite}.cena .c2{animation-duration:8s;animation-delay:-3s}
+@keyframes slide{0%{opacity:0;transform:translateY(8px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+@keyframes scan{from{transform:translateX(-120px)}to{transform:translateX(560px)}}
+@keyframes bnr{from{transform:translateY(0)}to{transform:translateY(-144px)}}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-520px)}}
+@keyframes blink{50%{opacity:.2}}@keyframes twk{50%{opacity:.85}}
+@keyframes road{to{stroke-dashoffset:-48}}@keyframes car{from{transform:translateX(0)}to{transform:translateX(1000px)}}
+@media(max-width:900px){.ghtxt{display:block;padding:26px 20px 40px}.scene{margin:14px 0}.cena{height:auto}.ghfoot h1{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.cena *{animation:none!important}.cena .s1{opacity:1}}
+.pw{position:relative}.pw input{padding-right:46px}.pw .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:16px;padding:6px;opacity:.6}.pw .eye:hover{opacity:1}
+.newuser{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:0 0 26px}.newuser h3{margin:0 0 4px}
+.cred{display:grid;gap:8px;background:var(--bg,#f4f4fa);border-radius:12px;padding:14px 16px;margin:6px 0 12px}.cred div{display:flex;justify-content:space-between;gap:12px}.cred span{color:var(--mid)}

@@ -44,7 +44,7 @@ var Store = (function(){
   async function resolverSugestao(id,acao,payload,resposta){ must(await sb.rpc('resolver_sugestao',{p_id:id,p_acao:acao,p_payload:payload||null,p_resposta:resposta||null})); }
 
   /* ---------- propostas (backup) ---------- */
-  async function salvarProposta(row){ must(await sb.from('propostas').insert(row)); }
+  async function salvarProposta(row){ var r=await sb.from('propostas').insert(row); if(r.error&&/bv/i.test(r.error.message||'')){ var c=Object.assign({},row); delete c.bv; r=await sb.from('propostas').insert(c); } must(r); }
   async function listarPropostas(colunas){
     var out=[], from=0, step=1000;
     while(true){
@@ -56,6 +56,8 @@ var Store = (function(){
 
   /* ---------- usuários ---------- */
   async function listarUsuarios(){ return must(await sb.from('profiles').select('*').order('criado_em',{ascending:true})); }
+  async function criarUsuario(email,senha,nome,papel){ return must(await sb.rpc('admin_criar_usuario',{p_email:email,p_senha:senha,p_nome:nome||'',p_papel:papel})); }
+  async function redefinirSenha(id,senha){ must(await sb.rpc('admin_redefinir_senha',{p_id:id,p_senha:senha})); }
   async function mudarPapel(id,papel){ must(await sb.from('profiles').update({papel:papel}).eq('id',id)); }
 
   /* ---------- tempo real ---------- */
@@ -68,5 +70,5 @@ var Store = (function(){
     lerConfig:lerConfig, gravarConfig:gravarConfig, lerPontos:lerPontos, gravarPontos:gravarPontos, apagarPontos:apagarPontos,
     uploadPhoto:enviarFoto, photoUrl:urlFoto,
     criarSugestao:criarSugestao, listarSugestoes:listarSugestoes, contarPendentes:contarPendentes, resolverSugestao:resolverSugestao,
-    salvarProposta:salvarProposta, listarPropostas:listarPropostas, listarUsuarios:listarUsuarios, mudarPapel:mudarPapel, assinar:assinar };
+    salvarProposta:salvarProposta, listarPropostas:listarPropostas, listarUsuarios:listarUsuarios, criarUsuario:criarUsuario, redefinirSenha:redefinirSenha, mudarPapel:mudarPapel, assinar:assinar };
 })();

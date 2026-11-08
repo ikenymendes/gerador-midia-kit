@@ -252,6 +252,7 @@ create table if not exists public.propostas (
   n_locais         integer not null default 0,
   modo_valor       text,                    -- 'bruto' ou 'liquido'
   comissao         numeric,
+  bv               numeric,
   total_tabela     numeric not null default 0,
   total_negociado  numeric not null default 0,
   locais           jsonb not null default '[]'::jsonb,   -- [{secao, endereco, bairro, cidade, lat, lng, tamanho, pixels, ...}]

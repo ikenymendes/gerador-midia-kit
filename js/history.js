@@ -9,7 +9,7 @@ async function logProposta(formato,mode){
     var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:secLabel(p.secao),endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||''}; });
     var tt=0,tn=0;
     var valores=rows.map(function(c){ tt+=c.tabela; tn+=c.final; return {nome:c.nome,pontos:c.pontos,periodo:c.periodo,insercoes_por_ativo:c.insPor,insercoes_total:c.insN,tabela:c.tabela,desconto:c.desc,negociado:c.neg,final:c.final}; });
-    await Store.salvarProposta({tipo:prop?'proposta':'kit_completo',formato:formato,cliente:D.kit.cliente||null,titulo:D.kit.titulo||null,n_locais:prop?pts.length:D.pontos.length,modo_valor:D.modoGeral,comissao:num(D.comissao),total_tabela:tt,total_negociado:tn,locais:locais,valores:valores});
+    await Store.salvarProposta({tipo:prop?'proposta':'kit_completo',formato:formato,cliente:D.kit.cliente||null,titulo:D.kit.titulo||null,n_locais:prop?pts.length:D.pontos.length,modo_valor:D.modoGeral,comissao:num(D.comissao),bv:num(D.bv),total_tabela:tt,total_negociado:tn,locais:locais,valores:valores});
     return ' · backup da proposta salvo';
   }catch(e){
     console.error(e); toast('Atenção: o arquivo foi gerado, mas o backup da proposta NÃO foi salvo ('+erroMsg(e)+').',true);
@@ -31,8 +31,8 @@ function exportarPropostas(lista,tipo){
     var ls=[]; lista.forEach(function(p){ (p.locais||[]).forEach(function(l){ ls.push(base(p).concat([l.secao_nome||l.secao,l.endereco,l.bairro,l.cidade,l.lat,l.lng,l.tamanho,l.pixels,l.veic,l.publico,l.fluxo,l.impacto,l.sentido])); }); });
     baixarTexto('propostas-locais-'+carimbo()+'.csv',csvTexto(cabBase.concat(['formato_do_ponto','endereco','bairro','cidade','latitude','longitude','tamanho','pixels','veiculacoes_dia','publico','fluxo_dia','impacto_semanal','sentido']),ls),'text/csv;charset=utf-8'); return;
   }
-  var vs=[]; lista.forEach(function(p){ (p.valores||[]).forEach(function(v){ vs.push(base(p).concat([p.modo_valor,p.comissao,v.nome,v.pontos,v.periodo,v.insercoes_por_ativo,v.insercoes_total,v.tabela,v.desconto,v.negociado,v.final])); }); });
-  baixarTexto('propostas-valores-'+carimbo()+'.csv',csvTexto(cabBase.concat(['valor_bruto_ou_liquido','comissao_%','linha','pontos','periodo','insercoes_por_ativo','insercoes_total','valor_tabela','desconto_%','valor_negociado','valor_final']),vs),'text/csv;charset=utf-8');
+  var vs=[]; lista.forEach(function(p){ (p.valores||[]).forEach(function(v){ vs.push(base(p).concat([p.modo_valor,p.comissao,p.bv,v.nome,v.pontos,v.periodo,v.insercoes_por_ativo,v.insercoes_total,v.tabela,v.desconto,v.negociado,v.final])); }); });
+  baixarTexto('propostas-valores-'+carimbo()+'.csv',csvTexto(cabBase.concat(['valor_bruto_ou_liquido','comissao_%','bv_%','linha','pontos','periodo','insercoes_por_ativo','insercoes_total','valor_tabela','desconto_%','valor_negociado','valor_final']),vs),'text/csv;charset=utf-8');
 }
 
 function viewHistorico(v){
@@ -85,7 +85,7 @@ function viewHistorico(v){
 function detalheProposta(p){
   var w=h('div',{class:'det'});
   if(p.tipo!=='proposta'){ w.appendChild(h('p',{class:'hint',text:'Mídia kit completo gerado com '+p.n_locais+' pontos. Este tipo não guarda a lista de locais nem valores.'})); return w; }
-  w.appendChild(h('h3',{text:'Valores praticados · '+(p.modo_valor==='liquido'?'líquido de comissão ('+(p.comissao||0)+'%)':'bruto')}));
+  w.appendChild(h('h3',{text:'Valores praticados · '+(p.modo_valor==='liquido'?'líquido de comissão ('+(p.comissao||0)+'%)'+(p.bv?' e BV ('+p.bv+'%)':''):'bruto')}));
   var tv=h('table',{class:'ptab'}); tv.appendChild(h('thead',{},[h('tr',{},['Formato','Pontos','Período','Inserções','Tabela','Desc.','Negociado','Final'].map(function(x){ return h('th',{text:x}); }))])); var b1=h('tbody'); tv.appendChild(b1);
   (p.valores||[]).forEach(function(r){ b1.appendChild(h('tr',{},[r.nome,String(r.pontos),r.periodo||'',String(r.insercoes_total||'—'),brlN(r.tabela),(r.desconto||0)+'%',brlN(r.negociado),brlN(r.final)].map(function(x){ return h('td',{text:x}); }))); });
   b1.appendChild(h('tr',{class:'tot'},['Total','','','',brlN(p.total_tabela),'','',brlN(p.total_negociado)].map(function(x){ return h('td',{text:x}); })));

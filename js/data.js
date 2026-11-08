@@ -5,7 +5,7 @@ function migPrecos(D){ (D.precos||[]).forEach(function(r){ if(r.nome==='Bancas d
 function calcPreco(D,r){
   migPrecos(D);
   var pontos=r.pontos!==''&&r.pontos!=null?num(r.pontos):(r.auto?(r.auto.split(',').reduce(function(a,k){ return a+(k==='mercado'?(D.mercado.nTelas||0):k==='guanabara'?(D.guanabara.nTelas||0):ptsOf(D,k).length);},0)):0);
-  var tab=num(r.tabela), desc=num(r.desc), neg=tab*(1-desc/100), modo=D.modoGeral, fin=modo==='liquido'?neg*(1-num(D.comissao)/100):neg;
+  var tab=num(r.tabela), desc=num(r.desc), neg=tab*(1-desc/100), modo=D.modoGeral, fin=modo==='liquido'?neg*(1-num(D.comissao)/100)*(1-num(D.bv)/100):neg;
   var ip=num(r.insPor), ins=ip?ip*pontos:0;
   return {nome:r.nome,pontos:pontos,periodo:r.periodo,insPor:ip,insercoes:ins?String(ins).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—',insN:ins,tabela:tab,desc:desc,neg:neg,modo:modo,final:fin};
 }
@@ -33,7 +33,7 @@ var DEF=function(){ return {
   demo:{faixaCats:['18–25','26–40','41–55','55+'],faixa:[5,39,45,11],classes:[0,38,50,11,1],genero:[41,59],audiencia:[['Alcance','251.661'],['Impactos','268.324'],['Frequência','1,17']]},
   specs:[['Totens Guanabara','1,00 x 2,00 m','239 x 479'],['Painel de LED','4,00 x 2,00 m','768 x 320']],caption:'Totem (1 x 2 m) e painel de LED (4 x 2 m).',chips:[['MP4','Extensão do arquivo'],['10 s','Duração do VT'],['250','Veiculações por dia'],['20 MB','Tamanho máximo']]},
  brasilia:{tiles:[['3.854.278','usuários por mês'],['160 mil','usuários por dia'],['68%','usam o metrô todos os dias'],['59%','têm entre 21 e 40 anos'],['81%','com ensino médio completo'],['~20%','com nível superior completo']],genero:[53.4,45.4],generoNota:'1,2% se declararam com outra identidade.',fonte:'Pesquisa Ser Desenvolvimento Humano e Empresarial.',texto:'O Metrô-DF transporta por mês 3.854.278 usuários, sendo público A, B e C. A faixa etária é majoritariamente jovem, economicamente ativa e receptiva a novas tendências: mais de 59% dos passageiros têm entre 21 e 40 anos.',formatos:[['Envelopamento externo','Envelopamento externo de vagões'],['Cabeceira de vagão','Mídia na cabeceira do vagão'],['Mídia interna','Painéis dentro dos vagões'],['Interna em cabeceira','Mídia interna na cabeceira do vagão'],['Mídia nas estações','Painéis de 6,00 x 2,00 m (tamanhos variam por estação)']],dims:['1,92 m','2,88 m'],veic:'420',caption:'Painel de LED de 1,92 x 2,88 m (640 x 960 px).',painelChips:[['MP4','Extensão do arquivo'],['10 s','Duração do VT · sem animação'],['420','Inserções por dia'],['6 MB','Tamanho máximo']]},
- comissao:20, modoGeral:'bruto',
+ comissao:20, bv:0, modoGeral:'bruto',
  precos:[['Painéis de LED · Belo Horizonte','led_bh','4 semanas','500'],['Painéis de LED · Região Metropolitana','led_rm','4 semanas','500'],['Bancas de LED','banca_led','4 semanas','500'],['Circuito Mercado Central','mercado','4 semanas','220'],['Circuito Parque Guanabara','guanabara','4 semanas','250'],['Empenas','empena','Mensal','—'],['Painéis frontlight','front','Mensal','—'],['Painéis mensais · mega painéis e outdoors','mensal','Mensal','—'],['Bancas Estáticas','revista','Mensal','—'],['Metrô-DF · mídia no metrô','metro','Mensal','—'],['Painéis de LED · Brasília','df_painel','4 semanas','420']].map(function(r){ return {nome:r[0],auto:r[1],pontos:'',periodo:r[2],insercoes:r[3],tabela:'',desc:'',modo:'geral'}; })
 };};
 var D=DEF(), uid=0;
