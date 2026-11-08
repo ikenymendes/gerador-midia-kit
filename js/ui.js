@@ -1,0 +1,190 @@
+/* Telas do gerador (comuns a administrador e comercial). */
+var curTab='kit';
+function viewSelecao(v){
+  v.appendChild(h('h2',{text:'Pontos da proposta'}));
+  v.appendChild(h('p',{class:'hint',text:'Marque os pontos que entram na proposta personalizada. Para o mídia kit completo, vá direto para a aba Gerar: todos os pontos entram, sem preços.'}));
+  var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(filtro===k) o.selected=true; return o; })));
+  var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca;
+  bar.appendChild(fsel); bar.appendChild(bs); bar.appendChild(h('button',{class:'btn',type:'button',text:'➕ Sugerir novo ponto',onclick:function(){ abrirFormSugestao('adicionar',null); }})); v.appendChild(bar);
+  v.appendChild(h('p',{class:'hint',text:'Você não altera endereços diretamente. Para incluir ou corrigir um ponto, use "Sugerir": o administrador recebe o aviso, confere e aplica.'}));
+  var mk=h('input',{type:'checkbox'}), mtx=h('span',{}); v.appendChild(h('label',{class:'selall'},[mk,mtx]));
+  var list=h('div',{class:'plist'}); v.appendChild(list);
+  function vis(){ return D.pontos.filter(matchP); }
+  function ref(){ var Lst=vis(), n=Lst.filter(function(p){return p.sel}).length; mk.checked=Lst.length>0&&n===Lst.length; mk.indeterminate=n>0&&n<Lst.length; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+Lst.length+' marcados  ('+D.pontos.filter(function(p){return p.sel}).length+' no total)'; }
+  function draw(){ list.innerHTML=''; var n=0; vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
+  fsel.addEventListener('change',function(){ filtro=fsel.value; draw(); });
+  bs.addEventListener('input',function(){ busca=bs.value; draw(); });
+  mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); dirty(); draw(); });
+  draw();
+}
+
+/* ---- usuários (admin) ---- */
+function askPin(titulo,detalhe){ return new Promise(function(res){
+  var code=String(Math.floor(1000+Math.random()*9000)), ov=h('div',{class:'pinov'}), box=h('div',{class:'pinbox'}), msg=h('p',{class:'pinmsg',text:''}), ip=h('input',{type:'text',inputmode:'numeric',maxlength:'4',placeholder:'0000',class:'pinin'});
+  function close(v){ document.removeEventListener('keydown',kd); ov.remove(); res(v); }
+  function ok(){ if(ip.value.trim()===code) close(true); else { msg.textContent='Código incorreto. Digite exatamente o código mostrado.'; ip.value=''; ip.focus(); } }
+  function kd(e){ if(e.key==='Escape') close(false); if(e.key==='Enter') ok(); }
+  box.appendChild(h('h3',{text:titulo||'Confirmar exclusão'})); if(detalhe) box.appendChild(h('p',{class:'pind',text:detalhe}));
+  box.appendChild(h('p',{class:'pinl',text:'Para confirmar, digite o código:'})); box.appendChild(h('div',{class:'pincode',text:code})); box.appendChild(ip); box.appendChild(msg);
+  box.appendChild(h('div',{class:'bar'},[h('button',{class:'btn del',text:'Excluir',onclick:ok}),h('button',{class:'btn',text:'Cancelar',onclick:function(){ close(false); }})]));
+  ov.appendChild(box); document.body.appendChild(ov); document.addEventListener('keydown',kd); setTimeout(function(){ ip.focus(); },50); }); }
+function h(tag,attrs,kids){ var e=document.createElement(tag); attrs=attrs||{}; Object.keys(attrs).forEach(function(k){ if(k==='class') e.className=attrs[k]; else if(k==='text') e.textContent=attrs[k]; else if(k.slice(0,2)==='on') e.addEventListener(k.slice(2),attrs[k]); else if(k==='value') e.value=attrs[k]; else e.setAttribute(k,attrs[k]); }); (kids||[]).forEach(function(c){ if(c!=null) e.appendChild(typeof c==='string'?document.createTextNode(c):c); }); return e; }
+function field(label,input,hint,cls){ return h('label',{class:'f '+(cls||'')},[h('span',{text:label}),input,hint?h('small',{text:hint}):null]); }
+function getp(o,p){ return p.split('.').reduce(function(a,k){return a[k]},o); }
+function setp(o,p,v){ var ks=p.split('.'), l=ks.pop(); ks.reduce(function(a,k){return a[k]},o)[l]=v; }
+function inp(obj,path,o){ o=o||{}; var i=h(o.area?'textarea':'input',{type:o.type||'text',rows:o.rows||3}); i.value=getp(obj,path)==null?'':getp(obj,path); i.addEventListener('input',function(){ var v=i.value; if(o.num) v=v===''?null:parseFloat(String(v).replace(',','.')); setp(obj,path,v); if(o.onchange) o.onchange(v); dirty(); }); return i; }
+function pairsText(a){ return (a||[]).map(function(r){ return Array.isArray(r)?r.join(' | '):r; }).join('\n'); }
+function parsePairs(t){ return t.split('\n').map(function(l){return l.trim()}).filter(Boolean).map(function(l){ return l.split('|').map(function(x){return x.trim()}); }); }
+function schemaField(obj,s){
+  var path=s[0], type=s[1], label=s[2], cur=getp(obj,path), i;
+  if(type==='text') return field(label,inp(obj,path));
+  if(type==='num') return field(label,inp(obj,path,{num:true}));
+  if(type==='area') return field(label,inp(obj,path,{area:true,rows:4}),null,'wide');
+  if(type==='fotos') return photosField(label,obj,path);
+  var conv={pairs:[pairsText,parsePairs],rows:[pairsText,parsePairs],pair:[function(a){return (a||[]).join(' | ')},function(t){return t.split('|').map(function(x){return x.trim()})}],
+    strs:[function(a){return (a||[]).join(', ')},function(t){return t.split(',').map(function(x){return x.trim()}).filter(Boolean)}],
+    nums:[function(a){return (a||[]).join(', ')},function(t){return t.split(',').map(function(x){return parseFloat(x.trim())}).filter(function(x){return !isNaN(x)})}]}[type];
+  i=h('textarea',{rows:type==='pairs'||type==='rows'?(s[3]||6):2}); i.value=conv[0](cur); i.addEventListener('input',function(){ setp(obj,path,conv[1](i.value)); dirty(); });
+  return field(label,i,s[4],'wide');
+}
+function photosField(label,obj,path){
+  var wrap=h('div',{class:'photos'}), fi=h('input',{type:'file',accept:'image/*',multiple:'multiple'}); 
+  function draw(){ wrap.innerHTML=''; var arr=getp(obj,path); if(!Array.isArray(arr)){ arr=arr?[arr]:[]; }
+    arr.forEach(function(k,ix){ wrap.appendChild(h('span',{class:'thumb'},[h('img',{src:libSrc(k)}),h('b',{text:'×',title:'remover',onclick:function(){ askPin('Remover foto','A foto será retirada deste ponto.').then(function(ok){ if(!ok) return; arr.splice(ix,1); setp(obj,path,Array.isArray(getp(obj,path))?arr:(arr[0]||null)); draw(); dirty(); }); }})])); }); }
+  fi.addEventListener('change',async function(){ var arr=getp(obj,path); var multi=Array.isArray(arr); arr=multi?arr:(arr?[arr]:[]); try{ for(var f of fi.files){ var k=await addPhoto(f); arr.push(k); } }catch(e){ toast(e.message||String(e),true); } if(!multi) arr=arr.slice(-1); setp(obj,path,multi?arr:(arr[0]||null)); fi.value=''; draw(); dirty(); });
+  draw(); return field(label,h('div',{},[fi,wrap]),null,'wide');
+}
+
+function viewKit(v){ migKit(D);
+  var K=D.kit, g=h('div',{class:'grid'});
+  [['titulo','text','Título do kit (nome do arquivo)'],['ano','text','Ano da capa'],['frase1','text','Capa · frase 1'],['frase2','text','Capa · frase 2'],['subtitulo','text','Capa · subtítulo'],['selo','text','Capa · linha inferior'],['capaTexto','area','Capa · texto sobre a Mega'],['capaPilares','strs','Capa · 3 pilares (separe por vírgula)'],['capaStats','pairs','Capa · 3 números: valor | rótulo (use "auto" para contar os pontos)',3],['sobre','area','Texto "Quem somos"'],['fotoCapa','fotos','Foto da capa (opcional; sem foto a capa mostra o texto sobre a Mega)'],['fotoContra','fotos','Foto da contracapa (opcional)'],['investTitulo','text','Página de investimento · título'],['pagamento','text','Forma de pagamento'],['validade','text','Validade da proposta']].forEach(function(s){ g.appendChild(schemaField(K,s)); });
+  v.appendChild(h('h2',{text:'Dados gerais do kit'})); v.appendChild(g);
+  v.appendChild(h('h3',{text:'Responsável (contracapa)'})); var g2=h('div',{class:'grid'}); [['nome','text','Nome'],['cargo','text','Cargo'],['email','text','E-mail'],['tel1','text','Telefone / WhatsApp'],['tel2','text','Telefone fixo'],['site','text','Site']].forEach(function(s){ g2.appendChild(schemaField(K.resp,s)); }); v.appendChild(g2);
+  v.appendChild(h('h3',{text:'Faixas de especificação (4 itens por página)'})); var g3=h('div',{class:'grid'});
+  g3.appendChild(schemaField(D.specChips,['led','pairs','Painéis de LED: valor | rótulo',4])); g3.appendChild(schemaField(D.specChips,['banca','pairs','Bancas de LED: valor | rótulo',4])); v.appendChild(g3);
+  var sel=h('select',{},[['esri_street','Ruas (Esri) · padrão'],['esri_gray','Cinza claro (Esri)'],['osm','OpenStreetMap']].map(function(o){ var op=h('option',{value:o[0],text:o[1]}); if(mapSt(D.mapStyle)===o[0]) op.selected=true; return op; })); sel.addEventListener('change',function(){ D.mapStyle=sel.value; dirty(); });
+  
+  v.appendChild(h('h3',{text:'Textos das capas (separadores de praça e formato)'})); v.appendChild(h('p',{class:'hint',text:'Cada capa mostra um texto sobre a praça ou o formato, 3 números e 3 destaques. Use "auto" no número para contar os pontos cadastrados.'}));
+  SEPS.forEach(function(sp){ var info=sepInfo(D,sp.i), det=h('details',{class:'pt'}), sm=h('summary',{},[h('span',{class:'t',text:(sp.i<10?'0':'')+sp.i+' · '+sp.title.replace('\n',' ')})]); det.appendChild(sm); var gg=h('div',{class:'grid',style:'padding:12px 16px'}); gg.appendChild(schemaField(info,['texto','area','Texto'])); gg.appendChild(schemaField(info,['stats','pairs','3 números: valor | rótulo',3])); gg.appendChild(schemaField(info,['bullets','rows','3 destaques (um por linha)',3])); det.appendChild(gg); v.appendChild(det); });
+}
+var MERC=[['circuito','text','Nome do circuito (ex.: Circuito de 8 telas de LED)'],['nTelas','num','Nº de telas (usado na tabela de preços)'],['lat','num','Latitude do Mercado'],['lng','num','Longitude do Mercado'],['fotos','fotos','Fotos do Mercado (a 1ª aparece na página de abertura e no separador)'],['texto','area','Texto de abertura'],['tiles','pairs','6 indicadores — um por linha: valor | rótulo',6],['pill1','text','Selo 1'],['pill2','text','Selo 2'],['destaque','pair','Destaque: título | texto'],
+ ['demo.tiles','pairs','Perfil demográfico · 4 indicadores: valor | rótulo',4],['demo.faixaCats','strs','Faixa etária · categorias (separe por vírgula)'],['demo.faixa','nums','Faixa etária · valores (%)'],['demo.genero','nums','Gênero · Feminino, Masculino (%)'],['demo.classes','nums','Classe social A–E (%)'],['demo.renda','nums','Renda média por classe A–E (R$, decimais com ponto)'],['demo.intCats','strs','Top 5 interesses · nomes'],['demo.intVals','nums','Top 5 interesses · quantidades'],
+ ['specs','rows','Especificações: Ponto | Qtd. | Tamanho | Formato (px)',5],['dims','strs','Medidas do desenho (largura, altura)'],['caption','text','Legenda do desenho'],['chips','pairs','Faixa de 4 itens: valor | rótulo',4]];
+var GUAN=[['circuito','text','Nome do circuito'],['nTelas','num','Nº de telas (tabela de preços)'],['lat','num','Latitude do parque (confira!)'],['lng','num','Longitude do parque (confira!)'],['endereco','text','Endereço'],['fotoParque','fotos','Foto do parque para a abertura (opcional; sem foto usa a ilustração)'],['fotos','fotos','Outras fotos do parque (reserva)'],['texto','area','Texto de abertura'],['tiles','pairs','3 indicadores: valor | rótulo',3],['quem','strs','Quem visita (separe por vírgula)'],['porque','text','Por que anunciar'],
+ ['demo.faixaCats','strs','Faixa etária · categorias'],['demo.faixa','nums','Faixa etária · valores (%)'],['demo.classes','nums','Classe social A–E (%)'],['demo.genero','nums','Gênero · Mulheres, Homens (%)'],['demo.audiencia','pairs','Audiência: rótulo | valor',3],['specs','rows','Especificações: Ponto | Tamanho | Formato (px)',4],['caption','text','Legenda do desenho'],['chips','pairs','Faixa de 4 itens: valor | rótulo',4]];
+var BRAS=[['tiles','pairs','6 indicadores do Metrô-DF: valor | rótulo',6],['genero','nums','Gênero · Feminino, Masculino (%)'],['generoNota','text','Nota do gráfico de gênero'],['fonte','text','Fonte da pesquisa'],['texto','area','Texto sobre o público do metrô'],['formatos','pairs','Formatos de mídia no metrô (5): nome | descrição',6],['dims','strs','Medidas do painel de LED (largura, altura)'],['veic','text','Inserções por dia (painéis)'],['caption','text','Legenda do desenho'],['painelChips','pairs','Faixa de 4 itens: valor | rótulo',4]];
+function viewSchema(v,key,schema){ v.appendChild(h('h2',{text:key==='mercado'?'Mercado Central':(key==='guanabara'?'Parque Guanabara':'Brasília · Metrô-DF e painéis')})); v.appendChild(h('p',{class:'hint',text:'Já vem preenchido com os dados do mídia kit atual. Altere o que mudou.'})); var g=h('div',{class:'grid'}); schema.forEach(function(s){ g.appendChild(schemaField(D[key],s)); }); v.appendChild(g); }
+
+/* ---------- pontos ---------- */
+var filtro='', busca='';
+function matchP(p){ if(filtro&&p.secao!==filtro) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
+function secLabel(k){ return SEC[k]?SEC[k].nome+(SEC[k].praca?' · '+SEC[k].praca:''):k; }
+function novoPontoPanel(){
+  var np={secao:filtro||'led_bh',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
+  var d=h('details',{class:'pt novo',id:'novoponto'}); d.open=true; d.appendChild(h('summary',{},[h('span',{class:'t',text:'➕ Adicionar novo ponto'})]));
+  var g=h('div',{class:'grid'}), msg=h('p',{class:'status'});
+  var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(np.secao===k) o.selected=true; return o; })); sel.addEventListener('change',function(){ np.secao=sel.value; if(np.secao==='metro'||np.secao==='df_painel'){ np.cidade='Brasília-DF'; cid.value=np.cidade; } });
+  g.appendChild(field('Seção / formato do ponto',sel,'Painel de LED, banca de LED, empena, frontlight, painel mensal, banca estática, Metrô-DF…'));
+  var ed=inp(np,'endereco'), ba=inp(np,'bairro'), cid=inp(np,'cidade');
+  g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
+  var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(np,'lat',{num:true}), lng=inp(np,'lng',{num:true}), res=h('small',{text:''});
+  function ok(r){ np.lat=r.lat; np.lng=r.lng; lat.value=r.lat; lng.value=r.lng; res.textContent='✓ Coordenadas encontradas: '+r.lat+' , '+r.lng; res.style.color='#2a9d6f'; lk.style.borderColor='#2a9d6f'; }
+  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r) ok(r); else { res.textContent=lk.value?'Não encontrei coordenadas neste link (links curtos maps.app.goo.gl não funcionam: abra o ponto no Maps e copie o link completo da barra do navegador).':''; res.style.color='#b0003a'; lk.style.borderColor=''; } });
+  g.appendChild(field('Link do Google Maps (busca lat/long sozinho)',h('div',{},[lk,res]),null,'wide'));
+  var bt=h('button',{class:'btn',text:'🔎 Buscar pelo endereço',onclick:async function(){ var q=[np.endereco,np.bairro,np.cidade].filter(Boolean).join(', '); if(!np.endereco){ res.textContent='Digite o endereço primeiro.'; res.style.color='#b0003a'; return; } res.textContent='Buscando…'; res.style.color=''; try{ var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q)); var j=await r.json(); if(j&&j[0]) ok({lat:+(+j[0].lat).toFixed(7),lng:+(+j[0].lon).toFixed(7)}); else { res.textContent='Endereço não encontrado: use o link do Maps.'; res.style.color='#b0003a'; } }catch(e){ res.textContent='Sem conexão com o serviço de busca: use o link do Maps.'; res.style.color='#b0003a'; } }});
+  
+  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng));
+  [['tamanho','Tamanho (ex.: 9,00 x 3,00 m)'],['pixels','Formato em pixels (ex.: 2308 x 577)'],['veic','Veiculações/dia (bancas)'],['publico','Público (ex.: A, B, C e D)'],['fluxo','Fluxo de carros/dia'],['impacto','Impacto semanal'],['sentido','Sentido (ex.: Centro / Bairro)']].forEach(function(f){ g.appendChild(field(f[1],inp(np,f[0]))); });
+  g.appendChild(photosField('Foto do ponto',np,'foto')); g.appendChild(photosField('Imagem do mapa (opcional)',np,'mapa'));
+  d.appendChild(g);
+  var bar=h('div',{class:'bar'}); bar.appendChild(h('button',{class:'btn pri big',text:'Adicionar ponto',onclick:function(){ if(!String(np.endereco||'').trim()){ msg.textContent='Preencha o endereço.'; msg.className='status err'; return; } var c=JSON.parse(JSON.stringify(np)); c.id=newId(); c.sel=true; D.pontos.push(c); dirty(); filtro=c.secao; showTab('pontos'); var s=$('#fotomsg'); if(s) s.textContent='Ponto adicionado: '+c.endereco+(c.lat==null?' (sem coordenadas, o mapa não vai aparecer)':'')+'.'; setTimeout(function(){ var cs=document.querySelectorAll('details.pt:not(.novo)'); var last=cs[cs.length-1]; if(last){ last.open=true; last.scrollIntoView({block:'center'}); } },200); }})); bar.appendChild(msg); d.appendChild(bar);
+  return d;
+}
+function viewPontos(v){
+  v.appendChild(h('h2',{text:'Painel de pontos'})); v.appendChild(h('p',{class:'hint',text:'Cada ponto vira uma ficha no kit. Adicione pontos novos, troque a foto, escolha a seção/formato e cole o link do Maps para buscar latitude e longitude. Exclusões pedem um código de confirmação.'})); v.appendChild(novoPontoPanel());
+  var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(filtro===k) o.selected=true; return o; })));
+  fsel.addEventListener('change',function(){ filtro=fsel.value; showTab('pontos'); });
+  bar.appendChild(fsel);
+  var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca; bs.addEventListener('input',function(){ busca=bs.value; if(window.drawList) window.drawList(); }); bar.appendChild(bs);
+  function setSel(v){ D.pontos.forEach(function(p){ if(!filtro||p.secao===filtro) p.sel=v; }); dirty(); showTab('pontos'); }
+  bar.appendChild(h('button',{class:'btn',text:'✓ Marcar todos'+(filtro?' desta seção':''),onclick:function(){ setSel(true); }}));
+  bar.appendChild(h('button',{class:'btn',text:'Limpar marcação',onclick:function(){ setSel(false); }}));
+  bar.appendChild(h('button',{class:'btn pri',text:'+ Novo ponto',onclick:function(){ var f=$('#novoponto'); f.open=true; f.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(function(){ var i=f.querySelector('input[type=text]'); if(i) i.focus(); },300); }}));
+  bar.appendChild(h('button',{class:'btn',text:'Importar planilha (colar)',onclick:function(){ $('#imp').classList.toggle('show'); }}));
+  var fl=h('input',{type:'file',accept:'image/*',multiple:'multiple'}); fl.addEventListener('change',async function(){ var n=0; try{ for(var f of fl.files){ var kk=await addPhoto(f); D.libMap=D.libMap||{}; D.libMap[f.name]=kk; n++; } }catch(e){ toast(e.message||String(e),true); } dirty(); $('#fotomsg').textContent=n+' foto(s) adicionadas à biblioteca. Use o nome do arquivo na planilha ou escolha em cada ponto.'; showTab('pontos'); });
+  bar.appendChild(h('label',{class:'btn'},['Fotos em lote',fl])); v.appendChild(bar); v.appendChild(h('p',{id:'fotomsg',class:'hint'}));
+  var cnt=SEC_ORDER.map(function(k){ return ptsOf(D,k).length?secLabel(k)+': '+ptsOf(D,k).length:null; }).filter(Boolean).join('  ·  ')||'Nenhum ponto cadastrado ainda.'; v.appendChild(h('p',{class:'hint',text:'Total: '+D.pontos.length+' pontos · '+D.pontos.filter(function(p){return p.sel}).length+' marcados para a proposta   —   '+cnt}));
+  var vis=function(){ return D.pontos.filter(matchP); };
+  var mk=h('input',{type:'checkbox'}), mtx=h('span',{});
+  function refMaster(){ var L=vis(), n=L.filter(function(p){return p.sel}).length; mk.checked=L.length>0&&n===L.length; mk.indeterminate=n>0&&n<L.length; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+L.length+' marcados  ('+D.pontos.filter(function(p){return p.sel}).length+' no total)'; }
+  mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); document.querySelectorAll('details.pt input[type=checkbox]').forEach(function(c){ if(c.closest('details.pt').style.display!=='none') c.checked=val; }); dirty(); refMaster(); });
+  window.refMaster=refMaster;
+  v.appendChild(h('label',{class:'selall'},[mk,mtx])); refMaster();
+  // importação
+  var imp=h('div',{id:'imp',class:'imp'}), ta=h('textarea',{rows:6,placeholder:'Cole aqui as linhas copiadas do Excel (sem cabeçalho). Colunas: Seção | Endereço | Bairro | Cidade | Link do Maps ou "lat, long" | Tamanho | Pixels | Veic./dia | Público | Fluxo/dia | Impacto semanal | Sentido | Nome do arquivo da foto'});
+  imp.appendChild(h('p',{class:'hint',html:null,text:'Seção aceita: LED BH, LED RM, Banca LED, Empena, Frontlight, Mensal, Revista. Para as fotos, use "Fotos em lote" e escreva o nome do arquivo na última coluna.'}));
+  imp.appendChild(ta); imp.appendChild(h('button',{class:'btn pri',text:'Importar',onclick:function(){ var n=importText(ta.value); ta.value=''; dirty(); $('#fotomsg').textContent=n+' ponto(s) importado(s).'; showTab('pontos'); }}));
+  imp.appendChild(h('button',{class:'btn',text:'Baixar modelo (CSV)',onclick:function(){ var csv='﻿Seção;Endereço;Bairro;Cidade;Link ou lat,long;Tamanho;Pixels;Veic./dia;Público;Fluxo/dia;Impacto semanal;Sentido;Foto\r\nLED BH;Av. Exemplo, 1000;Centro;Belo Horizonte;-19.9231747, -43.943164;9,00 x 3,00 m;2308 x 577;500;A, B, C e D;50.000;350.000;Centro / Bairro;foto1.jpg\r\n'; download(new Blob([csv],{type:'text/csv'}),'modelo-pontos.csv'); }}));
+  v.appendChild(imp);
+  var list=h('div',{class:'plist'});
+  function drawList(){ list.innerHTML=''; var n=0; D.pontos.forEach(function(p,ix){ if(!matchP(p)) return; n++; list.appendChild(pointCard(p,ix)); }); if(!n) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); if(window.refMaster) window.refMaster(); }
+  drawList(); v.appendChild(list); window.drawList=drawList;
+}
+function normSec(s){ s=String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); if(/rm|metropol/.test(s)&&/led|painel/.test(s)) return 'led_rm'; if(/banca/.test(s)&&/(revista|estatic)/.test(s)) return 'revista'; if(/revista/.test(s)) return 'revista'; if(/banca/.test(s)) return 'banca_led'; if(/empena/.test(s)) return 'empena'; if(/front/.test(s)) return 'front'; if(/mensal|outdoor|mega/.test(s)) return 'mensal'; return 'led_bh'; }
+function importText(t){ var n=0; t.split(/\r?\n/).forEach(function(line){ if(!line.trim()) return; var c=line.indexOf('\t')>=0?line.split('\t'):line.split(';'); c=c.map(function(x){return x.trim()}); if(/^se[cç][aã]o$/i.test(c[0])) return; var ll=parseMapsText(c[4]||'');
+  D.pontos.push({id:newId(),sel:true,secao:normSec(c[0]),endereco:c[1]||'',bairro:c[2]||'',cidade:c[3]||'',lat:ll?ll.lat:null,lng:ll?ll.lng:null,zoom:16,tamanho:c[5]||'',pixels:c[6]||'',veic:c[7]||'',publico:c[8]||'',fluxo:c[9]||'',impacto:c[10]||'',sentido:c[11]||'',foto:(c[12]&&libSrc(c[12]))?(D.libMap&&D.libMap[c[12]]||c[12]):null}); n++; }); return n; }
+function pointCard(p,ix){
+  var d=h('details',{class:'pt'}), sm=h('summary'), title=h('span',{class:'t'}), badge=h('em',{text:SEC[p.secao]?SEC[p.secao].nome:''});
+  function upd(){ title.textContent=(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:''); badge.textContent=secLabel(p.secao); st.textContent=(p.lat!=null&&!isNaN(p.lat))?'📍 mapa ok':'sem coordenadas'; st.className='st '+((p.lat!=null&&!isNaN(p.lat))?'ok':'no'); }
+  var st=h('span',{class:'st'}); var ck=h('input',{type:'checkbox',title:'Incluir na proposta'}); ck.checked=!!p.sel; ck.addEventListener('click',function(e){ e.stopPropagation(); }); ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); if(window.refMaster) window.refMaster(); var cc=document.querySelectorAll('.hint'); }); var cl=h('label',{class:'ck',title:'Incluir na proposta'},[ck,h('span',{text:'proposta'})]); cl.addEventListener('click',function(e){ e.stopPropagation(); }); sm.appendChild(cl); sm.appendChild(badge); sm.appendChild(title); sm.appendChild(st);
+  sm.appendChild(h('button',{class:'mini',text:'duplicar',onclick:function(e){ e.preventDefault(); var c=JSON.parse(JSON.stringify(p)); c.id=newId(); D.pontos.splice(ix+1,0,c); dirty(); showTab('pontos'); }}));
+  sm.appendChild(h('button',{class:'mini del',text:'excluir',onclick:function(e){ e.preventDefault(); askPin('Excluir ponto',(p.endereco||'(sem endereço)')+' · '+secLabel(p.secao)).then(function(ok){ if(!ok) return; var k=D.pontos.indexOf(p); if(k>=0) D.pontos.splice(k,1); dirty(); showTab('pontos'); }); }}));
+  var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; if(fk&&libSrc(fk)) sm.insertBefore(h('img',{class:'sth',src:libSrc(fk)}),sm.firstChild);
+  d.appendChild(sm);
+  var g=h('div',{class:'grid'});
+  var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(p.secao===k) o.selected=true; return o; })); sel.addEventListener('change',function(){ p.secao=sel.value; upd(); dirty(); }); g.appendChild(field('Seção / formato',sel));
+  function I(path,label,o){ o=o||{}; o.onchange=upd; return field(label,inp(p,path,o),o.hint); }
+  g.appendChild(I('endereco','Endereço (título da ficha)')); g.appendChild(I('bairro','Bairro')); g.appendChild(I('cidade','Cidade'));
+  var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}); var lat=inp(p,'lat',{num:true,onchange:upd}), lng=inp(p,'lng',{num:true,onchange:upd});
+  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r){ p.lat=r.lat; p.lng=r.lng; lat.value=r.lat; lng.value=r.lng; upd(); dirty(); lk.style.borderColor='#2a9d6f'; } else lk.style.borderColor=''; });
+  g.appendChild(field('Link do Google Maps (preenche lat/long)',lk,'Link curto (maps.app.goo.gl) não funciona: abra e copie o endereço completo da barra.','wide'));
+  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng)); g.appendChild(I('zoom','Zoom do mapa (13–19)',{num:true}));
+  g.appendChild(I('tamanho','Tamanho (ex.: 9,00 x 3,00 m)')); g.appendChild(I('pixels','Formato em pixels (ex.: 2308 x 577)')); g.appendChild(I('veic','Veiculações/dia (bancas)')); g.appendChild(I('publico','Público (ex.: A, B, C e D)')); g.appendChild(I('fluxo','Fluxo de carros/dia')); g.appendChild(I('impacto','Impacto semanal')); g.appendChild(I('sentido','Sentido (ex.: Centro / Bairro)'));
+  g.appendChild(photosField('Foto do ponto',p,'foto')); g.appendChild(photosField('Imagem do mapa (opcional; envie um print do mapa do ponto)',p,'mapa')); d.appendChild(g); upd(); return d;
+}
+
+/* ---------- preços ---------- */
+function viewPrecos(v){ migPrecos(D);
+  v.appendChild(h('h2',{text:'Tabela de preços e investimento'}));
+  v.appendChild(h('p',{class:'hint',text:'Preencha valor de tabela e desconto: o valor negociado, o total e a página de Investimento Total são calculados sozinhos. O valor é bruto ou líquido para todas as linhas (campo acima). Pontos vêm da contagem dos pontos cadastrados (Mercado Central e Parque Guanabara usam o número de telas). Inserções: digite por ativo/tela e o total é calculado (pontos × inserções).'}));
+  var top=h('div',{class:'grid'}), ms=h('select',{},[['bruto','Bruto'],['liquido','Líquido (desconta comissão da agência)']].map(function(o){ var op=h('option',{value:o[0],text:o[1]}); if(D.modoGeral===o[0]) op.selected=true; return op; })); ms.addEventListener('change',function(){ D.modoGeral=ms.value; dirty(); recalc(); });
+  top.appendChild(field('Valor padrão do kit',ms)); top.appendChild(field('Comissão da agência (%)',inp(D,'comissao',{num:true,onchange:recalc}))); v.appendChild(top);
+  var tb=h('table',{class:'ptab'}); tb.appendChild(h('thead',{},[h('tr',{},['Formato','Pontos','Período','Inserções por ativo/tela','Total inserções','Valor tabela (R$)','Desconto (%)','Valor negociado','',''].map(function(t){return h('th',{text:t})}))]));
+  var body=h('tbody'); tb.appendChild(body); var foot=h('tfoot'); tb.appendChild(foot);
+  function recalc(){ var tt=0,tn=0; D.precos.forEach(function(r,i){ var c=calcPreco(D,r); tt+=c.tabela; tn+=c.final; var cell=body.children[i]&&body.children[i].querySelector('.val'); if(cell) cell.textContent=brl(c.final); var pc=body.children[i]&&body.children[i].querySelector('.pts'); if(pc) pc.placeholder=String(c.pontos); var ic=body.children[i]&&body.children[i].querySelector('.ins'); if(ic) ic.textContent=c.insercoes; }); foot.innerHTML=''; foot.appendChild(h('tr',{},[h('td',{text:'Total'}),h('td'),h('td'),h('td'),h('td'),h('td',{text:brl(tt)}),h('td'),h('td',{text:brl(tn)}),h('td'),h('td')])); }
+  function row(r,i){ var tr=h('tr'); function td(x){ var t=h('td'); t.appendChild(x); tr.appendChild(t); }
+    td(inp(r,'nome')); var pi=inp(r,'pontos'); pi.className='pts'; td(pi); td(inp(r,'periodo')); td(inp(r,'insPor',{onchange:recalc})); var ti=h('td',{class:'calc ins'}); tr.appendChild(ti); td(inp(r,'tabela',{onchange:recalc})); td(inp(r,'desc',{onchange:recalc}));
+    var cs=h('td',{class:'calc val'}); tr.appendChild(cs);
+    if(!ME.admin){ td(h('span')); td(h('span')); return tr; }
+    td(h('button',{class:'mini',text:'↑',onclick:function(){ if(i>0){ D.precos.splice(i-1,0,D.precos.splice(i,1)[0]); dirty(); showTab('precos'); } }})); td(h('button',{class:'mini del',text:'×',onclick:function(){ askPin('Excluir linha de preço',r.nome).then(function(ok){ if(!ok) return; var k=D.precos.indexOf(r); if(k>=0) D.precos.splice(k,1); dirty(); showTab('precos'); }); }})); return tr; }
+  D.precos.forEach(function(r,i){ body.appendChild(row(r,i)); }); v.appendChild(h('div',{class:'tw'},[tb])); recalc();
+  if(!ME.admin) v.appendChild(h('button',{class:'btn',text:'Restaurar valores da tabela base',onclick:function(){ restorePrecos(); showTab('precos'); }}));
+  if(ME.admin) v.appendChild(h('button',{class:'btn',text:'+ Adicionar linha',onclick:function(){ D.precos.push({nome:'Nova linha',auto:'',pontos:'',periodo:'4 semanas',insercoes:'',insPor:'',v2:1,tabela:'',desc:'',modo:'geral'}); dirty(); showTab('precos'); }}));
+}
+
+/* ---------- gerar ---------- */
+function viewGerar(v){
+  v.appendChild(h('h2',{text:'Gerar'}));
+  v.appendChild(h('p',{class:'hint',text:'Os mapas são gerados na hora a partir das coordenadas (precisa de internet). O PowerPoint sai 100% editável; o PDF sai direto, pronto para enviar.'}));
+  var nsel=D.pontos.filter(function(p){return p.sel}).length;
+  var g=h('div',{class:'gcards'});
+  var c1=h('div',{class:'gcard'},[h('h3',{text:'Mídia kit completo'}),h('p',{class:'hint',text:'Todos os '+D.pontos.length+' pontos cadastrados, com todas as páginas: Mercado Central, Parque Guanabara e Brasília. Sem preços: tabela de preços e investimento só entram na proposta.'})]);
+  var b1=h('div',{class:'bar'}); b1.appendChild(h('button',{class:'btn pri big',text:'⬇ PowerPoint',onclick:function(){ generate('pptx','completo'); }})); b1.appendChild(h('button',{class:'btn big',text:'⬇ PDF',onclick:function(){ generate('pdf','completo'); }})); b1.appendChild(h('button',{class:'btn',text:'Prévia',onclick:function(){ generate('prev','completo'); }})); c1.appendChild(b1);
+  var c2=h('div',{class:'gcard'},[h('h3',{text:'Proposta personalizada'}),h('p',{class:'hint',text:nsel+' ponto(s) marcado(s) na aba de pontos. Só entram as seções, especificações e os preços dos pontos escolhidos (tabela de preços e investimento). Escolha os pontos na aba "Pontos da proposta".'})]);
+  c2.appendChild(field('Cliente / campanha (aparece na capa)',inp(D.kit,'cliente')));
+  var b2=h('div',{class:'bar'}); b2.appendChild(h('button',{class:'btn pri big',text:'⬇ PowerPoint',onclick:function(){ generate('pptx','proposta'); }})); b2.appendChild(h('button',{class:'btn big',text:'⬇ PDF',onclick:function(){ generate('pdf','proposta'); }})); b2.appendChild(h('button',{class:'btn',text:'Prévia',onclick:function(){ generate('prev','proposta'); }})); c2.appendChild(b2);
+  g.appendChild(c1); g.appendChild(c2); v.appendChild(g);
+  v.appendChild(h('p',{id:'gstatus',class:'status'}));
+  v.appendChild(h('div',{id:'prev',class:'prev'}));
+}
+

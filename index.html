@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerador de Mídia Kit · Mega Mídia OOH</title>
+<link rel="icon" href="assets/logoC.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header>
+  <img id="hl" alt="MEGA OOH">
+  <div><h1>Gerador de Mídia Kit</h1><small>Pontos, propostas e mídia kit da Mega Mídia OOH</small></div>
+  <span id="who"></span>
+  <button id="bell" class="bell" type="button" title="Sugestões pendentes" hidden>🔔 <b id="bellN">0</b></button>
+  <span id="saved"></span>
+</header>
+<div id="banner" hidden></div>
+<nav id="tabs"></nav>
+<main id="view"></main>
+<div id="gate"></div>
+<div id="toast" class="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/vendor/pptxgen.bundle.js"></script>
+<script src="js/vendor/jspdf.umd.js"></script>
+<script src="js/lib-index.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/suggestions.js"></script>
+<script src="js/history.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/users.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>boot();</script>
+</body>
+</html>
