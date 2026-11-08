@@ -531,6 +531,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   push(S);
 
   // 4 BH
+  if(full||bhCount>0){
   S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Pontos ativos por formato');
   skyline(S,7.3,0.95,5.43,0.95,{dark:false});
   [['led_bh','Painéis de LED'],['banca_led','Bancas de LED'],['empena','Empenas'],['front','Painéis frontlight'],['mensal','Painéis mensais'],['revista','Bancas Estáticas']].forEach(function(t,i){
@@ -539,6 +540,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
     S.rect(x+0.3,y+0.3,0.4,0.05,{fill:C.PINK}); S.text(x+0.25,y+0.42,3.3,1.2,big,{size:60,f:'M',color:first?C.WHITE:C.NAVY,valign:'m'}); S.text(x+0.28,y+1.58,3.3,0.4,t[1],{size:14,f:'R',color:first?C.WHITE:C.MID}); });
   push(S);
 
+  }
   // separadores + fichas
   var order=[1,2]; 
   function sepAndFichas(i,secs,g){ CG=g; if(full||secs.some(has)) push(separator(D,A,SEPS[i-1])); secs.forEach(function(s){ ptsOf(D,s).forEach(function(p){ push(ficha(D,A,p)); }); }); }

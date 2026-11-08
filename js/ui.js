@@ -256,7 +256,7 @@ function viewFluxo(v,tipo){
     panel.appendChild(h('h3',{text:'Tudo pronto'})); panel.appendChild(sm);
     var md=comp?'completo':mode, b=h('div',{class:'bar'});
     b.appendChild(h('button',{class:'btn pri big',text:'⬇ PowerPoint',onclick:function(){ generate('pptx',md); }})); b.appendChild(h('button',{class:'btn big',text:'⬇ PDF',onclick:function(){ generate('pdf',md); }})); b.appendChild(h('button',{class:'btn',text:'Prévia',onclick:function(){ generate('prev',md); }})); panel.appendChild(b);
-    panel.appendChild(h('p',{class:'hint',text:'O PowerPoint sai editável; o PDF sai pronto para enviar. Fica salvo em "Minhas propostas".'}));
+    panel.appendChild(h('p',{class:'hint',text:'Dica: clique em Prévia para ver as páginas e remover as que não quiser antes de baixar. O PowerPoint sai editável; o PDF sai pronto para enviar.'}));
     panel.appendChild(h('p',{id:'gstatus',class:'status'})); panel.appendChild(h('div',{id:'prev',class:'prev'}));
   }
   var nav=h('div',{class:'fnav'});

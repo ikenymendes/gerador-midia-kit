@@ -156,14 +156,27 @@ async function prepare(setStatus,mode){
 async function download(blob,name){ var u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); URL.revokeObjectURL(u); },4000); }
 function safeName(){ return (D.kit.titulo||'Midia_Kit').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\-]+/g,'_'); }
 var lastSlides=null;
+var PAG={sig:'',off:new Set()};
+function sigPag(mode,n){ return mode+'|'+D.pontos.filter(function(p){return p.sel}).map(function(p){return p.id}).join(',')+'|'+n; }
 async function generate(kind,mode){ mode=mode||'completo'; var nsel=D.pontos.filter(function(p){return p.sel}).length; if((mode==='proposta'||mode==='kit')&&!nsel){ var st0=$('#gstatus'); st0.textContent='Escolha ao menos um ponto no passo "Pontos" para gerar.'; st0.className='status err'; return; }
   var st=$('#gstatus'); var set=function(t,c){ st.textContent=t; st.className='status '+(c||''); };
   try{
-    await fontsReady(); var A=await prepare(set,mode); var slides=buildSlides(D,A,mode); lastSlides=slides;
+    await fontsReady(); var A=await prepare(set,mode); var slides=buildSlides(D,A,mode); var sg=sigPag(mode,slides.length);
+    if(kind!=='prev'&&PAG.sig===sg&&PAG.off.size){ slides=slides.filter(function(s,i){ return !PAG.off.has(i); }); slides.forEach(function(s,i){ if(s.pn) s.pn.str=(i+1<10?'0':'')+(i+1); }); }
+    lastSlides=slides;
     if(A.mapFail) set('','err');
     if(kind==='pptx'){ set('Montando PowerPoint (editável)…'); var b=await buildPptx(slides,{title:D.kit.titulo}); var bk=await logProposta('pptx',mode); await download(b,safeName()+(mode==='proposta'||mode==='kit'?(mode==='kit'?'_MidiaKit':'_Proposta')+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pptx'); set('PowerPoint gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
     else if(kind==='pdf'){ var b2=await buildPdf(slides,function(i,n){ set('Gerando PDF… página '+i+'/'+n); }); var bk=await logProposta('pdf',mode); await download(b2,safeName()+(mode==='proposta'||mode==='kit'?(mode==='kit'?'_MidiaKit':'_Proposta')+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pdf'); set('PDF gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
-    else { var box=$('#prev'); box.innerHTML=''; for(var i=0;i<slides.length;i++){ var cv=document.createElement('canvas'); renderCanvas(slides[i],cv,520); var f=document.createElement('figure'); f.appendChild(cv); var cap=document.createElement('figcaption'); cap.textContent=(i+1); f.appendChild(cap); box.appendChild(f); if(i%4==3) await new Promise(function(r){setTimeout(r,0)}); } set('Prévia pronta: '+slides.length+' páginas.','ok'); }
+    else { var box=$('#prev'); box.innerHTML=''; PAG={sig:sg,off:new Set()};
+      var tb=document.createElement('div'); tb.className='ptool'; var info=document.createElement('span'); tb.appendChild(info);
+      function upd(){ var n=slides.length-PAG.off.size; info.textContent=n+' de '+slides.length+' páginas vão no arquivo'+(PAG.off.size?' · '+PAG.off.size+' removida'+(PAG.off.size>1?'s':''):'')+'. Clique em ✕ para remover uma página.'; b1.textContent='⬇ PowerPoint ('+n+')'; b2.textContent='⬇ PDF ('+n+')'; b1.disabled=b2.disabled=!n; }
+      var b1=document.createElement('button'); b1.type='button'; b1.className='btn pri'; b1.onclick=function(){ generate('pptx',mode); };
+      var b2=document.createElement('button'); b2.type='button'; b2.className='btn'; b2.onclick=function(){ generate('pdf',mode); };
+      tb.appendChild(b1); tb.appendChild(b2); box.appendChild(tb);
+      for(var i=0;i<slides.length;i++){ (function(i){ var cv=document.createElement('canvas'); renderCanvas(slides[i],cv,520); var f=document.createElement('figure'); f.appendChild(cv); var cap=document.createElement('figcaption'); cap.textContent=(i+1); f.appendChild(cap);
+        var x=document.createElement('button'); x.type='button'; x.className='pgx'; x.textContent='✕'; x.title='Remover esta página'; x.onclick=function(){ if(PAG.off.has(i)){ PAG.off.delete(i); f.classList.remove('off'); x.textContent='✕'; x.title='Remover esta página'; } else { PAG.off.add(i); f.classList.add('off'); x.textContent='↺'; x.title='Voltar com a página'; } upd(); };
+        f.appendChild(x); box.appendChild(f); })(i); if(i%4==3) await new Promise(function(r){setTimeout(r,0)}); }
+      upd(); set('Prévia pronta: '+slides.length+' páginas. Remova as que não quiser e baixe.','ok'); }
   }catch(e){ console.error(e); set('Erro ao gerar: '+(e&&e.message||e),'err'); }
 }
 function fontsReady(){ return Promise.all(['400 20px "Poppins Light"','400 20px "Poppins"','700 20px "Poppins"','400 20px "Poppins Medium"'].map(function(f){ return document.fonts.load(f); })); }

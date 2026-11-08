@@ -356,3 +356,9 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 }
 
 .fnav .btn{white-space:nowrap}.fnav .btn:disabled{opacity:.55}
+
+/* ===== remover páginas na prévia ===== */
+.ptool{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:0 6px 18px #00006618}
+.ptool span{flex:1 1 220px;font-size:13px;color:var(--mid)}
+.pgx{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:#fff;color:var(--pink);font:700 15px/1 Poppins,sans-serif;box-shadow:0 4px 12px #00003d40;cursor:pointer}
+.prev figure.off canvas{opacity:.28;filter:grayscale(1)}.prev figure.off figcaption{text-decoration:line-through}.prev figure.off .pgx{background:var(--navy);color:#fff}
