@@ -140,6 +140,7 @@ function telaPendente(papel){
   if(unsubPerfil) unsubPerfil(); unsubPerfil=Store.assinar('profiles',function(ev){ if(ev.new&&ev.new.id===ME.uid&&ev.new.papel!==papel){ iniciarSessao(); } });
 }
 async function sairDoGerador(){
+  try{ sessionStorage.removeItem('mk_bv'); }catch(e){}
   try{ await Store.sair(); }catch(e){}
   try{ location.reload(); }catch(e){}
 }
