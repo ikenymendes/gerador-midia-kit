@@ -1,4 +1,7 @@
 /* Tela de acesso: login, primeiro cadastro, espera de liberação e saída. */
+function carro(cor){ return '<path d="M0 548 L0 540 Q2 535 10 535 L20 528 Q24 526 34 526 L48 526 Q54 527 58 535 L68 536 Q72 538 72 548 Z" fill="'+cor+'"/><path d="M24 535 L28 529 L38 529 L38 535 Z M42 535 L42 529 L49 529 L53 535 Z" fill="#0a0a50"/><circle cx="16" cy="548" r="6" fill="#05052e" stroke="#9a9aff" stroke-width="2"/><circle cx="56" cy="548" r="6" fill="#05052e" stroke="#9a9aff" stroke-width="2"/><path d="M72 540 L150 530 L150 556 Z" fill="#fff" opacity=".16"/><rect x="69" y="538" width="4" height="4" rx="2" fill="#fff8c0"/>'; }
+function onibus(){ return '<rect x="0" y="512" width="150" height="36" rx="7" fill="#1c1c9a"/><rect x="8" y="517" width="92" height="22" rx="3" fill="#05052e"/><rect class="bustxt" x="8" y="517" width="92" height="22" rx="3" fill="#ff0066" opacity=".85"/><text x="54" y="533" text-anchor="middle" class="bt" style="font-size:11px">MEGA OOH</text><rect x="106" y="517" width="14" height="14" rx="2" fill="#7a7aff" opacity=".5"/><rect x="124" y="517" width="20" height="14" rx="2" fill="#7a7aff" opacity=".5"/><circle cx="28" cy="548" r="7" fill="#05052e" stroke="#9a9aff" stroke-width="2"/><circle cx="122" cy="548" r="7" fill="#05052e" stroke="#9a9aff" stroke-width="2"/>'; }
+function estrelas(){ var o=''; for(var i=0;i<26;i++){ o+='<circle class="st" style="animation-delay:'+((i*0.37)%4).toFixed(1)+'s" cx="'+((i*97)%900-60)+'" cy="'+(12+(i*41)%200)+'" r="'+(i%3?1.2:1.8)+'" fill="#fff"/>'; } return o; }
 function cenaSvg(logo){
   var win=''; for(var i=0;i<46;i++){ var x=18+((i*53)%700), y=330+((i*37)%170); win+='<rect class="tw" style="animation-delay:'+((i*0.7)%6).toFixed(1)+'s" x="'+x+'" y="'+y+'" width="5" height="7" rx="1"/>'; }
   function banca(x,d,tit){ return '<g transform="translate('+x+',0)"><rect x="4" y="522" width="104" height="8" rx="3" fill="#06063a"/>'+
@@ -16,10 +19,10 @@ function cenaSvg(logo){
   '<linearGradient id="gScr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a0a62"/><stop offset="1" stop-color="#1a1ab0"/></linearGradient>'+
   '<linearGradient id="gTr" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>'+
   '<clipPath id="cScr"><rect x="150" y="64" width="460" height="222" rx="4"/></clipPath><clipPath id="cPol"><rect x="572" y="338" width="96" height="46" rx="3"/></clipPath></defs>'+
-  '<g fill="#0b0b5e" opacity=".9"><rect x="0" y="330" width="70" height="200"/><rect x="82" y="290" width="54" height="240"/><rect x="146" y="350" width="40" height="180"/><rect x="580" y="300" width="60" height="230"/><rect x="650" y="340" width="52" height="190"/><rect x="712" y="310" width="48" height="220"/></g>'+win+
+  estrelas()+'<g fill="#0b0b5e" opacity=".9"><rect x="0" y="330" width="70" height="200"/><rect x="82" y="290" width="54" height="240"/><rect x="146" y="350" width="40" height="180"/><rect x="580" y="300" width="60" height="230"/><rect x="650" y="340" width="52" height="190"/><rect x="712" y="310" width="48" height="220"/></g>'+win+
   '<rect x="-500" y="530" width="1760" height="30" fill="#04042b"/><rect x="-500" y="530" width="1760" height="3" fill="#ff0066" opacity=".8"/>'+
   '<line class="road" x1="-500" y1="548" x2="1260" y2="548" stroke="#6b6bd6" stroke-width="2" stroke-dasharray="26 22"/>'+
-  '<rect class="car c1" x="-160" y="539" width="130" height="4" rx="2" fill="url(#gTr)"/><rect class="car c2" x="-160" y="553" width="90" height="3" rx="2" fill="url(#gTr)"/>'+
+  '<g class="veh v1">'+carro('#ff0066')+'</g><g class="veh v2">'+carro('#7a7aff')+'</g><g class="veh v3">'+onibus()+'</g>'+
   '<rect x="372" y="286" width="16" height="246" fill="#2f2f9a"/><rect x="360" y="520" width="40" height="10" rx="3" fill="#1b1b78"/>'+
   '<rect x="138" y="52" width="484" height="246" rx="10" fill="#10106e" stroke="#4a4ac8" stroke-width="3"/>'+
   '<rect x="150" y="64" width="460" height="222" rx="4" fill="url(#gScr)"/>'+

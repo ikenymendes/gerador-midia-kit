@@ -12,7 +12,7 @@ var TABS=TABS_ADMIN, uSub=[], unsubs=[], pendentes=0, ignorarRt=0, pollTimer=nul
 
 function showTab(t){
   curTab=t; document.body.classList.remove('nav-open'); uSub.forEach(function(f){ try{f();}catch(e){} }); uSub=[];
-  document.querySelectorAll('.tab').forEach(function(b){ b.classList.toggle('on',b.dataset.t===t); });
+  document.querySelectorAll('.tab,.bt').forEach(function(b){ if(b.dataset.t) b.classList.toggle('on',b.dataset.t===t); });
   var v=$('#view'); v.innerHTML='';
   var fn=({dash:viewDashboard,kit:viewKit,pontos:viewPontos,sel:viewSelecao,sug:viewSugestoes,minhas:viewMinhasSugestoes,hist:viewHistorico,usuarios:viewUsuarios,
     mercado:function(v){viewSchema(v,'mercado',MERC)},guanabara:function(v){viewSchema(v,'guanabara',GUAN)},brasilia:function(v){viewSchema(v,'brasilia',BRAS)},
@@ -37,13 +37,20 @@ function montarAbas(){
     b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONES[t[3]]||'')+'</svg><span class="lbl"></span><b class="cnt" hidden></b>';
     b.querySelector('.lbl').textContent=t[1]; nav.appendChild(b);
   });
+  montarBarraInferior();
+}
+var BN_CURTO={dash:'Início',pontos:'Pontos',sel:'Pontos',sug:'Sugestões',precos:'Preços',gerar:'Gerar',minhas:'Sugestões',hist:'Propostas'};
+function montarBarraInferior(){
+  var bn=$('#bnav'); bn.innerHTML=''; var ids=ME.admin?['dash','pontos','sug','precos','gerar']:['sel','precos','gerar','minhas','hist'];
+  ids.forEach(function(id){ var t=TABS.filter(function(x){return x[0]===id})[0]; if(!t) return; var b=h('button',{type:'button',class:'bt',onclick:function(){ showTab(id); }}); b.dataset.t=id; b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(ICONES[t[3]]||'')+'</svg><span></span><b class="cnt" hidden></b>'; b.querySelector('span').textContent=BN_CURTO[id]||t[1]; bn.appendChild(b); });
+  if(ME.admin){ var m=h('button',{type:'button',class:'bt',onclick:function(){ document.body.classList.toggle('nav-open'); }}); m.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Mais</span>'; bn.appendChild(m); }
 }
 
 async function atualizarPendentes(){
   if(!ME.admin) return;
   try{ pendentes=await Store.contarPendentes(); }catch(e){ return; }
   var bn=$('#bellN'); if(bn){ bn.textContent=pendentes; $('#bell').classList.toggle('on',pendentes>0); }
-  var cnt=document.querySelector('.tab[data-t=sug] .cnt'); if(cnt){ cnt.textContent=pendentes; cnt.hidden=!pendentes; }
+  document.querySelectorAll('.tab[data-t=sug] .cnt,.bt[data-t=sug] .cnt').forEach(function(cnt){ cnt.textContent=pendentes; cnt.hidden=!pendentes; });
   document.title=(pendentes?'('+pendentes+') ':'')+'Gerador de Mídia Kit · Mega Mídia OOH';
 }
 

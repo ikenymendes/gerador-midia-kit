@@ -195,8 +195,8 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 /* ---------- telas menores ---------- */
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.kpi{border-top:1px solid var(--line)}.kpi:nth-child(-n+3){border-top:0}.kpi:nth-child(4){border-left:0}.dgrid{grid-template-columns:1fr}}
 @media(max-width:900px){
-  .side{transform:translateX(-100%);transition:transform .25s;box-shadow:0 0 60px #0006}
-  body.nav-open .side{transform:none}
+  .side{transform:translateX(-100%);transition:transform .25s}
+  body.nav-open .side{transform:none;box-shadow:0 0 60px #0006}
   body.nav-open::after{content:'';position:fixed;inset:0;background:#00003d77;z-index:25}
   .main{margin-left:0}.topbar{padding:0 16px}#menu{display:grid;place-items:center}
   main{padding:24px 16px 80px}#banner{padding:10px 16px}h2{font-size:25px}
@@ -231,15 +231,57 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .cena .bnr{animation:bnr 8s linear infinite}
 .cena .tw{fill:#ffd96a;opacity:.1;animation:twk 6s ease-in-out infinite}
 .cena .road{animation:road 1s linear infinite}
-.cena .car{animation:car 5s linear infinite}.cena .c2{animation-duration:8s;animation-delay:-3s}
+.cena .veh{animation:drive 7s linear infinite;transform:translateX(-200px)}.cena .v2{animation-duration:11s;animation-delay:-4s}.cena .v3{animation-duration:16s;animation-delay:-9s}
+.cena .bustxt{animation:pulse 2.2s ease-in-out infinite}.cena .st{animation:twk 4s ease-in-out infinite}
+.cena .big,.cena .clk{animation:glow 3s ease-in-out infinite}
 @keyframes slide{0%{opacity:0;transform:translateY(8px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
 @keyframes scan{from{transform:translateX(-120px)}to{transform:translateX(560px)}}
 @keyframes bnr{from{transform:translateY(0)}to{transform:translateY(-144px)}}
 @keyframes marq{from{transform:translateX(0)}to{transform:translateX(-520px)}}
 @keyframes blink{50%{opacity:.2}}@keyframes twk{50%{opacity:.85}}
-@keyframes road{to{stroke-dashoffset:-48}}@keyframes car{from{transform:translateX(0)}to{transform:translateX(1000px)}}
+@keyframes road{to{stroke-dashoffset:-48}}@keyframes drive{from{transform:translateX(-200px)}to{transform:translateX(1000px)}}@keyframes pulse{50%{opacity:.35}}@keyframes glow{50%{filter:brightness(1.35)}}
 @media(max-width:900px){.ghtxt{display:block;padding:26px 20px 40px}.scene{margin:14px 0}.cena{height:auto}.ghfoot h1{font-size:20px}}
-@media(prefers-reduced-motion:reduce){.cena *{animation:none!important}.cena .s1{opacity:1}}
 .pw{position:relative}.pw input{padding-right:46px}.pw .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:16px;padding:6px;opacity:.6}.pw .eye:hover{opacity:1}
 .newuser{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:0 0 26px}.newuser h3{margin:0 0 4px}
 .cred{display:grid;gap:8px;background:var(--bg,#f4f4fa);border-radius:12px;padding:14px 16px;margin:6px 0 12px}.cred div{display:flex;justify-content:space-between;gap:12px}.cred span{color:var(--mid)}
+
+/* ---------- celular: barra inferior, cartões e toques maiores ---------- */
+#bnav,.fab{display:none}
+@media(max-width:900px){
+  #bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 24px #00003d14;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  #gate:not([hidden])~#bnav{display:none}
+  #bnav .bt{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:8px 2px 6px;border-radius:12px;color:var(--mid);font:500 11px var(--sans);cursor:pointer;min-height:56px}
+  #bnav .bt svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  #bnav .bt.on{color:var(--pink);background:var(--pink-bg)}
+  #bnav .bt .cnt{position:absolute;top:2px;left:calc(50% + 6px);background:var(--pink);color:#fff;font-size:10.5px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 5px}
+  #bnav .bt .cnt[hidden]{display:none}
+  main{padding-bottom:130px}
+  input,select,textarea{font-size:16px!important;min-height:46px}
+  .btn{min-height:46px}.mini{min-height:38px;padding:0 14px}
+  .bar{gap:10px}.gcard .bar .btn{flex:1 1 100%}
+  .fab{display:block;position:fixed;left:14px;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:29;min-height:52px;font-size:16px;box-shadow:0 10px 30px #ff006655}
+  .fab:disabled{background:#fff;color:var(--mid);border:1px solid var(--line);box-shadow:0 6px 20px #00003d18;opacity:1}
+  .toast{bottom:150px}
+  .tw:has(.ptab){overflow:visible;border:0;background:none;box-shadow:none}
+  .ptab{min-width:0!important;display:block}.ptab thead{display:none}.ptab tbody,.ptab tfoot{display:block}
+  .ptab tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  .ptab tbody td{display:block;padding:0;border:0;min-width:0}
+  .ptab tbody td[data-l]::before{content:attr(data-l);display:block;font:500 12px var(--sans);color:var(--mid);margin-bottom:4px}
+  .ptab tbody td:nth-child(1),.ptab tbody td:nth-child(3){grid-column:1/-1}
+  .ptab td input,.ptab td select{min-width:0!important;width:100%!important;height:46px}
+  .ptab tbody td.calc{font-size:15px}.ptab tbody td.val{grid-column:1/-1;font-size:20px;background:var(--pink-bg);border-radius:10px;padding:10px 12px;color:var(--navy)}
+  .ptab tbody td:not([data-l]){display:none}
+  .ptab tfoot tr{display:block;border-radius:16px;overflow:hidden}.ptab tfoot td{display:block;padding:10px 14px}
+}
+@media(max-width:900px){
+  .gslash{display:none}
+  .ghero{clip-path:none;margin-bottom:0}
+  .gform{position:relative;padding-top:56px;background:#fff}
+  .gform::before{content:'';position:absolute;top:0;left:0;right:0;height:36px;background:linear-gradient(to bottom right,var(--navy) 49%,var(--pink) 49%,var(--pink) 51.5%,#fff 51.5%)}
+  .gbox h2{font-size:26px}
+}
+
+@media(max-width:900px){
+  .dica-longa{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .ptab tbody tr:hover td,.ptab tbody td{background:transparent}.ptab tbody td.val{background:var(--pink-bg)}
+}

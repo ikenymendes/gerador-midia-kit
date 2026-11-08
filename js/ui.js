@@ -9,8 +9,9 @@ function viewSelecao(v){
   v.appendChild(h('p',{class:'hint',text:'Você não altera endereços diretamente. Para incluir ou corrigir um ponto, use "Sugerir": o administrador recebe o aviso, confere e aplica.'}));
   var mk=h('input',{type:'checkbox'}), mtx=h('span',{}); v.appendChild(h('label',{class:'selall'},[mk,mtx]));
   var list=h('div',{class:'plist'}); v.appendChild(list);
+  var fab=h('button',{type:'button',class:'fab btn pri',onclick:function(){ showTab('precos'); }}); v.appendChild(fab);
   function vis(){ return D.pontos.filter(matchP); }
-  function ref(){ var Lst=vis(), n=Lst.filter(function(p){return p.sel}).length; mk.checked=Lst.length>0&&n===Lst.length; mk.indeterminate=n>0&&n<Lst.length; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+Lst.length+' marcados  ('+D.pontos.filter(function(p){return p.sel}).length+' no total)'; }
+  function ref(){ var Lst=vis(), n=Lst.filter(function(p){return p.sel}).length; mk.checked=Lst.length>0&&n===Lst.length; mk.indeterminate=n>0&&n<Lst.length; var tot=D.pontos.filter(function(p){return p.sel}).length; fab.textContent=tot?'Continuar com '+tot+' ponto'+(tot>1?'s':'')+' · Preços':'Marque os pontos da proposta'; fab.disabled=!tot; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+Lst.length+' marcados  ('+D.pontos.filter(function(p){return p.sel}).length+' no total)'; }
   function draw(){ list.innerHTML=''; var n=0; vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
   fsel.addEventListener('change',function(){ filtro=fsel.value; draw(); });
   bs.addEventListener('input',function(){ busca=bs.value; draw(); });
@@ -156,7 +157,7 @@ function pointCard(p,ix){
 /* ---------- preços ---------- */
 function viewPrecos(v){ migPrecos(D);
   v.appendChild(h('h2',{text:'Tabela de preços e investimento'}));
-  v.appendChild(h('p',{class:'hint',text:'Preencha valor de tabela e desconto: o valor negociado, o total e a página de Investimento Total são calculados sozinhos. O valor é bruto ou líquido para todas as linhas (campo acima). Pontos vêm da contagem dos pontos cadastrados (Mercado Central e Parque Guanabara usam o número de telas). Inserções: digite por ativo/tela e o total é calculado (pontos × inserções).'}));
+  v.appendChild(h('p',{class:'hint dica-longa',text:'Preencha valor de tabela e desconto: o valor negociado, o total e a página de Investimento Total são calculados sozinhos. O valor é bruto ou líquido para todas as linhas (campo acima). Pontos vêm da contagem dos pontos cadastrados (Mercado Central e Parque Guanabara usam o número de telas). Inserções: digite por ativo/tela e o total é calculado (pontos × inserções).'}));
   var top=h('div',{class:'grid'}), ms=h('select',{},[['bruto','Bruto'],['liquido','Líquido (desconta comissão da agência e BV)']].map(function(o){ var op=h('option',{value:o[0],text:o[1]}); if(D.modoGeral===o[0]) op.selected=true; return op; })); ms.addEventListener('change',function(){ D.modoGeral=ms.value; dirty(); recalc(); });
   top.appendChild(field('Valor padrão do kit',ms)); top.appendChild(field('Comissão da agência (%)',inp(D,'comissao',{num:true,onchange:recalc}))); top.appendChild(field('BV à parte (%)',inp(D,'bv',{num:true,onchange:recalc}))); v.appendChild(top);
   var tb=h('table',{class:'ptab'}); tb.appendChild(h('thead',{},[h('tr',{},['Formato','Pontos','Período','Inserções por ativo/tela','Total inserções','Valor tabela (R$)','Desconto (%)','Valor negociado','',''].map(function(t){return h('th',{text:t})}))]));
@@ -167,7 +168,7 @@ function viewPrecos(v){ migPrecos(D);
     var cs=h('td',{class:'calc val'}); tr.appendChild(cs);
     if(!ME.admin){ td(h('span')); td(h('span')); return tr; }
     td(h('button',{class:'mini',text:'↑',onclick:function(){ if(i>0){ D.precos.splice(i-1,0,D.precos.splice(i,1)[0]); dirty(); showTab('precos'); } }})); td(h('button',{class:'mini del',text:'×',onclick:function(){ askPin('Excluir linha de preço',r.nome).then(function(ok){ if(!ok) return; var k=D.precos.indexOf(r); if(k>=0) D.precos.splice(k,1); dirty(); showTab('precos'); }); }})); return tr; }
-  D.precos.forEach(function(r,i){ body.appendChild(row(r,i)); }); v.appendChild(h('div',{class:'tw'},[tb])); recalc();
+  var ROT=['Formato','Pontos','Período','Inserções por ativo/tela','Total inserções','Valor tabela (R$)','Desconto (%)','Valor negociado']; D.precos.forEach(function(r,i){ var tr=row(r,i); ROT.forEach(function(l,k){ if(tr.children[k]) tr.children[k].setAttribute('data-l',l); }); body.appendChild(tr); }); v.appendChild(h('div',{class:'tw'},[tb])); recalc();
   if(!ME.admin) v.appendChild(h('button',{class:'btn',text:'Restaurar valores da tabela base',onclick:function(){ restorePrecos(); showTab('precos'); }}));
   if(ME.admin) v.appendChild(h('button',{class:'btn',text:'+ Adicionar linha',onclick:function(){ D.precos.push({nome:'Nova linha',auto:'',pontos:'',periodo:'4 semanas',insercoes:'',insPor:'',v2:1,tabela:'',desc:'',modo:'geral'}); dirty(); showTab('precos'); }}));
 }
