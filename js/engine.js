@@ -502,7 +502,12 @@ function specSlide(A,kicker,title,sub,rows,colw,drawFn,caption,chipItems,o){
   chips(S,1.95+ch+0.25,(chipItems||[]).map(function(c){ return [c[0],minLbl(c[0],c[1])]; })); return S;
 }
 /* uma linha por ponto (endereço · bairro) */
-function groupSpec(pts,withVeic,maxc){ maxc=maxc||60;
+function groupSpec(pts,withVeic,maxc,label){ maxc=maxc||60;
+  var N=function(v){ return String(v||'').replace(/\s+/g,'').toLowerCase(); };
+  if(label&&pts.length>1){ var gr=[], idx={};
+    pts.forEach(function(p){ var key=N(p.tamanho)+'|'+N(p.pixels)+'|'+(withVeic?N(p.veic):''); if(!(key in idx)){ idx[key]=gr.length; gr.push(p); } });
+    return gr.map(function(q){ var r0=[label+(q.tamanho?' · '+q.tamanho:''),q.tamanho||'—',q.pixels||'—']; if(withVeic) r0.push(q.veic||'—'); return r0; });
+  }
   return pts.map(function(p){ var loc=(p.endereco||'')+(p.bairro?' · '+p.bairro:''); if(loc.length>maxc) loc=loc.slice(0,maxc-1).trim()+'…'; var r=[loc,p.tamanho||'—',p.pixels||'—']; if(withVeic) r.push(p.veic||'—'); return r; });
 }
 function specPages(push,A,kick,sub,head,rows,colw,drawFn,cap,chips,o){ var per=7, nch=Math.max(1,Math.ceil(rows.length/per));
@@ -570,10 +575,10 @@ function buildSlides(D0,A,mode){ migKit(D0);
   function sepAndFichas(i,secs,g){ CG=g; if(full||secs.some(has)) push(separator(D,A,SEPS[i-1])); secs.forEach(function(s){ ptsOf(D,s).forEach(function(p){ push(ficha(D,A,p)); }); }); }
   sepAndFichas(2,['led_mega','led_r2'],2);
   // especificações LED
-  var ledRows=groupSpec(ptsOf(D,'led_mega').concat(ptsOf(D,'led_r2')),false);
+  var ledRows=groupSpec(ptsOf(D,'led_mega').concat(ptsOf(D,'led_r2')),false,0,'Painéis de LED');
   specPages(push,A,NP(2)+' · Painéis de LED','Belo Horizonte e região metropolitana',['Local','Tamanho','Formato (px)'],ledRows,[4.4,1.5,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.4,dims:['Largura','Altura']});},'Tamanho em metros · formato em pixels (resolução do arquivo).',D.specChips.led);
   sepAndFichas(4,['banca_mega','banca_r2'],3);
-  var bRows=groupSpec(ptsOf(D,'banca_mega').concat(ptsOf(D,'banca_r2')),true,50);
+  var bRows=groupSpec(ptsOf(D,'banca_mega').concat(ptsOf(D,'banca_r2')),true,50,'Bancas de LED');
   specPages(push,A,NP(4)+' · Bancas de LED','Belo Horizonte e região metropolitana',['Local','Tamanho','Formato (px)','Veic./dia'],bRows,[3.7,1.5,1.4,1.2],function(S,x,y,w,h){bancaDraw(S,x,y,w,h,{dark:false,dims:['Largura','Altura']});},'Banca com tela de LED na frente e na lateral.',D.specChips.banca);
 
   // MERCADO
@@ -655,7 +660,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   card(S,0.6,1.95,7.9,4.85,0.2); if(A.mapDF) S.img(0.8,2.15,7.5,4.45,A.mapDF,{r:0.18}); else S.rect(0.8,2.15,7.5,4.45,{fill:'EEF0F8',r:0.18});
   [[String(dfp.length),'painéis de LED em Brasília','navy'],[B.dims[0]+' x '+B.dims[1],'medida de cada painel','white'],[B.veic,'inserções por dia','pink']].forEach(function(t,i){ tile(S,8.7,1.95+i*1.65,4.03,1.5,t[0],t[1],t[2],26,10); });
   push(S);
-  if(dfp.length||full) specPages(push,A,NP(12)+' · Painéis de LED · Brasília','Distrito Federal',['Local','Tamanho','Formato (px)'],groupSpec(dfp,false),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips);
+  if(dfp.length||full) specPages(push,A,NP(12)+' · Painéis de LED · Brasília','Distrito Federal',['Local','Tamanho','Formato (px)'],groupSpec(dfp,false,0,'Painéis de LED · Brasília'),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips);
   dfp.forEach(function(p){ push(ficha(D,A,p)); });
   }
 
