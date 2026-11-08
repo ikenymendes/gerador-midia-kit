@@ -329,7 +329,12 @@ var SEC = {
   df_painel:{nome:'Painéis de LED · Brasília',praca:'',tipo:'Painel de LED',sep:12,tiles:[['INSERÇÕES POR DIA','veic'],['FORMATO (PX)','pixels']]}
 };
 var SEC_ORDER=['led_bh','led_rm','banca_led','empena','front','mensal','revista','mercado','guanabara','metro','df_painel'];
-var CIRCUITOS=['mercado'];
+var CIRCUITOS=['mercado','guanabara'];
+var DONOS=[['padrao','Padrão'],['mega','MEGA'],['mega_r2','MEGA/R2'],['terceiros','Terceiros']];
+function donoDe(p){ return p&&p.dono||'padrao'; }
+function donoNome(k){ var r=DONOS.filter(function(d){return d[0]===k})[0]; return r?r[1]:k; }
+function setCircuito(D,sec,val){ ptsOf(D,sec).forEach(function(p){ p.sel=val; }); }
+function sincCircuitos(D){ CIRCUITOS.forEach(function(k){ var a=ptsOf(D,k); if(a.some(function(p){return p.sel;})) a.forEach(function(p){ p.sel=true; }); }); }
 function vlr(v){ return typeof v==='number'?v:num(v); }
 function ptsOf(D,sec){ return D.pontos.filter(function(p){return p.secao===sec;}); }
 function num(v){ v=parseFloat(String(v).replace(/\./g,'').replace(',','.')); return isNaN(v)?0:v; }

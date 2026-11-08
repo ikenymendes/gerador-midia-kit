@@ -330,3 +330,7 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .mapprev .mpbody{padding:12px 16px 14px}.mapprev .mpimg{display:block;width:100%;max-width:560px;aspect-ratio:1040/720;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#eef0f7}
 .mapprev .mpimg[hidden]{display:none}.mapprev .mpmsg{margin:8px 0 0;font-size:13px;color:var(--mid)}.mapprev .mpmsg.ok{color:#1d7f58}.mapprev .mpmsg.err{color:#b0003a}
 .grid>.mapprev{grid-column:1/-1}
+
+/* ---------- propriedade do ponto ---------- */
+.dono{font-style:normal;font-size:12px;font-weight:600;padding:3px 11px;border-radius:99px;white-space:nowrap}
+.dono.d-mega{background:#000066;color:#fff}.dono.d-mega_r2{background:#e8e6ff;color:#3b2fc9}.dono.d-terceiros{background:#fff1d6;color:#9a5b00}

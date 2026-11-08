@@ -5,18 +5,19 @@ function viewSelecao(v){
   v.appendChild(h('p',{class:'hint',text:'Marque os pontos que entram na proposta personalizada. Para o mídia kit completo, vá direto para a aba Gerar: todos os pontos entram, sem preços.'}));
   var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(filtro===k) o.selected=true; return o; })));
   var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca;
-  bar.appendChild(fsel); bar.appendChild(bs); bar.appendChild(h('button',{class:'btn',type:'button',text:'➕ Sugerir novo ponto',onclick:function(){ abrirFormSugestao('adicionar',null); }})); v.appendChild(bar);
+  var fdn=filtroDonoSel(function(){ draw(); });
+  bar.appendChild(fsel); bar.appendChild(fdn); bar.appendChild(bs); bar.appendChild(h('button',{class:'btn',type:'button',text:'➕ Sugerir novo ponto',onclick:function(){ abrirFormSugestao('adicionar',null); }})); v.appendChild(bar);
   v.appendChild(h('p',{class:'hint',text:'Você não altera endereços diretamente. Para incluir ou corrigir um ponto, use "Sugerir": o administrador recebe o aviso, confere e aplica.'}));
   var mk=h('input',{type:'checkbox'}), mtx=h('span',{}); v.appendChild(h('label',{class:'selall'},[mk,mtx]));
   var list=h('div',{class:'plist'}); v.appendChild(list);
   var fab=h('button',{type:'button',class:'fab btn pri',onclick:function(){ showTab('precos'); }}); v.appendChild(fab);
   function vis(){ return D.pontos.filter(function(p){ return CIRCUITOS.indexOf(p.secao)<0&&matchP(p); }); }
-  function circ(){ return CIRCUITOS.filter(function(k){ if(!ptsOf(D,k).length) return false; if(filtro&&filtro!==k) return false; if(!busca) return true; var t=('circuito '+secLabel(k)+' '+((D[k]&&D[k].circuito)||'')+' '+((D[k]&&D[k].endereco)||'')+(k==='mercado'?' av. augusto de lima centro':'')).toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }); }
+  function circ(){ return CIRCUITOS.filter(function(k){ if(!ptsOf(D,k).length) return false; if(filtro&&filtro!==k) return false; if(filtroDono&&!ptsOf(D,k).some(function(p){return donoDe(p)===filtroDono;})) return false; if(!busca) return true; var t=('circuito '+secLabel(k)+' '+((D[k]&&D[k].circuito)||'')+' '+((D[k]&&D[k].endereco)||'')+(k==='mercado'?' av. augusto de lima centro':'')).toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }); }
   function circSel(k){ var a=ptsOf(D,k); return a.length>0&&a.every(function(p){ return p.sel; }); }
   function contaSel(){ return D.pontos.filter(function(p){ return p.sel&&CIRCUITOS.indexOf(p.secao)<0; }).length+CIRCUITOS.filter(function(k){ return ptsOf(D,k).length&&circSel(k); }).length; }
   function desenhaCirc(){ var cs=circ(); cs.forEach(function(k){ var ck=h('input',{type:'checkbox'}); ck.checked=circSel(k); ck.addEventListener('change',function(){ ptsOf(D,k).forEach(function(p){ p.sel=ck.checked; }); dirty(); ref(); }); var fk=D[k]&&D[k].fotos&&D[k].fotos[0]; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t'},[h('b',{text:'Circuito '+SEC[k].nome}),document.createTextNode(' · '+((D[k]&&D[k].circuito)||'')+' · todas as telas juntas')])); kids.push(h('em',{text:secLabel(k)})); list.appendChild(h('label',{class:'srow circ'},kids)); }); return cs.length; }
   function ref(){ var Lst=vis(), nc=circ(), items=Lst.length+nc.length, n=Lst.filter(function(p){return p.sel}).length+nc.filter(circSel).length; mk.checked=items>0&&n===items; mk.indeterminate=n>0&&n<items; var tot=contaSel(); fab.textContent=tot?'Continuar com '+tot+' ponto'+(tot>1?'s':'')+' · Preços':'Marque os pontos da proposta'; fab.disabled=!tot; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+items+' marcados  ('+tot+' no total)'; }
-  function draw(){ list.innerHTML=''; var n=0, ncirc=desenhaCirc(); vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n&&!ncirc) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
+  function draw(){ list.innerHTML=''; var n=0, ncirc=desenhaCirc(); vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); if(donoDe(p)!=='padrao') kids.push(h('em',{class:'dono d-'+donoDe(p),text:donoNome(donoDe(p))})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n&&!ncirc) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
   fsel.addEventListener('change',function(){ filtro=fsel.value; draw(); });
   bs.addEventListener('input',function(){ busca=bs.value; draw(); });
   mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); circ().forEach(function(k){ ptsOf(D,k).forEach(function(p){ p.sel=val; }); }); dirty(); draw(); });
@@ -81,15 +82,15 @@ var BRAS=[['tiles','pairs','6 indicadores do Metrô-DF: valor | rótulo',6],['ge
 function viewSchema(v,key,schema){ v.appendChild(h('h2',{text:key==='mercado'?'Mercado Central':(key==='guanabara'?'Parque Guanabara':'Brasília · Metrô-DF e painéis')})); v.appendChild(h('p',{class:'hint',text:'Já vem preenchido com os dados do mídia kit atual. Altere o que mudou.'})); var g=h('div',{class:'grid'}); schema.forEach(function(s){ g.appendChild(schemaField(D[key],s)); }); v.appendChild(g); }
 
 /* ---------- pontos ---------- */
-var filtro='', busca='';
-function matchP(p){ if(filtro&&p.secao!==filtro) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
+var filtro='', busca='', filtroDono='';
+function matchP(p){ if(filtro&&p.secao!==filtro) return false; if(filtroDono&&donoDe(p)!==filtroDono) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
 function secLabel(k){ return SEC[k]?SEC[k].nome+(SEC[k].praca?' · '+SEC[k].praca:''):k; }
 function novoPontoPanel(){
   var np={secao:filtro||'led_bh',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
   var d=h('details',{class:'pt novo',id:'novoponto'}); d.open=true; d.appendChild(h('summary',{},[h('span',{class:'t',text:'➕ Adicionar novo ponto'})]));
   var g=h('div',{class:'grid'}), msg=h('p',{class:'status'});
   var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(np.secao===k) o.selected=true; return o; })); sel.addEventListener('change',function(){ np.secao=sel.value; if(np.secao==='metro'||np.secao==='df_painel'){ np.cidade='Brasília-DF'; cid.value=np.cidade; } });
-  g.appendChild(field('Seção / formato do ponto',sel,'Painel de LED, banca de LED, empena, frontlight, painel mensal, banca estática, Metrô-DF…'));
+  g.appendChild(field('Seção / formato do ponto',sel,'Painel de LED, banca de LED, empena, frontlight, painel mensal, banca estática, Metrô-DF…')); g.appendChild(donoField(np));
   var ed=inp(np,'endereco'), ba=inp(np,'bairro'), cid=inp(np,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(np,'lat',{num:true}), lng=inp(np,'lng',{num:true}), res=h('small',{text:''});
@@ -109,7 +110,7 @@ function viewPontos(v){
   v.appendChild(h('h2',{text:'Painel de pontos'})); v.appendChild(h('p',{class:'hint',text:'Cada ponto vira uma ficha no kit. Adicione pontos novos, troque a foto, escolha a seção/formato e cole o link do Maps para buscar latitude e longitude. Exclusões pedem um código de confirmação.'})); v.appendChild(novoPontoPanel());
   var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(filtro===k) o.selected=true; return o; })));
   fsel.addEventListener('change',function(){ filtro=fsel.value; showTab('pontos'); });
-  bar.appendChild(fsel);
+  bar.appendChild(fsel); bar.appendChild(filtroDonoSel(function(){ showTab('pontos'); }));
   var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca; bs.addEventListener('input',function(){ busca=bs.value; if(window.drawList) window.drawList(); }); bar.appendChild(bs);
   function setSel(v){ D.pontos.forEach(function(p){ if(!filtro||p.secao===filtro) p.sel=v; }); dirty(); showTab('pontos'); }
   bar.appendChild(h('button',{class:'btn',text:'✓ Marcar todos'+(filtro?' desta seção':''),onclick:function(){ setSel(true); }}));
@@ -122,7 +123,7 @@ function viewPontos(v){
   var vis=function(){ return D.pontos.filter(matchP); };
   var mk=h('input',{type:'checkbox'}), mtx=h('span',{});
   function refMaster(){ var L=vis(), n=L.filter(function(p){return p.sel}).length; mk.checked=L.length>0&&n===L.length; mk.indeterminate=n>0&&n<L.length; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+L.length+' marcados  ('+D.pontos.filter(function(p){return p.sel}).length+' no total)'; }
-  mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); document.querySelectorAll('details.pt input[type=checkbox]').forEach(function(c){ if(c.closest('details.pt').style.display!=='none') c.checked=val; }); dirty(); refMaster(); });
+  mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); document.querySelectorAll('details.pt input[type=checkbox]').forEach(function(c){ if(c.closest('details.pt').style.display!=='none') c.checked=val; }); var cv=CIRCUITOS.filter(function(k){ return vis().some(function(p){ return p.secao===k; }); }); cv.forEach(function(k){ setCircuito(D,k,val); }); dirty(); if(cv.length){ var y0=window.scrollY; showTab('pontos'); window.scrollTo(0,y0); } else refMaster(); });
   window.refMaster=refMaster;
   v.appendChild(h('label',{class:'selall'},[mk,mtx])); refMaster();
   // importação
@@ -140,14 +141,14 @@ function importText(t){ var n=0; t.split(/\r?\n/).forEach(function(line){ if(!li
   D.pontos.push({id:newId(),sel:true,secao:normSec(c[0]),endereco:c[1]||'',bairro:c[2]||'',cidade:c[3]||'',lat:ll?ll.lat:null,lng:ll?ll.lng:null,zoom:16,tamanho:c[5]||'',pixels:c[6]||'',veic:c[7]||'',publico:c[8]||'',fluxo:c[9]||'',impacto:c[10]||'',sentido:c[11]||'',foto:(c[12]&&libSrc(c[12]))?(D.libMap&&D.libMap[c[12]]||c[12]):null}); n++; }); return n; }
 function pointCard(p,ix){
   var d=h('details',{class:'pt'}), sm=h('summary'), title=h('span',{class:'t'}), badge=h('em',{text:SEC[p.secao]?SEC[p.secao].nome:''});
-  function upd(){ title.textContent=(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:''); badge.textContent=secLabel(p.secao); st.textContent=(p.lat!=null&&!isNaN(p.lat))?'📍 mapa ok':'sem coordenadas'; st.className='st '+((p.lat!=null&&!isNaN(p.lat))?'ok':'no'); }
-  var st=h('span',{class:'st'}); var ck=h('input',{type:'checkbox',title:'Incluir na proposta'}); ck.checked=!!p.sel; ck.addEventListener('click',function(e){ e.stopPropagation(); }); ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); if(window.refMaster) window.refMaster(); var cc=document.querySelectorAll('.hint'); }); var cl=h('label',{class:'ck',title:'Incluir na proposta'},[ck,h('span',{text:'proposta'})]); cl.addEventListener('click',function(e){ e.stopPropagation(); }); sm.appendChild(cl); sm.appendChild(badge); sm.appendChild(title); sm.appendChild(st);
+  function upd(){ title.textContent=(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:''); badge.textContent=secLabel(p.secao)+(donoDe(p)!=='padrao'?' · '+donoNome(donoDe(p)):''); st.textContent=(p.lat!=null&&!isNaN(p.lat))?'📍 mapa ok':'sem coordenadas'; st.className='st '+((p.lat!=null&&!isNaN(p.lat))?'ok':'no'); }
+  var st=h('span',{class:'st'}); var ck=h('input',{type:'checkbox',title:'Incluir na proposta'}); ck.checked=!!p.sel; ck.addEventListener('click',function(e){ e.stopPropagation(); }); ck.addEventListener('change',function(){ if(CIRCUITOS.indexOf(p.secao)>=0){ setCircuito(D,p.secao,ck.checked); dirty(); var y=window.scrollY; showTab('pontos'); window.scrollTo(0,y); return; } p.sel=ck.checked; dirty(); if(window.refMaster) window.refMaster(); }); var cl=h('label',{class:'ck',title:'Incluir na proposta'},[ck,h('span',{text:'proposta'})]); cl.addEventListener('click',function(e){ e.stopPropagation(); }); sm.appendChild(cl); sm.appendChild(badge); sm.appendChild(title); sm.appendChild(st);
   sm.appendChild(h('button',{class:'mini',text:'duplicar',onclick:function(e){ e.preventDefault(); var c=JSON.parse(JSON.stringify(p)); c.id=newId(); D.pontos.splice(ix+1,0,c); dirty(); showTab('pontos'); }}));
   sm.appendChild(h('button',{class:'mini del',text:'excluir',onclick:function(e){ e.preventDefault(); askPin('Excluir ponto',(p.endereco||'(sem endereço)')+' · '+secLabel(p.secao)).then(function(ok){ if(!ok) return; var k=D.pontos.indexOf(p); if(k>=0) D.pontos.splice(k,1); dirty(); showTab('pontos'); }); }}));
   var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; if(fk&&libSrc(fk)) sm.insertBefore(h('img',{class:'sth',src:libSrc(fk)}),sm.firstChild);
   d.appendChild(sm);
   var g=h('div',{class:'grid'});
-  var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(p.secao===k) o.selected=true; return o; })); sel.addEventListener('change',function(){ p.secao=sel.value; upd(); dirty(); }); g.appendChild(field('Seção / formato',sel));
+  var sel=h('select',{},SEC_ORDER.map(function(k){ var o=h('option',{value:k,text:secLabel(k)}); if(p.secao===k) o.selected=true; return o; })); sel.addEventListener('change',function(){ p.secao=sel.value; upd(); dirty(); }); g.appendChild(field('Seção / formato',sel)); g.appendChild(donoField(p,function(){ upd(); }));
   function I(path,label,o){ o=o||{}; o.onchange=upd; return field(label,inp(p,path,o),o.hint); }
   g.appendChild(I('endereco','Endereço (título da ficha)')); g.appendChild(I('bairro','Bairro')); g.appendChild(I('cidade','Cidade'));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}); var lat=inp(p,'lat',{num:true,onchange:upd}), lng=inp(p,'lng',{num:true,onchange:upd});
@@ -177,6 +178,9 @@ function viewPrecos(v){ migPrecos(D);
   if(!ME.admin) v.appendChild(h('button',{class:'btn',text:'Restaurar valores da tabela base',onclick:function(){ restorePrecos(); showTab('precos'); }}));
   if(ME.admin) v.appendChild(h('button',{class:'btn',text:'+ Adicionar linha',onclick:function(){ D.precos.push({nome:'Nova linha',auto:'',pontos:'',periodo:'4 semanas',insercoes:'',insPor:'',v2:1,tabela:'',desc:'',modo:'geral'}); dirty(); showTab('precos'); }}));
 }
+
+function filtroDonoSel(onchg){ var s=h('select',{},[h('option',{value:'',text:'Todas as propriedades'})].concat(DONOS.map(function(d){ var o=h('option',{value:d[0],text:d[1]}); if(filtroDono===d[0]) o.selected=true; return o; }))); s.addEventListener('change',function(){ filtroDono=s.value; onchg(); }); return s; }
+function donoField(p,onchg){ var s=h('select',{},DONOS.map(function(d){ var o=h('option',{value:d[0],text:d[1]}); if(donoDe(p)===d[0]) o.selected=true; return o; })); s.addEventListener('change',function(){ p.dono=s.value; if(onchg) onchg(); dirty(); }); return field('Propriedade do ponto',s,'MEGA, MEGA/R2 (sócio), Terceiros ou Padrão.'); }
 
 /* ---------- preço por endereço (empenas, outdoors e demais estáticos) ---------- */
 function blocoEnderecos(){

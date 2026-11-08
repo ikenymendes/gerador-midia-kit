@@ -6,7 +6,7 @@ async function logProposta(formato,mode){
     var prop=(mode==='proposta');
     var rows=prop?(window.LAST_ROWS||[]):[];
     var pts=prop?D.pontos.filter(function(p){ return p.sel; }):[];
-    var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:secLabel(p.secao),endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||'',valor_tabela:p.preco==null||p.preco===''?null:vlr(p.preco)}; });
+    var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:secLabel(p.secao),endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||'',dono:donoDe(p),valor_tabela:p.preco==null||p.preco===''?null:vlr(p.preco)}; });
     var tt=0,tn=0;
     var valores=rows.map(function(c){ tt+=c.tabela; tn+=c.final; return {nome:c.nome,pontos:c.pontos,periodo:c.periodo,insercoes_por_ativo:c.insPor,insercoes_total:c.insN,tabela:c.tabela,desconto:c.desc,negociado:c.neg,final:c.final}; });
     await Store.salvarProposta({tipo:prop?'proposta':'kit_completo',formato:formato,cliente:D.kit.cliente||null,titulo:D.kit.titulo||null,n_locais:prop?pts.length:D.pontos.length,modo_valor:D.modoGeral,comissao:num(D.comissao),bv:num(D.bv),total_tabela:tt,total_negociado:tn,locais:locais,valores:valores});
@@ -28,8 +28,8 @@ function exportarPropostas(lista,tipo){
   var base=function(p){ return [p.id,dataBR(p.criado_em),p.cliente||'',p.criado_por_nome||'',p.criado_por_email||'',p.tipo,p.formato]; };
   var cabBase=['id_proposta','data','cliente','gerada_por','e-mail','tipo','formato'];
   if(tipo==='locais'){
-    var ls=[]; lista.forEach(function(p){ (p.locais||[]).forEach(function(l){ ls.push(base(p).concat([l.secao_nome||l.secao,l.endereco,l.bairro,l.cidade,l.lat,l.lng,l.tamanho,l.pixels,l.veic,l.publico,l.fluxo,l.impacto,l.sentido])); }); });
-    baixarTexto('propostas-locais-'+carimbo()+'.csv',csvTexto(cabBase.concat(['formato_do_ponto','endereco','bairro','cidade','latitude','longitude','tamanho','pixels','veiculacoes_dia','publico','fluxo_dia','impacto_semanal','sentido']),ls),'text/csv;charset=utf-8'); return;
+    var ls=[]; lista.forEach(function(p){ (p.locais||[]).forEach(function(l){ ls.push(base(p).concat([l.secao_nome||l.secao,l.endereco,l.bairro,l.cidade,l.lat,l.lng,l.tamanho,l.pixels,l.veic,l.publico,l.fluxo,l.impacto,l.sentido,l.dono||'padrao'])); }); });
+    baixarTexto('propostas-locais-'+carimbo()+'.csv',csvTexto(cabBase.concat(['formato_do_ponto','endereco','bairro','cidade','latitude','longitude','tamanho','pixels','veiculacoes_dia','publico','fluxo_dia','impacto_semanal','sentido','propriedade']),ls),'text/csv;charset=utf-8'); return;
   }
   var vs=[]; lista.forEach(function(p){ (p.valores||[]).forEach(function(v){ vs.push(base(p).concat([p.modo_valor,p.comissao,p.bv,v.nome,v.pontos,v.periodo,v.insercoes_por_ativo,v.insercoes_total,v.tabela,v.desconto,v.negociado,v.final])); }); });
   baixarTexto('propostas-valores-'+carimbo()+'.csv',csvTexto(cabBase.concat(['valor_bruto_ou_liquido','comissao_%','bv_%','linha','pontos','periodo','insercoes_por_ativo','insercoes_total','valor_tabela','desconto_%','valor_negociado','valor_final']),vs),'text/csv;charset=utf-8');
