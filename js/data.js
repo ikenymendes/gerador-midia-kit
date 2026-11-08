@@ -150,6 +150,7 @@ async function prepare(setStatus,mode){
   var all=withLL.filter(function(p){return p.secao!=='df_painel'}).map(function(p){return {lat:+p.lat,lng:+p.lng}}); all.push({lat:+D.mercado.lat,lng:+D.mercado.lng}); all.push({lat:+D.guanabara.lat,lng:+D.guanabara.lng});
   setStatus&&setStatus('Gerando mapa geral…'); A.mapGeral=await renderMap(all.filter(function(p){return !isNaN(p.lat)}),1460,890,0);
   var dfl=withLL.filter(function(p){return p.secao==='df_painel'}).map(function(p){return {lat:+p.lat,lng:+p.lng}}); if(dfl.length) A.mapDF=await renderMap(dfl,1500,890,0);
+  if(+D.mercado.lat&&+D.mercado.lng) A.mapM=await renderMap([{lat:+D.mercado.lat,lng:+D.mercado.lng}],1000,1260,zoomMapa(16));
   A.mapG=await renderMap([{lat:+D.guanabara.lat,lng:+D.guanabara.lng}],1284,408,16); A.mapG2=await renderMap([{lat:+D.guanabara.lat,lng:+D.guanabara.lng}],1000,1150,16);
   D.pontos.forEach(function(p){ var mk=Array.isArray(p.mapa)?p.mapa[0]:p.mapa; if(mk&&A.photos[mk]) A.maps[p.id]=A.photos[mk]; }); A.mapFail=0; return A;
 }

@@ -439,7 +439,7 @@ function separator(D,A,sp){
   S.rect(RX+0.02,1.42,0.9,0.06,{fill:C.PINK});
   var tx=info.texto||'', tsz=tx.length>260?15:(tx.length>170?17:19);
   S.text(RX,1.7,RW,2.3,tx,{size:tsz,f:'L',color:C.WHITE,ls:1.05});
-  var sw=(RW-0.4)/3; (info.stats||[]).slice(0,3).forEach(function(st,k){ var x=RX+k*(sw+0.2), val=(st[0]==='auto')?String(cnt):st[0];
+  var sts=(info.stats||[]).filter(function(st){ return st[0]!=='auto'; }).slice(0,3), sw=(RW-0.2*(sts.length-1))/Math.max(1,sts.length); sts.forEach(function(st,k){ var x=RX+k*(sw+0.2), val=st[0];
     gcard(S,x,4.15,sw,1.35,k===1?C.PINK:C.NAVY_L,0.14);
     S.text(x+0.2,4.3,sw-0.35,0.7,val,{size:String(val).length>6?24:32,f:'M',color:C.WHITE,valign:'m'});
     S.text(x+0.2,4.98,sw-0.35,0.45,st[1]||'',{size:9.5,f:'L',color:k===1?C.WHITE:'CCCCE0',ls:1.0}); });
@@ -497,18 +497,19 @@ function buildSlides(D0,A,mode){ migKit(D0);
   var CG=0; function push(S){ S.__g=CG; out.push(S); return S; }
 
   // 1 CAPA
-  var S=new Slide({g:[C.NAVY_D,C.NAVY]}); edge(S,A,7.2,1.2,K.fotoCapa,true);
+  var S=new Slide({g:[C.NAVY_D,C.NAVY]}); edge(S,A,7.2,1.2,null,true);
+  /* desenho de painéis, bem sutil, ao fundo do painel direito */
+  ledPanel(S,7.75,2.0,5.2,3.9,{dark:true,ratio:2.4});
+  S.rect(7.2,0,SW-7.2,SH,{fill:C.NAVY_L,a:86});
   logoAt(S,A.logoW,0.75,0.6,1.0); var pt=(!full&&K.cliente)?('PROPOSTA  ·  '+K.cliente.toUpperCase()):('MÍDIA KIT  ·  '+(K.ano||'2026')); pill(S,0.8,2.6,Math.max(2.6,pt.length*0.115+0.6),0.36,pt,{size:9.5});
   S.text(0.75,3.1,6.2,0.9,K.frase1||'Pense grande.',{size:44,f:'L',color:C.WHITE}); S.text(0.75,3.85,6.2,1.2,K.frase2||'Pense MEGA.',{size:58,f:'B',color:C.WHITE});
   S.rect(0.85,5.27,1.3,0.07,{fill:C.PINK}); S.text(0.75,5.55,5.4,0.9,K.subtitulo||'',{size:14,f:'L',color:'E6E6F0'});
   S.text(0.75,6.85,6,0.3,(R.site||'')+'   ·   '+(R.tel2||''),{size:9.5,f:'L',color:C.WHITE});
-  if(K.fotoCapa&&A.photos[K.fotoCapa]){ S.rect(9.1,6.25,3.7,0.68,{fill:C.WHITE,r:0.34,a:92}); S.text(9.1,6.25,3.7,0.68,K.selo||'',{size:10.5,f:'M',color:C.NAVY,align:'c',valign:'m'}); }
-  else { var RX=8.75, RW=SW-RX-0.55, tot=D.pontos.length;
-    S.text(RX,0.85,RW,0.3,'SOBRE A MEGA MÍDIA OOH',{size:9.5,f:'B',color:C.PINK,spc:200}); S.rect(RX+0.02,1.22,0.9,0.06,{fill:C.PINK});
-    S.text(RX,1.5,RW,2.0,K.capaTexto,{size:15,f:'L',color:C.WHITE,ls:1.1});
-    (K.capaPilares||[]).slice(0,3).forEach(function(t,i){ var y=3.75+i*0.44; S.oval(RX+0.02,y+0.1,0.13,0.13,{fill:C.PINK}); S.text(RX+0.32,y,RW-0.3,0.34,t,{size:12,f:'M',color:C.WHITE}); });
-    var sw=(RW-0.4)/3; (K.capaStats||[]).slice(0,3).forEach(function(st,i){ var x=RX+i*(sw+0.2), val=st[0]==='auto'?String(tot):st[0]; gcard(S,x,5.35,sw,1.3,i===1?C.PINK:C.NAVY,0.14); S.text(x+0.15,5.45,sw-0.25,0.65,val,{size:String(val).length>4?22:28,f:'M',color:C.WHITE,valign:'m'}); S.text(x+0.15,6.05,sw-0.25,0.55,st[1]||'',{size:8.5,f:'L',color:'E6E6F2',ls:1.0}); });
-    S.text(RX,6.85,RW,0.3,K.selo||'',{size:10,f:'M',color:'CCCCE0'}); }
+  var RX=8.2, RW=SW-RX-0.6;
+  S.text(RX,0.95,RW,0.3,'SOBRE A MEGA MÍDIA OOH',{size:9.5,f:'B',color:C.PINK,spc:200}); S.rect(RX+0.02,1.32,0.9,0.06,{fill:C.PINK});
+  S.text(RX,1.6,RW,2.3,K.sobre||'',{size:14,f:'L',color:C.WHITE,ls:1.15});
+  [['Mídia OOH','Diversas opções de mídias'],['Comunicação visual','Equipe profissional capacitada'],['Projetos especiais','Qualquer projeto em Minas Gerais']].forEach(function(t,i){ var y=4.1+i*0.62; S.oval(RX+0.02,y+0.1,0.13,0.13,{fill:C.PINK}); S.text(RX+0.32,y,RW-0.3,0.28,t[0],{size:12,f:'M',color:C.WHITE}); S.text(RX+0.32,y+0.27,RW-0.3,0.26,t[1],{size:9.5,f:'L',color:'CCCCE0'}); });
+  S.text(RX,6.85,RW,0.3,K.selo||'',{size:10,f:'M',color:'CCCCE0'});
   push(S);
 
   // 2 INTRO
@@ -526,18 +527,18 @@ function buildSlides(D0,A,mode){ migKit(D0);
   var bhCount=['led_bh','banca_led','empena','front','mensal','revista'].reduce(function(a,s){return a+ptsOf(D,s).length;},0);
   S=frame(null,A,'Cobertura','Onde estamos','Mega Mídia OOH em Belo Horizonte, região metropolitana e Brasília');
   card(S,0.6,1.95,7.7,4.85,0.2); if(A.mapGeral) S.img(0.8,2.15,7.3,4.45,A.mapGeral,{r:0.18}); else S.rect(0.8,2.15,7.3,4.45,{fill:'EEF0F8',r:0.18});
-  [['Belo Horizonte',bhCount+' pontos · LED, bancas, empenas, frontlight e mensais','01'],['Região Metropolitana',ptsOf(D,'led_rm').length+' painéis de LED','02'],['Mercado Central',D.mercado.circuito,'03'],['Parque Guanabara',D.guanabara.circuito,'04'],['Brasília · DF',(ptsOf(D,'df_painel').length)+' painéis de LED + mídia no Metrô-DF','05']].forEach(function(t,i){ var y=1.95+i*1.0;
+  [['Belo Horizonte','LED, bancas, empenas, frontlight e mensais','01'],['Região Metropolitana','Painéis de LED','02'],['Mercado Central',D.mercado.circuito,'03'],['Parque Guanabara',D.guanabara.circuito,'04'],['Brasília · DF','Painéis de LED e mídia no Metrô-DF','05']].forEach(function(t,i){ var y=1.95+i*1.0;
     card(S,8.6,y,4.13,0.86,0.14); pill(S,8.78,y+0.2,0.46,0.46,t[2],{fill:i%2?C.NAVY:C.PINK,size:9.5}); S.text(9.42,y+0.1,3.2,0.34,t[0],{size:12.5,f:'M',color:C.NAVY}); S.text(9.42,y+0.43,3.2,0.4,t[1],{size:8.5,f:'L',color:C.MID,ls:1.0}); });
   push(S);
 
   // 4 BH
   if(full||bhCount>0){
-  S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Pontos ativos por formato');
+  S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Formatos disponíveis');
   skyline(S,7.3,0.95,5.43,0.95,{dark:false});
-  [['led_bh','Painéis de LED'],['banca_led','Bancas de LED'],['empena','Empenas'],['front','Painéis frontlight'],['mensal','Painéis mensais'],['revista','Bancas Estáticas']].forEach(function(t,i){
-    var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*2.45, big=String(ptsOf(D,t[0]).length), first=i===0;
+  var fmts=[['led_bh','Painéis de LED','Mídia digital em movimento'],['banca_led','Bancas de LED','Telas de LED na altura do olhar'],['empena','Empenas','Grande formato em edifícios'],['front','Painéis frontlight','Iluminados, visíveis dia e noite'],['mensal','Painéis mensais','Mega painéis e outdoors'],['revista','Bancas Estáticas','Mídia estática em bancas']].filter(function(t){ return full||ptsOf(D,t[0]).length; });
+  fmts.forEach(function(t,i){ var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*2.45, first=i===0;
     if(first) gcard(S,x,y,3.85,2.25,C.NAVY,0.2); else card(S,x,y,3.85,2.25,0.2);
-    S.rect(x+0.3,y+0.3,0.4,0.05,{fill:C.PINK}); S.text(x+0.25,y+0.42,3.3,1.2,big,{size:60,f:'M',color:first?C.WHITE:C.NAVY,valign:'m'}); S.text(x+0.28,y+1.58,3.3,0.4,t[1],{size:14,f:'R',color:first?C.WHITE:C.MID}); });
+    S.rect(x+0.3,y+0.35,0.4,0.05,{fill:C.PINK}); S.text(x+0.28,y+0.6,3.3,1.0,t[1],{size:24,f:'M',color:first?C.WHITE:C.NAVY,valign:'m',ls:0.95}); S.text(x+0.28,y+1.55,3.3,0.5,t[2],{size:12,f:'L',color:first?'DDDDEE':C.MID,ls:1.0}); });
   push(S);
 
   }
@@ -554,9 +555,9 @@ function buildSlides(D0,A,mode){ migKit(D0);
 
   // MERCADO
   var M=D.mercado; CG=1; if(full||has('mercado')){ push(separator(D,A,SEPS[4]));
-  S=new Slide({c:C.BG}); photoSlot(S,A,M.fotos[0],0.6,0.6,5.0,6.3,0.24);
-  S.rect(0.85,0.85,2.75,0.8,{fill:C.WHITE,r:0.18,a:95}); if(A.mercN){ var mw=0.64*A.mercN.w/A.mercN.h; S.img(1.0,0.93,mw,0.64,A.mercN,{contain:true}); }
-  S.text(1.72,0.85,1.85,0.8,['MERCADO','CENTRAL'],{size:10.5,f:'M',color:C.NAVY,valign:'m',ls:0.95,spc:100});
+  S=new Slide({c:C.BG}); if(A.mapM) S.img(0.6,0.6,5.0,6.3,A.mapM,{r:0.24}); else S.rect(0.6,0.6,5.0,6.3,{fill:'EEF0F8',r:0.24});
+  S.rect(0.85,0.85,3.5,1.1,{fill:C.WHITE,r:0.2,a:96}); if(A.mercN){ var mw=0.86*A.mercN.w/A.mercN.h; S.img(1.05,0.97,mw,0.86,A.mercN,{contain:true}); }
+  S.text(1.05+(A.mercN?0.86*A.mercN.w/A.mercN.h:0)+0.15,0.85,2.2,1.1,['MERCADO','CENTRAL'],{size:12.5,f:'M',color:C.NAVY,valign:'m',ls:0.95,spc:100});
   S.text(6.0,0.5,4.5,0.3,NP(5)+' · MERCADO CENTRAL',{size:10,f:'B',color:C.PINK,spc:220});
   var lw2=0.5*A.logoC.w/A.logoC.h; S.img(SW-0.6-lw2,0.4,lw2,0.5,A.logoC,{contain:true});
   S.text(6.0,0.95,6.75,1.1,'Mercado Central\nde Belo Horizonte',{size:26,f:'M',color:C.NAVY,ls:0.95}); S.text(6.0,2.05,6.7,0.8,M.texto,{size:11.5,f:'L',color:C.INK,ls:1.2});
