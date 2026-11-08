@@ -231,7 +231,7 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .cena .bnr{animation:bnr 8s linear infinite}
 .cena .tw{fill:#ffd96a;opacity:.1;animation:twk 6s ease-in-out infinite}
 .cena .road{animation:road 1s linear infinite}
-.cena .veh{animation:drive 7s linear infinite;transform:translateX(-200px)}.cena .v2{animation-duration:11s;animation-delay:-4s}.cena .v3{animation-duration:16s;animation-delay:-9s}
+.cena .veh{--e:470px;opacity:0;animation:drive 9s linear infinite;transform:translateX(-200px)}.cena .v3{--e:430px}.cena .v2{animation-duration:12s;animation-delay:-4s}.cena .v3{animation-duration:18s;animation-delay:-9s}
 .cena .bustxt{animation:pulse 2.2s ease-in-out infinite}.cena .st{animation:twk 4s ease-in-out infinite}
 .cena .big,.cena .clk{animation:glow 3s ease-in-out infinite}
 @keyframes slide{0%{opacity:0;transform:translateY(8px)}4%,22%{opacity:1;transform:none}27%,100%{opacity:0}}
@@ -239,7 +239,7 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 @keyframes bnr{from{transform:translateX(0)}to{transform:translateX(-100px)}}
 @keyframes marq{from{transform:translateX(0)}to{transform:translateX(-330px)}}
 @keyframes blink{50%{opacity:.2}}@keyframes twk{50%{opacity:.85}}
-@keyframes road{to{stroke-dashoffset:-48}}@keyframes drive{from{transform:translateX(-200px)}to{transform:translateX(1000px)}}@keyframes pulse{50%{opacity:.35}}@keyframes glow{50%{filter:brightness(1.35)}}
+@keyframes road{to{stroke-dashoffset:-48}}@keyframes drive{0%{transform:translateX(-170px);opacity:0}8%{opacity:1}82%{opacity:1}100%{transform:translateX(var(--e));opacity:0}}@keyframes pulse{50%{opacity:.35}}@keyframes glow{50%{filter:brightness(1.35)}}
 @media(max-width:900px){.ghtxt{display:block;padding:26px 20px 40px}.scene{margin:14px 0}.cena{height:auto}.ghfoot h1{font-size:20px}}
 .pw{position:relative}.pw input{padding-right:46px}.pw .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:16px;padding:6px;opacity:.6}.pw .eye:hover{opacity:1}
 .newuser{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:0 0 26px}.newuser h3{margin:0 0 4px}
