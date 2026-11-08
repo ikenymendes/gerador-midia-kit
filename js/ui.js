@@ -17,7 +17,7 @@ function viewSelecao(v,embed){
   function contaSel(){ return D.pontos.filter(function(p){ return p.sel&&CIRCUITOS.indexOf(p.secao)<0; }).length+CIRCUITOS.filter(function(k){ return ptsOf(D,k).length&&circSel(k); }).length; }
   function desenhaCirc(){ var cs=circ(); cs.forEach(function(k){ var ck=h('input',{type:'checkbox'}); ck.checked=circSel(k); ck.addEventListener('change',function(){ ptsOf(D,k).forEach(function(p){ p.sel=ck.checked; }); dirty(); ref(); }); var fk=D[k]&&D[k].fotos&&D[k].fotos[0]; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t'},[h('b',{text:'Circuito '+SEC[k].nome}),document.createTextNode(' · '+((D[k]&&D[k].circuito)||'')+' · todas as telas juntas')])); kids.push(h('em',{text:secLabel(k)})); list.appendChild(h('label',{class:'srow circ'},kids)); }); return cs.length; }
   function ref(){ var Lst=vis(), nc=circ(), items=Lst.length+nc.length, n=Lst.filter(function(p){return p.sel}).length+nc.filter(circSel).length; mk.checked=items>0&&n===items; mk.indeterminate=n>0&&n<items; var tot=contaSel(); fab.textContent=tot?'Continuar com '+tot+' ponto'+(tot>1?'s':'')+' · Preços':'Marque os pontos da proposta'; fab.disabled=!tot; if(window.__onSel) window.__onSel(tot); mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+items+' marcados  ('+tot+' no total)'; }
-  function draw(){ list.innerHTML=''; var n=0, ncirc=desenhaCirc(); vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); if(donoDe(p)!=='padrao') kids.push(h('em',{class:'dono d-'+donoDe(p),text:donoNome(donoDe(p))})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n&&!ncirc) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
+  function draw(){ list.innerHTML=''; var n=0, ncirc=desenhaCirc(); vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(qBadge(p)); kids.push(h('em',{text:secLabel(p.secao)})); if(donoDe(p)!=='padrao') kids.push(h('em',{class:'dono d-'+donoDe(p),text:donoNome(donoDe(p))})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n&&!ncirc) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
   fsel.addEventListener('change',function(){ filtro=fsel.value; draw(); });
   bs.addEventListener('input',function(){ busca=bs.value; draw(); });
   mk.addEventListener('change',function(){ var val=mk.checked; vis().forEach(function(p){ p.sel=val; }); circ().forEach(function(k){ ptsOf(D,k).forEach(function(p){ p.sel=val; }); }); dirty(); draw(); });
@@ -53,12 +53,28 @@ function schemaField(obj,s){
   i=h('textarea',{rows:type==='pairs'||type==='rows'?(s[3]||6):2}); i.value=conv[0](cur); i.addEventListener('input',function(){ setp(obj,path,conv[1](i.value)); dirty(); });
   return field(label,i,s[4],'wide');
 }
+/* ajuste do enquadramento da foto na ficha (foco, zoom ou foto inteira) com prévia ao vivo */
+function fotoAjuste(p){
+  var AR=6.5/4.85, w=h('div',{class:'fajuste'}), cv=h('canvas',{width:520,height:Math.round(520/AR)}), c=cv.getContext('2d'), im=new Image(), ok=false;
+  function aj(){ if(!p.fotoAj) p.fotoAj={x:50,y:50,z:100,inteira:false}; return p.fotoAj; }
+  function draw(){ c.fillStyle='#000066'; c.fillRect(0,0,cv.width,cv.height); if(!ok){ c.fillStyle='#fff'; c.font='14px Poppins,sans-serif'; c.fillText('Envie uma foto para ajustar o enquadramento.',20,40); return; }
+    var a=aj(); if(a.inteira){ var s=Math.min(cv.width/im.naturalWidth,cv.height/im.naturalHeight), dw=im.naturalWidth*s, dh=im.naturalHeight*s; c.drawImage(im,(cv.width-dw)/2,(cv.height-dh)/2,dw,dh); return; }
+    var r=cropRect(im.naturalWidth,im.naturalHeight,AR,a); c.drawImage(im,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height); }
+  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); ok=false; if(!src){ draw(); return; } im.onload=function(){ ok=true; draw(); }; im.src=src; }
+  function sl(rot,key,min,max){ var s=h('input',{type:'range',min:min,max:max,step:1}); s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; s.addEventListener('input',function(){ aj()[key]=+s.value; draw(); dirty(); }); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
+  var inteira=h('input',{type:'checkbox'}); inteira.checked=!!(p.fotoAj&&p.fotoAj.inteira); inteira.addEventListener('change',function(){ aj().inteira=inteira.checked; draw(); dirty(); });
+  var reset=h('button',{type:'button',class:'btn',text:'Restaurar',onclick:function(){ delete p.fotoAj; dirty(); var par=w.parentNode; if(par) par.replaceChild(fotoAjuste(p),w); }});
+  w.appendChild(cv); w.appendChild(h('div',{class:'fctl'},[sl('← Esquerda · Direita →','x',0,100),sl('↑ Cima · Baixo ↓','y',0,100),sl('Zoom','z',100,300),h('label',{class:'chk'},[inteira,h('span',{text:'Mostrar a foto inteira (sem cortar)'})]),reset]));
+  load(); return h('div',{class:'f wide'},[h('span',{text:'Enquadramento da foto no kit'}),w,h('small',{text:'Mexa nos controles até o painel aparecer inteiro. Vale para a ficha deste ponto no PowerPoint e no PDF.'})]); }
 function photosField(label,obj,path){
   var wrap=h('div',{class:'photos'}), fi=h('input',{type:'file',accept:'image/*',multiple:'multiple'}); 
   function draw(){ wrap.innerHTML=''; var arr=getp(obj,path); if(!Array.isArray(arr)){ arr=arr?[arr]:[]; }
     arr.forEach(function(k,ix){ wrap.appendChild(h('span',{class:'thumb'},[h('img',{src:libSrc(k)}),h('b',{text:'×',title:'remover',onclick:function(){ askPin('Remover foto','A foto será retirada deste ponto.').then(function(ok){ if(!ok) return; arr.splice(ix,1); setp(obj,path,Array.isArray(getp(obj,path))?arr:(arr[0]||null)); draw(); dirty(); }); }})])); }); }
   fi.addEventListener('change',async function(){ var arr=getp(obj,path); var multi=Array.isArray(arr); arr=multi?arr:(arr?[arr]:[]); try{ for(var f of fi.files){ var k=await addPhoto(f); arr.push(k); } }catch(e){ toast(e.message||String(e),true); } if(!multi) arr=arr.slice(-1); setp(obj,path,multi?arr:(arr[0]||null)); fi.value=''; draw(); dirty(); });
-  draw(); return field(label,h('div',{},[fi,wrap]),null,'wide');
+  var qi=h('p',{class:'qinfo'});
+  function qupd(){ if(path!=='foto'){ return; } var k=fotoKey(obj); qi.className='qinfo'; if(!k){ qi.textContent='⚠ Sem foto neste ponto.'; qi.classList.add('bad'); return; } qi.textContent='Verificando a foto…'; fqCheck(k).then(function(q){ if(!q){ qi.textContent=''; return; } if(q.low){ qi.textContent='⚠ Foto em baixa qualidade ('+q.w+'×'+q.h+' px). Substitua por uma foto maior (mínimo '+FQ_MIN_W+'×'+FQ_MIN_H+') para não sair borrada no kit.'; qi.classList.add('bad'); } else { qi.textContent='✓ Qualidade boa ('+q.w+'×'+q.h+' px)'; qi.classList.add('good'); } }); }
+  var _d=draw; draw=function(){ _d(); qupd(); document.dispatchEvent(new Event('fotochg')); };
+  draw(); return field(label,h('div',{},[fi,wrap,path==='foto'?qi:null]),null,'wide');
 }
 
 function viewKit(v){ migKit(D);
@@ -82,9 +98,23 @@ var BRAS=[['tiles','pairs','6 indicadores do Metrô-DF: valor | rótulo',6],['ge
 function viewSchema(v,key,schema){ v.appendChild(h('h2',{text:key==='mercado'?'Mercado Central':(key==='guanabara'?'Parque Guanabara':'Brasília · Metrô-DF e painéis')})); v.appendChild(h('p',{class:'hint',text:'Já vem preenchido com os dados do mídia kit atual. Altere o que mudou.'})); var g=h('div',{class:'grid'}); schema.forEach(function(s){ g.appendChild(schemaField(D[key],s)); }); v.appendChild(g); }
 
 /* ---------- pontos ---------- */
-var filtro='', busca='', filtroDono='';
+var filtro='', busca='', filtroDono='', filtroQ=false;
+/* ===== validador de fotos: avisa quando a foto é pequena demais para o kit ===== */
+var FQ={}, FQ_MIN_W=1000, FQ_MIN_H=650;
+function fotoKey(p){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto; return k||''; }
+function fqCheck(k){ if(!k) return Promise.resolve(null); if(FQ[k]) return Promise.resolve(FQ[k]); var src=libSrc(k); if(!src) return Promise.resolve(null);
+  return new Promise(function(res){ var im=new Image(); im.onload=function(){ var w=im.naturalWidth,hh=im.naturalHeight; FQ[k]={w:w,h:hh,low:(w<FQ_MIN_W||hh<FQ_MIN_H)}; res(FQ[k]); }; im.onerror=function(){ res(null); }; im.src=src; }); }
+function fotoAtencao(p){ var k=fotoKey(p); if(!k) return 'sem'; var q=FQ[k]; return q&&q.low?'baixa':''; }
+function fotoMsg(p){ var a=fotoAtencao(p); if(a==='sem') return 'Este ponto não tem foto.'; var q=FQ[fotoKey(p)]; return a==='baixa'?'Foto em baixa qualidade ('+q.w+'×'+q.h+' px). Substitua por uma foto maior (mínimo '+FQ_MIN_W+'×'+FQ_MIN_H+').':''; }
+function qBadge(p){ var s=h('span',{class:'qwarn'}); s.hidden=true;
+  function upd(){ if(!s.isConnected&&s.__ok){ document.removeEventListener('fotochg',upd); return; } var a=fotoAtencao(p); s.hidden=!a; if(a){ s.textContent=a==='sem'?'⚠ sem foto':'⚠ foto baixa'; s.title=fotoMsg(p); } }
+  upd(); fqCheck(fotoKey(p)).then(function(){ s.__ok=1; upd(); }); document.addEventListener('fotochg',upd); return s; }
+var fqScanning=false;
+function fqScan(done){ if(fqScanning) return; fqScanning=true; var ks=D.pontos.map(fotoKey).filter(function(k,i,a){ return k&&!FQ[k]&&a.indexOf(k)===i; }), i=0;
+  function next(){ if(i>=ks.length){ fqScanning=false; if(done) done(); return; } var k=ks[i++]; fqCheck(k).then(next); } for(var c=0;c<4;c++) next(); if(!ks.length){ fqScanning=false; if(done) done(); } }
+function fqConta(pts){ return (pts||D.pontos).filter(function(p){ return fotoAtencao(p); }).length; }
 function grupoSelect(p,after){ var cur=grupoDe(p).k; var s=h('select',{},GRUPOS.map(function(g){ var o=h('option',{value:g.k,text:g.nome}); if(g.k===cur) o.selected=true; return o; })); s.addEventListener('change',function(){ aplicaGrupo(p,s.value); if(after) after(); }); return s; }
-function matchP(p){ if(filtro&&grupoDe(p).k!==filtro) return false; if(filtroDono&&donoDe(p)!==filtroDono) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
+function matchP(p){ if(filtro&&grupoDe(p).k!==filtro) return false; if(filtroQ&&!fotoAtencao(p)) return false; if(filtroDono&&donoDe(p)!==filtroDono) return false; if(!busca) return true; var t=[p.endereco,p.bairro,p.cidade,secLabel(p.secao)].join(' ').toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }
 function secLabel(k){ return SEC[k]?SEC[k].nome+(SEC[k].praca?' · '+SEC[k].praca:''):k; }
 function novoPontoPanel(){
   var np={secao:(grupoPorK(filtro||'')||GRUPOS[1]).sec[0],dono:(grupoPorK(filtro||'')||{}).r2?'mega_r2':'padrao',endereco:'',bairro:'',cidade:'Belo Horizonte',lat:null,lng:null,zoom:16,tamanho:'',pixels:'',veic:'',publico:'',fluxo:'',impacto:'',sentido:'',foto:null};
@@ -112,6 +142,8 @@ function viewPontos(v){
   var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(GRUPOS.map(function(g){ var o=h('option',{value:g.k,text:g.nome}); if(filtro===g.k) o.selected=true; return o; })));
   fsel.addEventListener('change',function(){ filtro=fsel.value; showTab('pontos'); });
   bar.appendChild(fsel); bar.appendChild(filtroDonoSel(function(){ showTab('pontos'); }));
+  var qchip=h('button',{type:'button',class:'btn qchip'+(filtroQ?' on':''),text:'⚠ Fotos com atenção',onclick:function(){ filtroQ=!filtroQ; showTab('pontos'); }}); bar.appendChild(qchip);
+  function qchipUpd(){ var n=fqConta(); qchip.textContent='⚠ Fotos com atenção ('+n+')'; qchip.hidden=!n&&!filtroQ; } qchipUpd(); fqScan(function(){ qchipUpd(); if(window.drawList&&curTab==='pontos') window.drawList(); });
   var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca; bs.addEventListener('input',function(){ busca=bs.value; if(window.drawList) window.drawList(); }); bar.appendChild(bs);
   function setSel(v){ D.pontos.forEach(function(p){ if(!filtro||grupoDe(p).k===filtro) p.sel=v; }); dirty(); showTab('pontos'); }
   bar.appendChild(h('button',{class:'btn',text:'✓ Marcar todos'+(filtro?' desta seção':''),onclick:function(){ setSel(true); }}));
@@ -145,7 +177,7 @@ function pointCard(p,ix){
   function upd(){ title.textContent=(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:''); badge.textContent=grupoDe(p).nome+(donoDe(p)!=='padrao'?' · '+donoNome(donoDe(p)):''); st.textContent=(p.lat!=null&&!isNaN(p.lat))?'📍 mapa ok':'sem coordenadas'; st.className='st '+((p.lat!=null&&!isNaN(p.lat))?'ok':'no'); }
   var st=h('span',{class:'st'}); var ck=h('input',{type:'checkbox',title:'Incluir na proposta'}); ck.checked=!!p.sel; ck.addEventListener('click',function(e){ e.stopPropagation(); }); ck.addEventListener('change',function(){ if(CIRCUITOS.indexOf(p.secao)>=0){ setCircuito(D,p.secao,ck.checked); dirty(); var y=window.scrollY; showTab('pontos'); window.scrollTo(0,y); return; } p.sel=ck.checked; dirty(); if(window.refMaster) window.refMaster(); }); var cl=h('label',{class:'ck',title:'Incluir na proposta'},[ck,h('span',{text:'proposta'})]); cl.addEventListener('click',function(e){ e.stopPropagation(); }); sm.appendChild(cl); sm.appendChild(badge); sm.appendChild(title); sm.appendChild(st);
   sm.appendChild(h('button',{class:'mini',text:'duplicar',onclick:function(e){ e.preventDefault(); var c=JSON.parse(JSON.stringify(p)); c.id=newId(); D.pontos.splice(ix+1,0,c); dirty(); showTab('pontos'); }}));
-  sm.appendChild(h('button',{class:'mini del',text:'excluir',onclick:function(e){ e.preventDefault(); askPin('Excluir ponto',(p.endereco||'(sem endereço)')+' · '+secLabel(p.secao)).then(function(ok){ if(!ok) return; var k=D.pontos.indexOf(p); if(k>=0) D.pontos.splice(k,1); dirty(); showTab('pontos'); }); }}));
+  sm.appendChild(qBadge(p)); sm.appendChild(h('button',{class:'mini del',text:'excluir',onclick:function(e){ e.preventDefault(); askPin('Excluir ponto',(p.endereco||'(sem endereço)')+' · '+secLabel(p.secao)).then(function(ok){ if(!ok) return; var k=D.pontos.indexOf(p); if(k>=0) D.pontos.splice(k,1); dirty(); showTab('pontos'); }); }}));
   var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; if(fk&&libSrc(fk)) sm.insertBefore(h('img',{class:'sth',src:libSrc(fk)}),sm.firstChild);
   d.appendChild(sm);
   var g=h('div',{class:'grid'});
@@ -157,7 +189,7 @@ function pointCard(p,ix){
   g.appendChild(field('Link do Google Maps (preenche lat/long)',lk,'Link curto (maps.app.goo.gl) não funciona: abra e copie o endereço completo da barra.','wide'));
   g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng)); g.appendChild(I('zoom','Zoom do mapa (13–19)',{num:true})); var pm=mapaPreview(p); g.appendChild(pm.el); g.addEventListener('input',pm.update);
   g.appendChild(I('tamanho','Tamanho (ex.: 9,00 x 3,00 m)')); g.appendChild(I('pixels','Formato em pixels (ex.: 2308 x 577)')); g.appendChild(I('veic','Veiculações/dia (bancas)')); g.appendChild(I('publico','Público (ex.: A, B, C e D)')); g.appendChild(I('fluxo','Fluxo de carros/dia')); g.appendChild(I('impacto','Impacto semanal')); g.appendChild(I('sentido','Sentido (ex.: Centro / Bairro)')); g.appendChild(I('preco','Valor de tabela deste endereço (R$)',{num:true,hint:'Usado nas propostas de empenas, frontlight, mensais, bancas estáticas e Metrô-DF.'}));
-  g.appendChild(photosField('Foto do ponto',p,'foto')); g.appendChild(photosField('Imagem do mapa (opcional; envie um print do mapa do ponto)',p,'mapa')); d.appendChild(g); upd(); return d;
+  g.appendChild(photosField('Foto do ponto',p,'foto')); g.appendChild(fotoAjuste(p)); g.appendChild(photosField('Imagem do mapa (opcional; envie um print do mapa do ponto)',p,'mapa')); d.appendChild(g); upd(); return d;
 }
 
 /* ---------- preços ---------- */
@@ -254,6 +286,7 @@ function viewFluxo(v,tipo){
     var sm=h('div',{class:'resumo'},[h('div',{},[h('b',{text:D.kit.cliente||'(sem cliente)'}),h('span',{text:'cliente / campanha'})]),h('div',{},[h('b',{text:String(comp?D.pontos.length:n)}),h('span',{text:comp?'pontos (todos)':'pontos escolhidos'})])]);
     if(prop) sm.appendChild(h('div',{},[h('b',{text:brl(tot)}),h('span',{text:'investimento ('+(D.modoGeral==='liquido'?'líquido':'bruto')+')'})]));
     panel.appendChild(h('h3',{text:'Tudo pronto'})); panel.appendChild(sm);
+    var qa=h('p',{class:'qinfo bad'}); qa.hidden=true; panel.appendChild(qa); (function(){ var escolhidos=comp?D.pontos:D.pontos.filter(function(p){return p.sel}); function qu(){ var n=fqConta(escolhidos); qa.hidden=!n; qa.textContent='⚠ '+n+' ponto'+(n>1?'s':'')+' com foto em baixa qualidade ou sem foto. Peça ao administrador para substituir antes de enviar ao cliente.'; } fqScan(qu); qu(); })();
     var md=comp?'completo':mode, b=h('div',{class:'bar'});
     b.appendChild(h('button',{class:'btn pri big',text:'⬇ PowerPoint',onclick:function(){ generate('pptx',md); }})); b.appendChild(h('button',{class:'btn big',text:'⬇ PDF',onclick:function(){ generate('pdf',md); }})); b.appendChild(h('button',{class:'btn',text:'Prévia',onclick:function(){ generate('prev',md); }})); panel.appendChild(b);
     panel.appendChild(h('p',{class:'hint',text:'Dica: clique em Prévia para ver as páginas e remover as que não quiser antes de baixar. O PowerPoint sai editável; o PDF sai pronto para enviar.'}));
