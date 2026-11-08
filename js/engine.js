@@ -422,9 +422,9 @@ var SEPS=[
 ];
 var SEPINFO={
  1:{texto:'Capital de Minas Gerais, com mais de 2,3 milhões de habitantes e centro de uma região metropolitana de cerca de 6 milhões de pessoas. Principal polo econômico, cultural e de serviços do estado, concentra grandes avenidas, corredores de trânsito intenso e bairros de alto consumo: cenário ideal para mídia exterior de alto impacto.',stats:[['auto','pontos na capital'],['2,3 mi','habitantes'],['6 mi','na região metropolitana']],bullets:['Painéis de LED nos principais corredores viários','Bancas de LED no centro e nos bairros','Empenas, frontlight, painéis mensais e bancas de revista']},
- 2:{texto:'Mídia digital em movimento: vídeos de 10 segundos, em loop, com 500 inserções por dia em cada painel. Alta visibilidade dia e noite, troca de campanha rápida e flexibilidade para comunicar no momento certo.',stats:[['auto','painéis de LED'],['500','inserções por dia / painel'],['10 s','duração do VT']],bullets:['Instalados em avenidas de grande circulação','Arquivo em MP4, até 20 MB','Ideal para awareness e ações de curto prazo']},
- 3:{texto:'Painéis de LED nos principais acessos e avenidas das cidades da região metropolitana, levando a campanha para além da capital e alcançando quem circula todos os dias entre os municípios.',stats:[['auto','painéis na região'],['500','inserções por dia / painel'],['10 s','duração do VT']],bullets:['Cobertura dos grandes eixos de ligação com BH','Mesmo formato e regras dos painéis da capital','Complementa a campanha com alcance regional']},
- 4:{texto:'Bancas transformadas em painéis digitais de LED, espalhadas pelo centro e pelos bairros. Mídia na altura do olhar, que conversa com pedestres e motoristas e aproxima a marca do consumidor no dia a dia da cidade.',stats:[['auto','bancas de LED'],['500','inserções por dia / banca'],['10 s','duração do VT']],bullets:['Presença em ruas de grande fluxo de pedestres','Comunicação próxima e de alta frequência','Arquivo em MP4, até 20 MB']},
+ 2:{texto:'Mídia digital em movimento: vídeos de 10 segundos, em loop, com no mínimo 500 inserções por dia em cada painel. Alta visibilidade dia e noite, troca de campanha rápida e flexibilidade para comunicar no momento certo.',stats:[['auto','painéis de LED'],['500','mínimo de inserções por dia / painel'],['10 s','duração do VT']],bullets:['Instalados em avenidas de grande circulação','Arquivo em MP4, até 20 MB','Ideal para awareness e ações de curto prazo']},
+ 3:{texto:'Painéis de LED nos principais acessos e avenidas das cidades da região metropolitana, levando a campanha para além da capital e alcançando quem circula todos os dias entre os municípios.',stats:[['auto','painéis na região'],['500','mínimo de inserções por dia / painel'],['10 s','duração do VT']],bullets:['Cobertura dos grandes eixos de ligação com BH','Mesmo formato e regras dos painéis da capital','Complementa a campanha com alcance regional']},
+ 4:{texto:'Bancas transformadas em painéis digitais de LED, espalhadas pelo centro e pelos bairros. Mídia na altura do olhar, que conversa com pedestres e motoristas e aproxima a marca do consumidor no dia a dia da cidade.',stats:[['auto','bancas de LED'],['500','mínimo de inserções por dia / banca'],['10 s','duração do VT']],bullets:['Presença em ruas de grande fluxo de pedestres','Comunicação próxima e de alta frequência','Arquivo em MP4, até 20 MB']},
  5:{texto:'Maior mercado da América Latina e um dos principais pontos turísticos e gastronômicos de BH, recebendo visitantes do mundo todo.',stats:[['400+','lojas'],['15 mi','pessoas por ano'],['40 mil','pessoas por dia']],bullets:['Circuito de 8 telas de LED','Estacionamento com 420 vagas rotativas','Espaço monitorado por 90 câmeras']},
  6:{texto:'Um dos parques de diversões mais tradicionais do Brasil, na região da Lagoa da Pampulha, um dos principais cartões-postais de BH. Conecta marcas a um público diverso nos momentos de lazer.',stats:[['70 mil','visitantes por mês'],['1951','ano de fundação'],['10','telas no circuito']],bullets:['Famílias, grupos escolares e turistas','Ambiente emocionalmente positivo','Estacionamento próprio no parque']},
  7:{texto:'Mídia estática de grande formato aplicada nas laterais de edifícios. Altíssima visibilidade e forte presença de marca, vista de longe por quem circula na região.',stats:[['auto','empenas'],['Grande','formato'],['Mensal','período de exposição']],bullets:['Pontos de grande visibilidade na cidade','Impacto de marca em escala urbana','Exposição contínua durante o período']},
@@ -435,6 +435,9 @@ var SEPINFO={
  12:{texto:'Painéis de LED nos eixos e rodovias que ligam o Plano Piloto ao restante do Distrito Federal, falando com quem se desloca todos os dias de carro.',stats:[['auto','painéis de LED'],['420','inserções por dia'],['10 s','duração do VT']],bullets:['Eixos e rodovias de grande fluxo','Vídeos de 10 segundos em MP4','Alta frequência e repetição de marca']}
 };
 function sepInfo(D,i){ D.sepInfo=D.sepInfo||{}; if(!D.sepInfo[i]) D.sepInfo[i]=JSON.parse(JSON.stringify(SEPINFO[i])); return D.sepInfo[i]; }
+/* garantia comercial: 500 inserções por dia é o MÍNIMO entregue (vale também para textos já salvos) */
+function minTxt(t){ t=String(t==null?'':t); return /m[ií]nimo/i.test(t)?t:t.replace(/(\b)500 inser/g,'$1no mínimo 500 inser'); }
+function minLbl(val,lbl){ lbl=String(lbl||''); if(!/^\s*500/.test(String(val))||/m[ií]nimo/i.test(lbl)) return lbl; return lbl.replace(/^(inserções|veiculações)/i,function(m){ return 'mínimo de '+m.toLowerCase(); }); }
 function separator(D,A,sp){
   var S=new Slide({c:C.NAVY}), info=sepInfo(D,sp.i), X=5.75;
   slantMotif(S,9.6,-0.5,6.2,10);
@@ -448,12 +451,12 @@ function separator(D,A,sp){
   var RX=X+0.15, RW=SW-RX-0.7;
   S.text(RX,1.05,RW,0.3,(sp.kick==='Praça'||sp.kick==='Ponto especial'?'SOBRE A PRAÇA':'SOBRE O FORMATO'),{size:9.5,f:'B',color:C.PINK,spc:200});
   S.rect(RX+0.02,1.42,0.9,0.06,{fill:C.PINK});
-  var tx=info.texto||'', tsz=tx.length>260?15:(tx.length>170?17:19);
+  var tx=minTxt(info.texto||''), tsz=tx.length>260?15:(tx.length>170?17:19);
   S.text(RX,1.7,RW,2.3,tx,{size:tsz,f:'L',color:C.WHITE,ls:1.05});
   var sts=(info.stats||[]).filter(function(st){ return st[0]!=='auto'; }).slice(0,3), sw=(RW-0.2*(sts.length-1))/Math.max(1,sts.length); sts.forEach(function(st,k){ var x=RX+k*(sw+0.2), val=st[0];
     gcard(S,x,4.15,sw,1.35,k===1?C.PINK:C.NAVY_L,0.14);
     S.text(x+0.2,4.3,sw-0.35,0.7,val,{size:String(val).length>6?24:32,f:'M',color:C.WHITE,valign:'m'});
-    S.text(x+0.2,4.98,sw-0.35,0.45,st[1]||'',{size:9.5,f:'L',color:k===1?C.WHITE:'CCCCE0',ls:1.0}); });
+    S.text(x+0.2,4.98,sw-0.35,0.45,minLbl(st[0],st[1]),{size:9.5,f:'L',color:k===1?C.WHITE:'CCCCE0',ls:1.0}); });
   (info.bullets||[]).slice(0,3).forEach(function(b,k){ var y=5.8+k*0.36; S.oval(RX+0.02,y+0.09,0.12,0.12,{fill:C.PINK}); S.text(RX+0.3,y,RW-0.3,0.32,b,{size:11,f:'L',color:'E6E6F2'}); });
   var xx=0.75; for(var i=0;i<SEQ.length;i++){ var cur=SEQ[i]===sp.i, w=cur?0.42:0.15; S.rect(xx,6.8,w,0.07,{fill:cur?C.PINK:'5A5A9A',r:0.035}); xx+=w+0.05; }
   return S;
@@ -492,13 +495,14 @@ function specSlide(A,kicker,title,sub,rows,colw,drawFn,caption,chipItems,o){
   card(S,0.6,1.95,7.9,ch,0.2); table(S,0.85,2.2,7.4,rows,colw,{rowH:rowH,size:o.size||11.5,aligns:o.aligns});
   card(S,8.7,1.95,4.03,ch,0.2); S.text(8.92,2.1,3.6,0.25,'REPRESENTAÇÃO',{size:8,f:'B',color:C.PINK,spc:160});
   drawFn(S,8.9,2.45,3.65,ch-1.0); S.text(8.92,1.95+ch-0.45,3.6,0.35,caption,{size:8.5,f:'L',color:C.MID,ls:1.0});
-  chips(S,1.95+ch+0.25,chipItems); return S;
+  chips(S,1.95+ch+0.25,(chipItems||[]).map(function(c){ return [c[0],minLbl(c[0],c[1])]; })); return S;
 }
-function groupSpec(pts,withVeic){
-  var g={}, order=[];
-  pts.forEach(function(p){ var k=(p.tamanho||'—')+'|'+(p.pixels||'—')+(withVeic?'|'+(p.veic||''):''); if(!g[k]){ g[k]={tam:p.tamanho||'—',px:p.pixels||'—',veic:p.veic||'',loc:[]}; order.push(k);} g[k].loc.push((p.endereco||'')+(p.bairro?' · '+p.bairro:'')); });
-  return order.map(function(k){ var o=g[k]; var r=[o.loc.length>4?o.loc.length+' pontos · demais endereços (ver fichas)':o.loc.join(' · '),o.tam,o.px]; if(withVeic) r.push(o.veic||'—'); return r; });
+/* uma linha por ponto (endereço · bairro) */
+function groupSpec(pts,withVeic,maxc){ maxc=maxc||60;
+  return pts.map(function(p){ var loc=(p.endereco||'')+(p.bairro?' · '+p.bairro:''); if(loc.length>maxc) loc=loc.slice(0,maxc-1).trim()+'…'; var r=[loc,p.tamanho||'—',p.pixels||'—']; if(withVeic) r.push(p.veic||'—'); return r; });
 }
+function specPages(push,A,kick,sub,head,rows,colw,drawFn,cap,chips,o){ var per=7, nch=Math.max(1,Math.ceil(rows.length/per));
+  for(var li=0;li<rows.length;li+=per) push(specSlide(A,kick,'Especificações técnicas'+(nch>1?' · '+(li/per+1)+'/'+nch:''),sub,[head].concat(rows.slice(li,li+per)),colw,drawFn,cap,chips,Object.assign({rowH:0.46,size:10.5,minH:3.2},o||{}))); }
 
 /* ===== Montagem do kit completo ===== */
 function migKit(D){ var K=D.kit; if(!K.v3){ K.v3=1; K.fotoCapa=null; K.fotoContra=null; } if(!K.capaTexto) K.capaTexto='Mídia exterior digital e estática, comunicação visual e projetos especiais para conectar a sua marca às pessoas nas ruas de Belo Horizonte, região metropolitana e Brasília.'; if(!K.capaStats) K.capaStats=[['auto','pontos de mídia'],['3','praças atendidas'],['11','formatos de mídia']]; if(!K.capaPilares) K.capaPilares=['Mídia OOH','Comunicação visual','Projetos especiais']; }
@@ -560,10 +564,10 @@ function buildSlides(D0,A,mode){ migKit(D0);
   sepAndFichas(2,['led_mega','led_r2'],2);
   // especificações LED
   var ledRows=groupSpec(ptsOf(D,'led_mega').concat(ptsOf(D,'led_r2')),false);
-  for(var li=0,nch=Math.ceil(ledRows.length/6);li<ledRows.length;li+=6) push(specSlide(A,NP(2)+' · Painéis de LED','Especificações técnicas'+(nch>1?' · '+(li/6+1)+'/'+nch:''),'Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)']].concat(ledRows.slice(li,li+6)),[4.4,1.5,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.4,dims:['Largura','Altura']});},'Tamanho em metros · formato em pixels (resolução do arquivo).',D.specChips.led,{rowH:0.6}));
+  specPages(push,A,NP(2)+' · Painéis de LED','Belo Horizonte e região metropolitana',['Local','Tamanho','Formato (px)'],ledRows,[4.4,1.5,1.4],function(S,x,y,w,h){ledPanel(S,x,y,w,h,{dark:false,ratio:2.4,dims:['Largura','Altura']});},'Tamanho em metros · formato em pixels (resolução do arquivo).',D.specChips.led);
   sepAndFichas(4,['banca_mega','banca_r2'],3);
-  var bRows=groupSpec(ptsOf(D,'banca_mega').concat(ptsOf(D,'banca_r2')),true);
-  if(bRows.length) push(specSlide(A,NP(4)+' · Bancas de LED','Especificações técnicas','Belo Horizonte e região metropolitana',[['Local','Tamanho','Formato (px)','Veic./dia']].concat(bRows),[3.7,1.5,1.4,1.2],function(S,x,y,w,h){bancaDraw(S,x,y,w,h,{dark:false,dims:['Largura','Altura']});},'Banca com tela de LED na frente e na lateral.',D.specChips.banca,{rowH:0.64}));
+  var bRows=groupSpec(ptsOf(D,'banca_mega').concat(ptsOf(D,'banca_r2')),true,50);
+  specPages(push,A,NP(4)+' · Bancas de LED','Belo Horizonte e região metropolitana',['Local','Tamanho','Formato (px)','Veic./dia'],bRows,[3.7,1.5,1.4,1.2],function(S,x,y,w,h){bancaDraw(S,x,y,w,h,{dark:false,dims:['Largura','Altura']});},'Banca com tela de LED na frente e na lateral.',D.specChips.banca);
 
   // MERCADO
   var M=D.mercado; CG=1; if(full||has('mercado')){ push(separator(D,A,SEPS[4]));
@@ -644,7 +648,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   card(S,0.6,1.95,7.9,4.85,0.2); if(A.mapDF) S.img(0.8,2.15,7.5,4.45,A.mapDF,{r:0.18}); else S.rect(0.8,2.15,7.5,4.45,{fill:'EEF0F8',r:0.18});
   [[String(dfp.length),'painéis de LED em Brasília','navy'],[B.dims[0]+' x '+B.dims[1],'medida de cada painel','white'],[B.veic,'inserções por dia','pink']].forEach(function(t,i){ tile(S,8.7,1.95+i*1.65,4.03,1.5,t[0],t[1],t[2],26,10); });
   push(S);
-  push(specSlide(A,NP(12)+' · Painéis de LED · Brasília','Especificações técnicas','Distrito Federal',[['Local','Tamanho','Formato (px)']].concat(groupSpec(dfp,false)),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips,{rowH:0.7}));
+  if(dfp.length||full) specPages(push,A,NP(12)+' · Painéis de LED · Brasília','Distrito Federal',['Local','Tamanho','Formato (px)'],groupSpec(dfp,false),[4.4,1.5,1.4],function(S,x,y,w,h){ ledPanel(S,x+w*0.2,y,w*0.6,h,{dark:false,ratio:0.67,dims:B.dims}); },B.caption,B.painelChips);
   dfp.forEach(function(p){ push(ficha(D,A,p)); });
   }
 
@@ -657,7 +661,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   if(!full&&!noPrice){
   S=frame(null,A,'Investimento','Tabela de preços','Valor de tabela, desconto e valor negociado ('+(D.modoGeral==='liquido'?'líquido de comissão':'bruto')+')');
   card(S,0.6,1.95,12.13,4.85,0.2);
-  var tb=[['Formato','Pontos','Período','Inserções/dia','Valor tabela','Desc.','Valor negociado'+(D.modoGeral==='liquido'?' (líq.)':' (bruto)')]], totT=0, totN=0;
+  var tb=[['Formato','Pontos','Período','Mín. inserções/dia','Valor tabela','Desc.','Valor negociado'+(D.modoGeral==='liquido'?' (líq.)':' (bruto)')]], totT=0, totN=0;
   rows.forEach(function(c){ totT+=c.tabela; totN+=c.final; tb.push([c.nome,String(c.pontos),c.periodo,c.insercoes||'—',brl(c.tabela),(c.desc||0)+'%',brl(c.final)]); });
   tb.push(['Total','','','',brl(totT),'',brl(totN)]);
   var hh=Math.min(0.41,(4.85-0.3-0.4)/(tb.length-1));
