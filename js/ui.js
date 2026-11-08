@@ -53,22 +53,21 @@ function schemaField(obj,s){
   i=h('textarea',{rows:type==='pairs'||type==='rows'?(s[3]||6):2}); i.value=conv[0](cur); i.addEventListener('input',function(){ setp(obj,path,conv[1](i.value)); dirty(); });
   return field(label,i,s[4],'wide');
 }
-/* ajuste do enquadramento da foto na ficha (foco, zoom ou foto inteira) com prévia ao vivo */
+/* ajuste do enquadramento da foto na ficha (foco, zoom ou foto inteira) com prévia ao vivo (sem canvas: usa a própria foto) */
 function fotoAjuste(p){
-  var AR=6.5/4.85, w=h('div',{class:'fajuste'}), cv=h('canvas',{width:520,height:Math.round(520/AR)}), c=cv.getContext('2d'), im=new Image(), ok=false;
+  var AR=6.5/4.85, w=h('div',{class:'fajuste'}), box=h('div',{class:'fprev'}), im=h('img',{alt:'Prévia do enquadramento'}), aviso=h('span',{class:'faviso',text:'Carregando a foto…'});
+  box.appendChild(im); box.appendChild(aviso);
   function aj(){ if(!p.fotoAj) p.fotoAj={x:50,y:50,z:100,inteira:false}; return p.fotoAj; }
-  function draw(){ c.fillStyle='#000066'; c.fillRect(0,0,cv.width,cv.height); if(!ok){ c.fillStyle='#fff'; c.font='14px Poppins,sans-serif'; c.fillText('Envie uma foto para ajustar o enquadramento.',20,40); return; }
-    var a=aj(); if(a.inteira){ var s=Math.min(cv.width/im.naturalWidth,cv.height/im.naturalHeight), dw=im.naturalWidth*s, dh=im.naturalHeight*s; c.drawImage(im,(cv.width-dw)/2,(cv.height-dh)/2,dw,dh); return; }
-    var r=cropRect(im.naturalWidth,im.naturalHeight,AR,a); c.drawImage(im,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height); }
-  function msgc(t){ c.fillStyle='#000066'; c.fillRect(0,0,cv.width,cv.height); c.fillStyle='#fff'; c.font='15px Poppins,sans-serif'; c.fillText(t,20,40); }
-  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); ok=false; if(!src){ draw(); return; } msgc('Carregando a foto…'); im.onload=function(){ ok=true; draw(); }; im.onerror=function(){ msgc('Não foi possível carregar a foto.'); }; im.src=src; }
-  function sl(rot,key,min,max){ var s=h('input',{type:'range',min:min,max:max,step:1}); s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; s.addEventListener('input',function(){ aj()[key]=+s.value; draw(); dirty(); }); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
+  function draw(){ var a=aj(); var nw=im.naturalWidth, nh=im.naturalHeight; if(!nw||!nh) return; aviso.hidden=true;
+    if(a.inteira){ im.style.cssText='width:100%;height:100%;left:0;top:0;object-fit:contain'; return; }
+    var r=cropRect(nw,nh,AR,a); im.style.cssText='object-fit:fill;width:'+(nw/r.sw*100)+'%;height:'+(nh/r.sh*100)+'%;left:'+(-r.sx/r.sw*100)+'%;top:'+(-r.sy/r.sh*100)+'%'; }
+  function load(){ var k=Array.isArray(p.foto)?p.foto[0]:p.foto, src=k&&libSrc(k); if(!src){ im.removeAttribute('src'); aviso.hidden=false; aviso.textContent='Este ponto não tem foto.'; return; } aviso.hidden=false; aviso.textContent='Carregando a foto…'; im.onload=draw; im.onerror=function(){ aviso.hidden=false; aviso.textContent='Não foi possível carregar a foto.'; }; im.src=src; if(im.complete&&im.naturalWidth) draw(); }
+  function sl(rot,key,min,max){ var s=h('input',{type:'range',step:1}); s.min=min; s.max=max; s.value=aj()[key]==null?(key==='z'?100:50):aj()[key]; s.addEventListener('input',function(){ aj()[key]=+s.value; draw(); dirty(); }); return h('label',{class:'frow'},[h('span',{text:rot}),s]); }
   var inteira=h('input',{type:'checkbox'}); inteira.checked=!!(p.fotoAj&&p.fotoAj.inteira); inteira.addEventListener('change',function(){ aj().inteira=inteira.checked; draw(); dirty(); });
-  var reset=h('button',{type:'button',class:'btn',text:'Restaurar',onclick:function(){ delete p.fotoAj; dirty(); var par=w.parentNode; if(par) par.replaceChild(fotoAjuste(p),w); }});
-  w.appendChild(cv); w.appendChild(h('div',{class:'fctl'},[sl('← Esquerda · Direita →','x',0,100),sl('↑ Cima · Baixo ↓','y',0,100),sl('Zoom','z',100,300),h('label',{class:'chk'},[inteira,h('span',{text:'Mostrar a foto inteira (sem cortar)'})]),reset]));
-  msgc('Carregando a foto…'); try{ var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ io.disconnect(); load(); } }); io.observe(cv); }catch(e){ load(); }
-  document.addEventListener('fotochg',function f(){ if(!cv.isConnected){ document.removeEventListener('fotochg',f); return; } if(cv.offsetParent) load(); });
-  return h('div',{class:'f wide'},[h('span',{text:'Enquadramento da foto no kit'}),w,h('small',{text:'Mexa nos controles até o painel aparecer inteiro. Vale para a ficha deste ponto no PowerPoint e no PDF.'})]); }
+  var reset=h('button',{type:'button',class:'btn',text:'Restaurar',onclick:function(){ delete p.fotoAj; dirty(); var par=wr.parentNode; if(par) par.replaceChild(fotoAjuste(p),wr); }});
+  w.appendChild(box); w.appendChild(h('div',{class:'fctl'},[sl('← Esquerda · Direita →','x',0,100),sl('↑ Cima · Baixo ↓','y',0,100),sl('Zoom','z',100,300),h('label',{class:'chk'},[inteira,h('span',{text:'Mostrar a foto inteira (sem cortar)'})]),reset]));
+  load(); document.addEventListener('fotochg',function f(){ if(box.isConnected){ box.__c=1; load(); } else if(box.__c){ document.removeEventListener('fotochg',f); } });
+  var wr=h('div',{class:'f wide'},[h('span',{text:'Enquadramento da foto no kit'}),w,h('small',{text:'Mexa nos controles até o painel aparecer inteiro. Vale para a ficha deste ponto no PowerPoint e no PDF.'})]); return wr; }
 function photosField(label,obj,path){
   var wrap=h('div',{class:'photos'}), fi=h('input',{type:'file',accept:'image/*',multiple:'multiple'}); 
   function draw(){ wrap.innerHTML=''; var arr=getp(obj,path); if(!Array.isArray(arr)){ arr=arr?[arr]:[]; }

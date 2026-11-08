@@ -388,3 +388,8 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 
 .seg{display:inline-flex;gap:6px;flex-wrap:wrap}.segb{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font:600 13px/1 Poppins,sans-serif;color:var(--mid);cursor:pointer}
 .segb.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.fprev{position:relative;overflow:hidden;width:min(100%,420px);aspect-ratio:6.5/4.85;border-radius:14px;background:#000066;box-shadow:0 8px 24px #00006624;flex:none}
+.fprev img{position:absolute;display:block;max-width:none}
+.fprev .faviso{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;text-align:center;padding:12px}
+.fprev .faviso[hidden]{display:none}
