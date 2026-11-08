@@ -321,8 +321,8 @@ var SEC = {
   led_rm:{nome:'Painéis de LED',praca:'Região Metropolitana',tipo:'Painel de LED',sep:2},
   banca_led:{nome:'Bancas de LED',praca:'BH e região',tipo:'Banca de LED',sep:4},
   empena:{nome:'Empenas',praca:'',tipo:'Empena',sep:7},
-  front:{nome:'Painéis frontlight',praca:'',tipo:'Painel frontlight',sep:8},
-  mensal:{nome:'Painéis mensais',praca:'',tipo:'Mega painel',sep:9},
+  front:{nome:'Painéis frontlight',praca:'',tipo:'Frontlight',sep:8},
+  mensal:{nome:'Mega Painéis',praca:'',tipo:'Mega painel',sep:9},
   outdoor:{nome:'Painéis outdoor',praca:'',tipo:'Outdoor',sep:13},
   revista:{nome:'Bancas Estáticas',praca:'',tipo:'Banca Estática',sep:10},
   mercado:{nome:'Mercado Central',praca:'',tipo:'Painel de LED',sep:5,tiles:[['FLUXO DE PESSOAS/MÊS','fluxo'],['VEICULAÇÕES/DIA','veic']]},
@@ -348,7 +348,7 @@ var GRUPOS=[
  {k:'guanabara',nome:'Parque Guanabara',sec:['guanabara']},
  {k:'empena',nome:'Empenas',sec:['empena']},
  {k:'front',nome:'Painéis Frontlight',sec:['front']},
- {k:'mensal',nome:'Painéis Mensais',sec:['mensal']},
+ {k:'mensal',nome:'Mega Painéis',sec:['mensal']},
  {k:'outdoor',nome:'Painéis Outdoor',sec:['outdoor']},
  {k:'revista',nome:'Bancas Estáticas',sec:['revista']},
  {k:'metro',nome:'Metrô-DF',sec:['metro']},
@@ -417,7 +417,7 @@ var SEPS=[
  {i:6,title:'Parque\nGuanabara',kick:'Ponto especial',sub:'',hero:function(S){wheelDraw(S,1.0,1.15,2.4,{dark:true});},secs:[],photo:'guanabara_foto2'},
  {i:7,title:'Empenas',kick:'Formato',sub:'Mídia estática de grande formato',hero:function(S){buildingDraw(S,0.8,1.2,3.2,2.25,{dark:true});},secs:['empena']},
  {i:8,title:'Painéis\nfrontlight',kick:'Formato',sub:'',hero:function(S){billboard(S,0.5,1.15,3.7,2.3,{dark:true,lamps:true,ratio:2.8});},secs:['front']},
- {i:9,title:'Painéis\nmensais',kick:'Formato',sub:'Mega painéis em pontos estratégicos',hero:function(S){billboard(S,0.5,1.4,3.7,2.0,{dark:true,ratio:3.4});},secs:['mensal']},
+ {i:9,title:'Mega\nPainéis',kick:'Formato',sub:'Mega painéis em pontos estratégicos',hero:function(S){billboard(S,0.5,1.4,3.7,2.0,{dark:true,ratio:3.4});},secs:['mensal']},
  {i:10,title:'Bancas\nEstáticas',kick:'Formato',sub:'Mídia estática em bancas de revista',hero:function(S){bancaDraw(S,0.9,1.35,3.0,2.1,{dark:true,kind:'revista'});},secs:['revista']},
  {i:11,title:'Brasília',kick:'Praça',sub:'Metrô-DF e painéis de LED',hero:function(S){congresso(S,0.6,1.3,3.7,2.1,{dark:true});},secs:['metro','df_painel']},
  {i:12,title:'Painéis de LED\nBrasília',kick:'Formato',sub:'Distrito Federal',hero:function(S){ledPanel(S,1.2,1.1,2.6,2.4,{dark:true,ratio:0.67});pinIcon(S,3.4,1.1,0.45);},secs:['df_painel']},
@@ -432,7 +432,7 @@ var SEPINFO={
  6:{texto:'Um dos parques de diversões mais tradicionais do Brasil, na região da Lagoa da Pampulha, um dos principais cartões-postais de BH. Conecta marcas a um público diverso nos momentos de lazer.',stats:[['70 mil','visitantes por mês'],['1951','ano de fundação'],['10','telas no circuito']],bullets:['Famílias, grupos escolares e turistas','Ambiente emocionalmente positivo','Estacionamento próprio no parque']},
  7:{texto:'Mídia estática de grande formato aplicada nas laterais de edifícios. Altíssima visibilidade e forte presença de marca, vista de longe por quem circula na região.',stats:[['auto','empenas'],['Grande','formato'],['Mensal','período de exposição']],bullets:['Pontos de grande visibilidade na cidade','Impacto de marca em escala urbana','Exposição contínua durante o período']},
  8:{texto:'Painéis iluminados que garantem a leitura da mensagem também à noite, instalados em vias de grande circulação.',stats:[['auto','painéis frontlight'],['Dia e noite','visibilidade'],['Mensal','período de exposição']],bullets:['Iluminação própria para leitura noturna','Vias de grande circulação','Exposição contínua durante o mês']},
- 9:{texto:'Mega painéis e outdoors em pontos estratégicos, com exposição contínua durante todo o mês e grande impacto visual.',stats:[['auto','painéis mensais'],['Mega','formatos de impacto'],['Mensal','período de exposição']],bullets:['Pontos estratégicos de grande fluxo','Mídia de massa com alto alcance','Exposição contínua durante o mês']},
+ 9:{texto:'Mega painéis em pontos estratégicos, com exposição contínua durante todo o mês e grande impacto visual.',stats:[['auto','mega painéis'],['Mega','formatos de impacto'],['Mensal','período de exposição']],bullets:['Pontos estratégicos de grande fluxo','Mídia de massa com alto alcance','Exposição contínua durante o mês']},
  10:{texto:'Bancas estáticas tradicionais da cidade, com comunicação impressa próxima ao pedestre, em pontos de grande circulação.',stats:[['auto','bancas estáticas'],['Rua','mídia na altura do olhar'],['Mensal','período de exposição']],bullets:['Localização em regiões de grande fluxo','Presença local e contato próximo','Boa opção para ações de proximidade']},
  11:{texto:'Capital federal, Patrimônio Cultural da Humanidade pela UNESCO e sede dos poderes da República. Com mais de 2,8 milhões de habitantes e uma das maiores rendas do país, reúne um público qualificado, que se desloca pelas grandes vias e pelo Metrô-DF.',stats:[['auto','pontos em Brasília'],['2,8 mi','habitantes'],['160 mil','usuários por dia no Metrô-DF']],bullets:['Mídia no Metrô-DF: vagões e estações','Painéis de LED nas principais vias','Público A, B e C']},
  13:{texto:'Outdoors em vias de grande circulação: formato tradicional da mídia exterior, com exposição contínua durante o mês e ótimo custo-benefício para construir presença de marca.',stats:[['auto','painéis outdoor'],['Mensal','período de exposição']],bullets:['Pontos de grande fluxo de pessoas e veículos','Visibilidade contínua, dia após dia','Ótimo custo-benefício']},
@@ -547,7 +547,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   var bhCount=['led_bh','banca_led','empena','front','mensal','outdoor','revista'].reduce(function(a,s){return a+ptsOf(D,s).length;},0);
   S=frame(null,A,'Cobertura','Onde estamos','Mega Mídia OOH em Belo Horizonte, região metropolitana e Brasília');
   card(S,0.6,1.95,7.7,4.85,0.2); if(A.mapGeral) S.img(0.8,2.15,7.3,4.45,A.mapGeral,{r:0.18}); else S.rect(0.8,2.15,7.3,4.45,{fill:'EEF0F8',r:0.18});
-  [['Belo Horizonte','LED, bancas, empenas, frontlight e mensais','01'],['Região Metropolitana','Painéis de LED','02'],['Mercado Central',D.mercado.circuito,'03'],['Parque Guanabara',D.guanabara.circuito,'04'],['Brasília · DF','Painéis de LED e mídia no Metrô-DF','05']].forEach(function(t,i){ var y=1.95+i*1.0;
+  [['Belo Horizonte','LED, bancas, empenas, frontlight, mega painéis e outdoors','01'],['Região Metropolitana','Painéis de LED','02'],['Mercado Central',D.mercado.circuito,'03'],['Parque Guanabara',D.guanabara.circuito,'04'],['Brasília · DF','Painéis de LED e mídia no Metrô-DF','05']].forEach(function(t,i){ var y=1.95+i*1.0;
     card(S,8.6,y,4.13,0.86,0.14); pill(S,8.78,y+0.2,0.46,0.46,t[2],{fill:i%2?C.NAVY:C.PINK,size:9.5}); S.text(9.42,y+0.1,3.2,0.34,t[0],{size:12.5,f:'M',color:C.NAVY}); S.text(9.42,y+0.43,3.2,0.4,t[1],{size:8.5,f:'L',color:C.MID,ls:1.0}); });
   push(S);
 
@@ -555,7 +555,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   if(full||bhCount>0){
   S=frame(null,A,'Belo Horizonte','Nossos formatos na capital','Formatos disponíveis');
   skyline(S,7.3,0.95,5.43,0.95,{dark:false});
-  var fmts=[['led_bh','Painéis de LED','Mídia digital em movimento'],['banca_led','Bancas de LED','Telas de LED na altura do olhar'],['empena','Empenas','Grande formato em edifícios'],['front','Painéis frontlight','Iluminados, visíveis dia e noite'],['mensal','Painéis mensais','Mega painéis em pontos estratégicos'],['outdoor','Painéis outdoor','Outdoors em vias de grande circulação'],['revista','Bancas Estáticas','Mídia estática em bancas']].filter(function(t){ return full||ptsOf(D,t[0]).length; });
+  var fmts=[['led_bh','Painéis de LED','Mídia digital em movimento'],['banca_led','Bancas de LED','Telas de LED na altura do olhar'],['empena','Empenas','Grande formato em edifícios'],['front','Painéis frontlight','Iluminados, visíveis dia e noite'],['mensal','Mega Painéis','Grandes formatos em pontos estratégicos'],['outdoor','Painéis outdoor','Outdoors em vias de grande circulação'],['revista','Bancas Estáticas','Mídia estática em bancas']].filter(function(t){ return full||ptsOf(D,t[0]).length; });
   var cp=fmts.length>6, th=cp?1.55:2.25, ts=cp?1.75:2.45;
   fmts.forEach(function(t,i){ var x=0.6+(i%3)*4.06, y=1.95+Math.floor(i/3)*ts, first=i===0;
     if(first) gcard(S,x,y,3.85,th,C.NAVY,0.2); else card(S,x,y,3.85,th,0.2);
