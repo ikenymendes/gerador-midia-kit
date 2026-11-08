@@ -1,5 +1,5 @@
 /* Dados do kit: estado padrão, preços, fotos, mapas e geração (PPTX/PDF/prévia). */
-var ONLINE=true;
+var ONLINE=false; /* false = mapas reais (Esri/OSM) com a internet */
 var INS_DEF={led_bh:500,led_rm:500,banca_led:500,mercado:220,guanabara:250,df_painel:420};
 function migPrecos(D){ (D.precos||[]).forEach(function(r){ if(r.nome==='Bancas de revista') r.nome='Bancas Estáticas'; if(!r.v2){ r.v2=1; var d=INS_DEF[r.auto]; r.insPor=d!=null?d:(parseInt(r.insercoes,10)||''); delete r.modo; } }); }
 var ESTATICOS=['empena','front','mensal','revista','metro'];
@@ -89,15 +89,39 @@ async function renderMap(pts,W,H,zoom,big){
   var s=Math.round(Math.min(W,H)*(pts.length>1?0.02:0.034));
   pts.forEach(function(p){ var w=worldXY(p.lat,p.lng,z); var px=w.x-x0, py=w.y-y0+(pts.length>1?0:Math.round(H*.05)); if(pts.length>1){ c.fillStyle='#fff'; c.beginPath(); c.arc(px,py,s*0.9,0,7); c.fill(); c.fillStyle='#ff0066'; c.beginPath(); c.arc(px,py,s*0.62,0,7); c.fill(); } else pinDraw(c,px,py,s); });
   if(!ONLINE){ c.font='400 '+Math.round(H*.016)+'px Poppins,Segoe UI,sans-serif'; c.textAlign='right'; var at=mapAttr(st), aw=c.measureText(at).width+16; c.fillStyle='rgba(255,255,255,.85)'; c.fillRect(W-aw-8,H-H*.045-6,aw,H*.045); c.fillStyle='#4a4a6a'; c.fillText(at,W-16,H-H*.045+H*.016*0.8-6); }
-  var src=cv.toDataURL('image/jpeg',0.9); var a={src:src,w:W,h:H,el:cv}; mapCache[key]=a; return a;
+  var src=cv.toDataURL('image/jpeg',0.9); var a={src:src,w:W,h:H,el:cv,falhou:mapFail>before}; if(!a.falhou) mapCache[key]=a; return a;
 }
 function parseMapsText(text){
   text=(text||'').trim(); if(!text) return null; try{ text=decodeURIComponent(text); }catch(e){}
   var m; if((m=text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/))) return {lat:+m[1],lng:+m[2]};
   if((m=text.match(/[?&](?:q|ll|query|center|destination|viewpoint)=(-?\d+(?:\.\d+)?)[,\s+]+(-?\d+(?:\.\d+)?)/))) return {lat:+m[1],lng:+m[2]};
   if((m=text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/))) return {lat:+m[1],lng:+m[2]};
+  if((m=text.match(/\/maps\/(?:search|place|dir)\/(?:[^\/]*\/)?(-?\d+\.\d+),\+?\s*(-?\d+\.\d+)/))) return {lat:+m[1],lng:+m[2]};
   if((m=text.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/))) return {lat:+m[1],lng:+m[2]};
   return null; }
+
+/* ---------- prévia do mapa no cadastro do ponto: o mesmo mapa que vai para o mídia kit ---------- */
+function mapaPreview(obj){
+  var img=h('img',{class:'mpimg',alt:'Mapa do ponto'}), msg=h('p',{class:'mpmsg'}), box=h('div',{class:'mapprev wide'},[h('div',{class:'mphead',text:'Mapa que vai para o mídia kit'}),h('div',{class:'mpbody'},[img,msg])]), tm=null, seq=0;
+  function vazio(t){ img.removeAttribute('src'); img.hidden=true; msg.textContent=t; msg.className='mpmsg'; }
+  async function gerar(){
+    var la=obj.lat, ln=obj.lng, ok=la!=null&&la!==''&&ln!=null&&ln!==''&&!isNaN(la)&&!isNaN(ln)&&Math.abs(la)<=90&&Math.abs(ln)<=180;
+    if(!ok){ vazio('Cole o link do Google Maps (ou a latitude e a longitude) e o mapa aparece aqui sozinho.'); return; }
+    var my=++seq; msg.textContent='Gerando o mapa…'; msg.className='mpmsg'; img.hidden=true;
+    try{
+      var a=await renderMap([{lat:+la,lng:+ln}],1040,720,+obj.zoom||16); if(my!==seq) return;
+      img.src=a.src; img.hidden=false;
+      if(a.falhou){ msg.textContent='Não consegui baixar o mapa agora (internet ou bloqueio do serviço de mapas). A posição está certa; o mapa será tentado de novo ao gerar o kit.'; msg.className='mpmsg err'; }
+      else { msg.textContent=(obj.mapa&&(Array.isArray(obj.mapa)?obj.mapa.length:1)?'Este ponto tem uma imagem de mapa enviada, que tem prioridade no kit. ':'')+'Gerado a partir de '+Number(la).toFixed(6)+' , '+Number(ln).toFixed(6)+'. Ajuste o zoom se quiser mais perto ou mais longe.'; msg.className='mpmsg ok'; }
+    }catch(e){ vazio('Não foi possível gerar o mapa: '+erroMsg(e)); }
+  }
+  var iniciou=false;
+  function update(){ if(!iniciou) return; clearTimeout(tm); tm=setTimeout(gerar,450); }
+  vazio('');
+  function iniciar(){ if(iniciou) return; iniciou=true; gerar(); }
+  if(window.IntersectionObserver){ var io=new IntersectionObserver(function(es){ if(es.some(function(e){return e.isIntersecting})){ io.disconnect(); iniciar(); } }); io.observe(box); } else iniciar();
+  return {el:box,update:update};
+}
 
 /* ---------- preparação dos assets e geração ---------- */
 var BASE={};

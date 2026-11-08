@@ -93,12 +93,12 @@ function novoPontoPanel(){
   var ed=inp(np,'endereco'), ba=inp(np,'bairro'), cid=inp(np,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(np,'lat',{num:true}), lng=inp(np,'lng',{num:true}), res=h('small',{text:''});
-  function ok(r){ np.lat=r.lat; np.lng=r.lng; lat.value=r.lat; lng.value=r.lng; res.textContent='✓ Coordenadas encontradas: '+r.lat+' , '+r.lng; res.style.color='#2a9d6f'; lk.style.borderColor='#2a9d6f'; }
+  function ok(r){ np.lat=r.lat; np.lng=r.lng; lat.value=r.lat; lng.value=r.lng; res.textContent='✓ Coordenadas encontradas: '+r.lat+' , '+r.lng; res.style.color='#2a9d6f'; lk.style.borderColor='#2a9d6f'; if(typeof pm!=='undefined') pm.update(); }
   lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r) ok(r); else { res.textContent=lk.value?'Não encontrei coordenadas neste link (links curtos maps.app.goo.gl não funcionam: abra o ponto no Maps e copie o link completo da barra do navegador).':''; res.style.color='#b0003a'; lk.style.borderColor=''; } });
   g.appendChild(field('Link do Google Maps (busca lat/long sozinho)',h('div',{},[lk,res]),null,'wide'));
   var bt=h('button',{class:'btn',text:'🔎 Buscar pelo endereço',onclick:async function(){ var q=[np.endereco,np.bairro,np.cidade].filter(Boolean).join(', '); if(!np.endereco){ res.textContent='Digite o endereço primeiro.'; res.style.color='#b0003a'; return; } res.textContent='Buscando…'; res.style.color=''; try{ var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q)); var j=await r.json(); if(j&&j[0]) ok({lat:+(+j[0].lat).toFixed(7),lng:+(+j[0].lon).toFixed(7)}); else { res.textContent='Endereço não encontrado: use o link do Maps.'; res.style.color='#b0003a'; } }catch(e){ res.textContent='Sem conexão com o serviço de busca: use o link do Maps.'; res.style.color='#b0003a'; } }});
   
-  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng));
+  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng)); var pm=mapaPreview(np); g.appendChild(pm.el); g.addEventListener('input',pm.update);
   [['tamanho','Tamanho (ex.: 9,00 x 3,00 m)'],['pixels','Formato em pixels (ex.: 2308 x 577)'],['veic','Veiculações/dia (bancas)'],['publico','Público (ex.: A, B, C e D)'],['fluxo','Fluxo de carros/dia'],['impacto','Impacto semanal'],['sentido','Sentido (ex.: Centro / Bairro)']].forEach(function(f){ g.appendChild(field(f[1],inp(np,f[0]))); });
   g.appendChild(photosField('Foto do ponto',np,'foto')); g.appendChild(photosField('Imagem do mapa (opcional)',np,'mapa'));
   d.appendChild(g);
@@ -151,9 +151,9 @@ function pointCard(p,ix){
   function I(path,label,o){ o=o||{}; o.onchange=upd; return field(label,inp(p,path,o),o.hint); }
   g.appendChild(I('endereco','Endereço (título da ficha)')); g.appendChild(I('bairro','Bairro')); g.appendChild(I('cidade','Cidade'));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}); var lat=inp(p,'lat',{num:true,onchange:upd}), lng=inp(p,'lng',{num:true,onchange:upd});
-  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r){ p.lat=r.lat; p.lng=r.lng; lat.value=r.lat; lng.value=r.lng; upd(); dirty(); lk.style.borderColor='#2a9d6f'; } else lk.style.borderColor=''; });
+  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r){ p.lat=r.lat; p.lng=r.lng; lat.value=r.lat; lng.value=r.lng; upd(); dirty(); pm.update(); lk.style.borderColor='#2a9d6f'; } else lk.style.borderColor=''; });
   g.appendChild(field('Link do Google Maps (preenche lat/long)',lk,'Link curto (maps.app.goo.gl) não funciona: abra e copie o endereço completo da barra.','wide'));
-  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng)); g.appendChild(I('zoom','Zoom do mapa (13–19)',{num:true}));
+  g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng)); g.appendChild(I('zoom','Zoom do mapa (13–19)',{num:true})); var pm=mapaPreview(p); g.appendChild(pm.el); g.addEventListener('input',pm.update);
   g.appendChild(I('tamanho','Tamanho (ex.: 9,00 x 3,00 m)')); g.appendChild(I('pixels','Formato em pixels (ex.: 2308 x 577)')); g.appendChild(I('veic','Veiculações/dia (bancas)')); g.appendChild(I('publico','Público (ex.: A, B, C e D)')); g.appendChild(I('fluxo','Fluxo de carros/dia')); g.appendChild(I('impacto','Impacto semanal')); g.appendChild(I('sentido','Sentido (ex.: Centro / Bairro)')); g.appendChild(I('preco','Valor de tabela deste endereço (R$)',{num:true,hint:'Usado nas propostas de empenas, frontlight, mensais, bancas estáticas e Metrô-DF.'}));
   g.appendChild(photosField('Foto do ponto',p,'foto')); g.appendChild(photosField('Imagem do mapa (opcional; envie um print do mapa do ponto)',p,'mapa')); d.appendChild(g); upd(); return d;
 }

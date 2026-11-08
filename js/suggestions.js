@@ -19,9 +19,10 @@ function formPonto(obj,semFoto){
   var ed=inp(obj,'endereco'), ba=inp(obj,'bairro'), cid=inp(obj,'cidade');
   g.appendChild(field('Endereço (título da ficha) *',ed)); g.appendChild(field('Bairro',ba)); g.appendChild(field('Cidade',cid));
   var lk=h('input',{type:'text',placeholder:'Cole o link completo do Google Maps ou "lat, long"'}), lat=inp(obj,'lat',{num:true}), lng=inp(obj,'lng',{num:true}), res=h('small',{text:''});
-  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r){ obj.lat=r.lat; obj.lng=r.lng; lat.value=r.lat; lng.value=r.lng; res.textContent='✓ Coordenadas encontradas: '+r.lat+' , '+r.lng; res.style.color='#2a9d6f'; } else { res.textContent=lk.value?'Não encontrei coordenadas neste link (use o link completo, não o curto).':''; res.style.color='#b0003a'; } });
+  lk.addEventListener('input',function(){ var r=parseMapsText(lk.value); if(r){ obj.lat=r.lat; obj.lng=r.lng; lat.value=r.lat; lng.value=r.lng; pm.update(); res.textContent='✓ Coordenadas encontradas: '+r.lat+' , '+r.lng; res.style.color='#2a9d6f'; } else { res.textContent=lk.value?'Não encontrei coordenadas neste link (use o link completo, não o curto).':''; res.style.color='#b0003a'; } });
   g.appendChild(field('Link do Google Maps (preenche lat/long)',h('div',{},[lk,res]),null,'wide'));
   g.appendChild(field('Latitude',lat)); g.appendChild(field('Longitude',lng));
+  var pm=mapaPreview(obj); g.appendChild(pm.el); g.addEventListener('input',pm.update);
   [['tamanho','Tamanho (ex.: 9,00 x 3,00 m)'],['pixels','Formato em pixels (ex.: 2308 x 577)'],['veic','Veiculações/dia (bancas)'],['publico','Público (ex.: A, B, C e D)'],['fluxo','Fluxo de carros/dia'],['impacto','Impacto semanal'],['sentido','Sentido (ex.: Centro / Bairro)']].forEach(function(f){ g.appendChild(field(f[1],inp(obj,f[0]))); });
   if(semFoto) g.appendChild(h('p',{class:'hint wide',text:'A foto e a imagem do mapa do ponto só o administrador altera.'})); else g.appendChild(photosField('Foto do ponto',obj,'foto'));
   return g;
