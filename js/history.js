@@ -8,7 +8,7 @@ async function logProposta(formato,mode){
     var pts=(prop||kitp)?D.pontos.filter(function(p){ return p.sel; }):[];
     var locais=pts.map(function(p){ return {secao:p.secao,secao_nome:grupoDe(p).nome,endereco:p.endereco||'',bairro:p.bairro||'',cidade:p.cidade||'',lat:p.lat==null||p.lat===''?null:+p.lat,lng:p.lng==null||p.lng===''?null:+p.lng,tamanho:p.tamanho||'',pixels:p.pixels||'',veic:p.veic||'',publico:p.publico||'',fluxo:p.fluxo||'',impacto:p.impacto||'',sentido:p.sentido||'',dono:donoDe(p),valor_tabela:p.preco==null||p.preco===''?null:vlr(p.preco)}; });
     var tt=0,tn=0;
-    var valores=rows.map(function(c){ tt+=c.tabela; tn+=c.final; return {nome:c.nome,pontos:c.pontos,periodo:c.periodo,insercoes_por_ativo:c.insPor,insercoes_total:c.insN,tabela:c.tabela,desconto:c.desc,negociado:c.neg,final:c.final}; });
+    var valores=rows.map(function(c){ tt+=c.tabela; tn+=c.final; var o={nome:c.nome,pontos:c.pontos,periodo:c.periodo,insercoes_por_ativo:c.insPor,insercoes_total:c.insN,tabela:c.tabela,desconto:c.desc,negociado:c.neg,final:c.final}; if(window.JUST_DESC&&c.desc>(num(D.descAlerta)||20)) o.justificativa=window.JUST_DESC; return o; });
     await Store.salvarProposta({tipo:prop?'proposta':'kit_completo',formato:formato,cliente:D.kit.cliente||null,titulo:D.kit.titulo||null,n_locais:(prop||kitp)?pts.length:D.pontos.length,modo_valor:D.modoGeral,comissao:num(D.comissao),bv:num(D.bv),total_tabela:tt,total_negociado:tn,locais:locais,valores:valores});
     return ' · backup da proposta salvo';
   }catch(e){
@@ -90,6 +90,7 @@ function detalheProposta(p){
   (p.valores||[]).forEach(function(r){ b1.appendChild(h('tr',{},[r.nome,String(r.pontos),r.periodo||'',String(r.insercoes_total||'—'),brlN(r.tabela),(r.desconto||0)+'%',brlN(r.negociado),brlN(r.final)].map(function(x){ return h('td',{text:x}); }))); });
   b1.appendChild(h('tr',{class:'tot'},['Total','','','',brlN(p.total_tabela),'','',brlN(p.total_negociado)].map(function(x){ return h('td',{text:x}); })));
   w.appendChild(h('div',{class:'tw small'},[tv]));
+  (p.valores||[]).filter(function(r){ return r.justificativa; }).forEach(function(r){ w.appendChild(h('p',{class:'hint',text:'Justificativa de desconto · '+r.nome+' ('+(r.desconto||0)+'%): '+r.justificativa})); });
   w.appendChild(h('h3',{text:'Locais incluídos ('+(p.locais||[]).length+')'}));
   var tl=h('table',{class:'ptab'}); tl.appendChild(h('thead',{},[h('tr',{},['Formato','Endereço','Bairro','Cidade','Tamanho'].map(function(x){ return h('th',{text:x}); }))])); var b2=h('tbody'); tl.appendChild(b2);
   (p.locais||[]).forEach(function(l){ b2.appendChild(h('tr',{},[l.secao_nome||l.secao,l.endereco,l.bairro,l.cidade,l.tamanho].map(function(x){ return h('td',{text:x||''}); }))); });

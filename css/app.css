@@ -449,3 +449,36 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
   .gform{padding:48px 18px 28px;background:#fbfbfe}.gbox{padding:26px 22px 24px;border-radius:18px}.gbox h2{font-size:26px}.gbox h2::before{margin-bottom:14px}
   .gform::after{position:static;display:block;margin-top:24px}
 }
+
+/* trava de conferência */
+.pinbox.conf{width:min(640px,94vw);text-align:left;max-height:90vh;overflow:auto;padding:26px 28px}
+.pinbox.conf h3{font-size:20px}.pinbox.conf .pind{margin:0 0 14px}
+.cwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.ctab{width:100%;border-collapse:collapse;font-size:13px}.ctab th{background:var(--paper);text-align:left;font-weight:500;color:var(--mid);padding:9px 12px;font-size:11.5px}
+.ctab td{padding:9px 12px;border-top:1px solid var(--line)}.ctab .n{text-align:right;white-space:nowrap}
+.ctab tr.al td{background:#fff4e5}.ctab tr.tot td{font-weight:600;background:var(--paper)}
+.cav{margin:14px 0 4px;display:grid;gap:6px}.ca{font-size:13px;padding:9px 12px;border-radius:10px;line-height:1.4}
+.ca.bad{background:#ffe9ec;color:#a30021}.ca.warn{background:#fff4e5;color:#8a4b00}.ca.info{background:var(--pink-bg);color:var(--navy)}
+.cck{display:flex;gap:10px;align-items:flex-start;margin:16px 0 4px;font-size:14px;cursor:pointer}.cck input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--pink)}
+.pinbox.conf .bar{display:flex;gap:10px;margin-top:14px}.pinbox.conf .bar .btn{flex:1}.pinbox.conf .btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* sugestão inteligente + passo a passo */
+.iabox{background:linear-gradient(135deg,#ff006610,#00006608);border:1px solid #ff006633;border-radius:18px;padding:18px 20px;margin:4px 0 18px}
+.iahead{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.iahead b{font-size:16px;color:var(--navy)}.iahead span{font-size:13px;color:var(--mid)}
+.iabox textarea{width:100%;box-sizing:border-box;min-height:64px;border-radius:12px;resize:vertical}
+.iabar{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 2px}.iabar .btn{flex:0 1 auto}
+.iaex{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:7px 14px;font:400 12.5px var(--sans);color:var(--navy);cursor:pointer}.chip:hover{border-color:var(--pink);color:var(--pink-d)}
+.iaout{margin-top:12px}.iaent{margin:0 0 8px;font-size:14px}
+.iarow{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:6px 0;cursor:pointer}
+.iarow .t{min-width:0}.iarow em{font-style:normal;font-size:11.5px;background:var(--pink-bg);color:var(--pink-d);border-radius:999px;padding:3px 10px}
+.iarow small{grid-column:2/-1;color:var(--mid);font-size:12px}.iarow.circ{grid-template-columns:1fr;cursor:default}
+.iarow input{width:20px;height:20px;accent-color:var(--pink)}
+.stepinfo{margin:-8px 0 16px;font-size:14px;color:var(--mid)}
+@media(max-width:900px){
+  .iabox{padding:14px}.iarow{grid-template-columns:auto 1fr}.iarow em{grid-column:2;justify-self:start}.iabar .btn{flex:1 1 100%}
+  .steps{display:flex;overflow-x:auto;gap:6px}.step{flex:none}
+  .fnav{position:sticky;bottom:66px;z-index:6;background:linear-gradient(to top,var(--paper) 70%,transparent);padding:14px 0 10px;margin-top:20px;display:flex;gap:10px}.fnav .btn{flex:1}
+  .fab{bottom:78px}
+}
+.pinbox.conf label.f{display:block;margin-top:14px}
