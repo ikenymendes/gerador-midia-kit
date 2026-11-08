@@ -66,7 +66,7 @@ function libSrc(k){ if(!k) return ''; if(String(k).indexOf('sb:')===0) return St
 async function addPhoto(file){ var du=await readImage(file); var path=await Store.uploadPhoto(dataToBlob(du),ME.admin); return 'sb:'+path; }
 async function loadPhoto(key){ var src=libSrc(key); if(!src) return null; var a=await loadAsset(src); if(!a||/^data:/.test(src)) return a; try{ var cv=document.createElement('canvas'); cv.width=a.w; cv.height=a.h; var c=cv.getContext('2d'); c.fillStyle='#fff'; c.fillRect(0,0,a.w,a.h); c.drawImage(a.el,0,0); a.src=cv.toDataURL('image/jpeg',0.9); }catch(e){ return null; } return a; }
 function usedPhotoKeys(mode){ var ks={}; function add(v){ if(Array.isArray(v)) v.forEach(add); else if(typeof v==='string'&&v) ks[v]=1; }
-  D.pontos.forEach(function(p){ if(mode==='proposta'&&!p.sel) return; add(p.foto); add(p.mapa); });
+  D.pontos.forEach(function(p){ if((mode==='proposta'||mode==='kit')&&!p.sel) return; add(p.foto); add(p.mapa); });
   [D.mercado,D.guanabara,D.brasilia].forEach(function(o){ if(!o) return; Object.keys(o).forEach(function(k){ if(/^foto/.test(k)) add(o[k]); }); });
   ['fotoCapa','fotoContra'].forEach(function(k){ add(D.kit[k]); }); Object.keys(D.sepFotos||{}).forEach(function(k){ add(D.sepFotos[k]); });
   return Object.keys(ks); }
@@ -145,7 +145,7 @@ var BASE={};
 async function prepare(setStatus,mode){
   var A={photos:{},maps:{},logoW:BASE.logoW,logoC:BASE.logoC,mercN:BASE.mercN,mercW:BASE.mercW};
   var keys=usedPhotoKeys(mode); for(var i=0;i<keys.length;i++){ setStatus&&setStatus('Preparando fotos '+(i+1)+'/'+keys.length+'…'); A.photos[keys[i]]=await loadPhoto(keys[i]); }
-  mapFail=0; var withLL=D.pontos.filter(function(p){return (mode!=='proposta'||p.sel)&&p.lat!=null&&p.lat!==''&&p.lng!=null&&!isNaN(p.lat)}); var done=0;
+  mapFail=0; var withLL=D.pontos.filter(function(p){return ((mode!=='proposta'&&mode!=='kit')||p.sel)&&p.lat!=null&&p.lat!==''&&p.lng!=null&&!isNaN(p.lat)}); var done=0;
   for(var j=0;j<withLL.length;j+=6){ await Promise.all(withLL.slice(j,j+6).map(async function(p){ A.maps[p.id]=await renderMap([{lat:+p.lat,lng:+p.lng}],1040,720,zoomMapa(p.zoom)); done++; setStatus&&setStatus('Gerando mapas '+done+'/'+withLL.length+'…'); })); }
   var all=withLL.filter(function(p){return p.secao!=='df_painel'}).map(function(p){return {lat:+p.lat,lng:+p.lng}}); all.push({lat:+D.mercado.lat,lng:+D.mercado.lng}); all.push({lat:+D.guanabara.lat,lng:+D.guanabara.lng});
   setStatus&&setStatus('Gerando mapa geral…'); A.mapGeral=await renderMap(all.filter(function(p){return !isNaN(p.lat)}),1460,890,0);
@@ -156,13 +156,13 @@ async function prepare(setStatus,mode){
 async function download(blob,name){ var u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); URL.revokeObjectURL(u); },4000); }
 function safeName(){ return (D.kit.titulo||'Midia_Kit').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\-]+/g,'_'); }
 var lastSlides=null;
-async function generate(kind,mode){ mode=mode||'completo'; var nsel=D.pontos.filter(function(p){return p.sel}).length; if(mode==='proposta'&&!nsel){ var st0=$('#gstatus'); st0.textContent='Selecione ao menos um ponto na aba de pontos para gerar a proposta.'; st0.className='status err'; return; }
+async function generate(kind,mode){ mode=mode||'completo'; var nsel=D.pontos.filter(function(p){return p.sel}).length; if((mode==='proposta'||mode==='kit')&&!nsel){ var st0=$('#gstatus'); st0.textContent='Escolha ao menos um ponto no passo "Pontos" para gerar.'; st0.className='status err'; return; }
   var st=$('#gstatus'); var set=function(t,c){ st.textContent=t; st.className='status '+(c||''); };
   try{
     await fontsReady(); var A=await prepare(set,mode); var slides=buildSlides(D,A,mode); lastSlides=slides;
     if(A.mapFail) set('','err');
-    if(kind==='pptx'){ set('Montando PowerPoint (editável)…'); var b=await buildPptx(slides,{title:D.kit.titulo}); var bk=await logProposta('pptx',mode); await download(b,safeName()+(mode==='proposta'?'_Proposta'+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pptx'); set('PowerPoint gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
-    else if(kind==='pdf'){ var b2=await buildPdf(slides,function(i,n){ set('Gerando PDF… página '+i+'/'+n); }); var bk=await logProposta('pdf',mode); await download(b2,safeName()+(mode==='proposta'?'_Proposta'+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pdf'); set('PDF gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
+    if(kind==='pptx'){ set('Montando PowerPoint (editável)…'); var b=await buildPptx(slides,{title:D.kit.titulo}); var bk=await logProposta('pptx',mode); await download(b,safeName()+(mode==='proposta'||mode==='kit'?(mode==='kit'?'_MidiaKit':'_Proposta')+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pptx'); set('PowerPoint gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
+    else if(kind==='pdf'){ var b2=await buildPdf(slides,function(i,n){ set('Gerando PDF… página '+i+'/'+n); }); var bk=await logProposta('pdf',mode); await download(b2,safeName()+(mode==='proposta'||mode==='kit'?(mode==='kit'?'_MidiaKit':'_Proposta')+(D.kit.cliente?'_'+D.kit.cliente.replace(/[^\w\-]+/g,'_'):''):'')+'.pdf'); set('PDF gerado ('+slides.length+' páginas). Arquivo salvo.'+bk+(A.mapFail?' (Alguns mapas ficaram simplificados.)':''),A.mapFail?'err':'ok'); }
     else { var box=$('#prev'); box.innerHTML=''; for(var i=0;i<slides.length;i++){ var cv=document.createElement('canvas'); renderCanvas(slides[i],cv,520); var f=document.createElement('figure'); f.appendChild(cv); var cap=document.createElement('figcaption'); cap.textContent=(i+1); f.appendChild(cap); box.appendChild(f); if(i%4==3) await new Promise(function(r){setTimeout(r,0)}); } set('Prévia pronta: '+slides.length+' páginas.','ok'); }
   }catch(e){ console.error(e); set('Erro ao gerar: '+(e&&e.message||e),'err'); }
 }

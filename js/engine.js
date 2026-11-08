@@ -491,7 +491,7 @@ function groupSpec(pts,withVeic){
 /* ===== Montagem do kit completo ===== */
 function migKit(D){ var K=D.kit; if(!K.v3){ K.v3=1; K.fotoCapa=null; K.fotoContra=null; } if(!K.capaTexto) K.capaTexto='Mídia exterior digital e estática, comunicação visual e projetos especiais para conectar a sua marca às pessoas nas ruas de Belo Horizonte, região metropolitana e Brasília.'; if(!K.capaStats) K.capaStats=[['auto','pontos de mídia'],['3','praças atendidas'],['11','formatos de mídia']]; if(!K.capaPilares) K.capaPilares=['Mídia OOH','Comunicação visual','Projetos especiais']; }
 function buildSlides(D0,A,mode){ migKit(D0);
-  var full=(mode!=='proposta'), D=Object.assign({},D0); if(!full) D.pontos=D0.pontos.filter(function(p){return p.sel;});
+  var full=(mode!=='proposta'&&mode!=='kit'), noPrice=(mode==='kit'), D=Object.assign({},D0); if(!full) D.pontos=D0.pontos.filter(function(p){return p.sel;});
   function has(k){ return ptsOf(D,k).length>0; }
   A.D=D; var out=[], K=D.kit, R=K.resp;
   var CG=0; function push(S){ S.__g=CG; out.push(S); return S; }
@@ -639,7 +639,7 @@ function buildSlides(D0,A,mode){ migKit(D0);
   /* linhas com o mesmo nome (ex.: Painéis MEGA + MEGA/R2) viram uma só na proposta: o dono é informação interna */
   if(!full){ var mg=[]; rows.forEach(function(r){ var o=mg.filter(function(x){return x.nome===r.nome})[0]; if(!o) mg.push(Object.assign({},r)); else { o.pontos+=r.pontos; o.insN+=r.insN; o.tabela+=r.tabela; o.neg+=r.neg; o.final+=r.final; o.desc=o.tabela?Math.round((1-o.neg/o.tabela)*10000)/100:0; o.insercoes=o.insN?String(o.insN).replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'—'; } }); rows=mg; }
   window.LAST_ROWS=rows;
-  if(!full){
+  if(!full&&!noPrice){
   S=frame(null,A,'Investimento','Tabela de preços','Valor de tabela, desconto e valor negociado ('+(D.modoGeral==='liquido'?'líquido de comissão':'bruto')+')');
   card(S,0.6,1.95,12.13,4.85,0.2);
   var tb=[['Formato','Pontos','Período','Inserções/dia','Valor tabela','Desc.','Valor negociado'+(D.modoGeral==='liquido'?' (líq.)':' (bruto)')]], totT=0, totN=0;

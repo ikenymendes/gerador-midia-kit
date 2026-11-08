@@ -334,3 +334,25 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 /* ---------- propriedade do ponto ---------- */
 .dono{font-style:normal;font-size:12px;font-weight:600;padding:3px 11px;border-radius:99px;white-space:nowrap}
 .dono.d-mega{background:#000066;color:#fff}.dono.d-mega_r2{background:#e8e6ff;color:#3b2fc9}.dono.d-terceiros{background:#fff1d6;color:#9a5b00}
+
+/* ===== Fluxo guiado (Mídia Kit personalizado · Proposta) ===== */
+.steps{display:flex;gap:8px;margin:14px 0 18px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:8px 16px 8px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;font:600 14px/1 Poppins,sans-serif;color:var(--mid);cursor:pointer}
+.step i{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#eceef8;color:var(--mid);font-style:normal;font-size:13px}
+.step.on{border-color:var(--pink);color:var(--navy);box-shadow:0 4px 14px #ff006626}.step.on i{background:var(--pink);color:#fff}
+.step.ok i{background:var(--navy);color:#fff}.step.ok{color:var(--navy)}
+.fpanel h3{margin:0 0 10px}
+.fpanel .vazio{display:none}
+.resumo{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+.resumo>div{flex:1 1 170px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.resumo b{font:600 22px/1.2 Poppins,sans-serif;color:var(--navy);word-break:break-word}.resumo span{font-size:12px;color:var(--mid)}
+.fnav{display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;padding:12px 0;margin-top:16px;z-index:5}
+.fnav .btn{min-width:150px}
+@media(max-width:900px){
+  .step span{display:none}.step{padding:6px}.step.on span{display:inline;padding-right:8px}
+  .fnav{position:fixed;left:14px;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));padding:0;margin:0;background:none;z-index:29}
+  .fnav .btn{flex:1;min-height:52px;font-size:16px;box-shadow:0 10px 30px #00003d22}
+  #view{padding-bottom:150px}
+}
+
+.fnav .btn{white-space:nowrap}.fnav .btn:disabled{opacity:.55}

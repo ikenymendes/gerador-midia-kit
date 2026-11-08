@@ -1,8 +1,8 @@
 /* Telas do gerador (comuns a administrador e comercial). */
 var curTab='kit';
-function viewSelecao(v){
-  v.appendChild(h('h2',{text:'Pontos da proposta'}));
-  v.appendChild(h('p',{class:'hint',text:'Marque os pontos que entram na proposta personalizada. Para o mídia kit completo, vá direto para a aba Gerar: todos os pontos entram, sem preços.'}));
+function viewSelecao(v,embed){
+  if(!embed){ v.appendChild(h('h2',{text:'Pontos da proposta'}));
+  v.appendChild(h('p',{class:'hint',text:'Marque os pontos que entram na proposta personalizada.'})); }
   var bar=h('div',{class:'bar'}), fsel=h('select',{},[h('option',{value:'',text:'Todas as seções'})].concat(GRUPOS.map(function(g){ var o=h('option',{value:g.k,text:g.nome}); if(filtro===g.k) o.selected=true; return o; })));
   var bs=h('input',{type:'search',placeholder:'🔍 Buscar endereço ou bairro',class:'busca'}); bs.value=busca;
   var fdn=filtroDonoSel(function(){ draw(); });
@@ -10,13 +10,13 @@ function viewSelecao(v){
   v.appendChild(h('p',{class:'hint',text:'Você não altera endereços diretamente. Para incluir ou corrigir um ponto, use "Sugerir": o administrador recebe o aviso, confere e aplica.'}));
   var mk=h('input',{type:'checkbox'}), mtx=h('span',{}); v.appendChild(h('label',{class:'selall'},[mk,mtx]));
   var list=h('div',{class:'plist'}); v.appendChild(list);
-  var fab=h('button',{type:'button',class:'fab btn pri',onclick:function(){ showTab('precos'); }}); v.appendChild(fab);
+  var fab=h('button',{type:'button',class:'fab btn pri'}); if(!embed) v.appendChild(fab);
   function vis(){ return D.pontos.filter(function(p){ return CIRCUITOS.indexOf(p.secao)<0&&matchP(p); }); }
   function circ(){ return CIRCUITOS.filter(function(k){ if(!ptsOf(D,k).length) return false; if(filtro&&filtro!==k) return false; if(filtroDono&&!ptsOf(D,k).some(function(p){return donoDe(p)===filtroDono;})) return false; if(!busca) return true; var t=('circuito '+secLabel(k)+' '+((D[k]&&D[k].circuito)||'')+' '+((D[k]&&D[k].endereco)||'')+(k==='mercado'?' av. augusto de lima centro':'')).toLowerCase(); return busca.toLowerCase().split(/\s+/).every(function(w){ return t.indexOf(w)>=0; }); }); }
   function circSel(k){ var a=ptsOf(D,k); return a.length>0&&a.every(function(p){ return p.sel; }); }
   function contaSel(){ return D.pontos.filter(function(p){ return p.sel&&CIRCUITOS.indexOf(p.secao)<0; }).length+CIRCUITOS.filter(function(k){ return ptsOf(D,k).length&&circSel(k); }).length; }
   function desenhaCirc(){ var cs=circ(); cs.forEach(function(k){ var ck=h('input',{type:'checkbox'}); ck.checked=circSel(k); ck.addEventListener('change',function(){ ptsOf(D,k).forEach(function(p){ p.sel=ck.checked; }); dirty(); ref(); }); var fk=D[k]&&D[k].fotos&&D[k].fotos[0]; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t'},[h('b',{text:'Circuito '+SEC[k].nome}),document.createTextNode(' · '+((D[k]&&D[k].circuito)||'')+' · todas as telas juntas')])); kids.push(h('em',{text:secLabel(k)})); list.appendChild(h('label',{class:'srow circ'},kids)); }); return cs.length; }
-  function ref(){ var Lst=vis(), nc=circ(), items=Lst.length+nc.length, n=Lst.filter(function(p){return p.sel}).length+nc.filter(circSel).length; mk.checked=items>0&&n===items; mk.indeterminate=n>0&&n<items; var tot=contaSel(); fab.textContent=tot?'Continuar com '+tot+' ponto'+(tot>1?'s':'')+' · Preços':'Marque os pontos da proposta'; fab.disabled=!tot; mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+items+' marcados  ('+tot+' no total)'; }
+  function ref(){ var Lst=vis(), nc=circ(), items=Lst.length+nc.length, n=Lst.filter(function(p){return p.sel}).length+nc.filter(circSel).length; mk.checked=items>0&&n===items; mk.indeterminate=n>0&&n<items; var tot=contaSel(); fab.textContent=tot?'Continuar com '+tot+' ponto'+(tot>1?'s':'')+' · Preços':'Marque os pontos da proposta'; fab.disabled=!tot; if(window.__onSel) window.__onSel(tot); mtx.textContent='Selecionar todos'+(filtro?' desta seção':'')+'  ·  '+n+' de '+items+' marcados  ('+tot+' no total)'; }
   function draw(){ list.innerHTML=''; var n=0, ncirc=desenhaCirc(); vis().forEach(function(p){ n++; var ck=h('input',{type:'checkbox'}); ck.checked=!!p.sel; ck.addEventListener('change',function(){ p.sel=ck.checked; dirty(); ref(); }); var fk=Array.isArray(p.foto)?p.foto[0]:p.foto; var kids=[ck]; if(fk&&libSrc(fk)) kids.push(h('img',{class:'sth',src:libSrc(fk)})); kids.push(h('span',{class:'t',text:(p.endereco||'(sem endereço)')+(p.bairro?' · '+p.bairro:'')})); kids.push(h('em',{text:secLabel(p.secao)})); if(donoDe(p)!=='padrao') kids.push(h('em',{class:'dono d-'+donoDe(p),text:donoNome(donoDe(p))})); kids.push(h('button',{class:'mini',type:'button',text:'✏️ sugerir alteração',title:'Pedir ao administrador para alterar este ponto',onclick:function(e){ e.preventDefault(); e.stopPropagation(); abrirFormSugestao('alterar',p); }})); list.appendChild(h('label',{class:'srow'},kids)); }); if(!n&&!ncirc) list.appendChild(h('p',{class:'hint',text:'Nenhum ponto encontrado.'})); ref(); }
   fsel.addEventListener('change',function(){ filtro=fsel.value; draw(); });
   bs.addEventListener('input',function(){ busca=bs.value; draw(); });
@@ -161,23 +161,23 @@ function pointCard(p,ix){
 }
 
 /* ---------- preços ---------- */
-function viewPrecos(v){ migPrecos(D);
-  v.appendChild(h('h2',{text:'Tabela de preços e investimento'}));
+function viewPrecos(v,embed){ migPrecos(D);
+  if(!embed) v.appendChild(h('h2',{text:'Tabela de preços e investimento'}));
   v.appendChild(h('p',{class:'hint dica-longa',text:'Preencha valor de tabela e desconto: o valor negociado, o total e a página de Investimento Total são calculados sozinhos. O valor é bruto ou líquido para todas as linhas (campo acima). Pontos vêm da contagem dos pontos cadastrados (Mercado Central e Parque Guanabara usam o número de telas). Inserções: digite por ativo/tela e o total é calculado (pontos × inserções).'}));
   var top=h('div',{class:'grid'}), ms=h('select',{},[['bruto','Bruto'],['liquido','Líquido (desconta comissão da agência e BV)']].map(function(o){ var op=h('option',{value:o[0],text:o[1]}); if(D.modoGeral===o[0]) op.selected=true; return op; })); ms.addEventListener('change',function(){ D.modoGeral=ms.value; dirty(); recalc(); });
   top.appendChild(field('Valor padrão do kit',ms)); top.appendChild(field('Comissão da agência (%)',inp(D,'comissao',{num:true,onchange:recalc}))); top.appendChild(field('BV à parte (%)',inp(D,'bv',{num:true,onchange:recalc}))); v.appendChild(top);
   var tb=h('table',{class:'ptab'}); tb.appendChild(h('thead',{},[h('tr',{},['Formato','Pontos','Período','Inserções por ativo/tela','Total inserções','Valor tabela (R$)','Desconto (%)','Valor negociado','',''].map(function(t){return h('th',{text:t})}))]));
   var body=h('tbody'); tb.appendChild(body); var foot=h('tfoot'); tb.appendChild(foot);
   function recalc(){ var tt=0,tn=0; D.precos.forEach(function(r,i){ var c=calcPreco(D,r); tt+=c.tabela; tn+=c.final; var cell=body.children[i]&&body.children[i].querySelector('.val'); if(cell) cell.textContent=brl(c.final); var pc=body.children[i]&&body.children[i].querySelector('.pts'); if(pc) pc.placeholder=String(c.pontos); var ic=body.children[i]&&body.children[i].querySelector('.ins'); if(ic) ic.textContent=c.insercoes; var tcl=body.children[i]&&body.children[i].querySelector('.tabcalc'); if(tcl) tcl.textContent=c.tabela?brl(c.tabela):'por endereço'; }); foot.innerHTML=''; foot.appendChild(h('tr',{},[h('td',{text:'Total'}),h('td'),h('td'),h('td'),h('td'),h('td',{text:brl(tt)}),h('td'),h('td',{text:brl(tn)}),h('td'),h('td')])); }
-  function row(r,i){ var tr=h('tr'); function td(x){ var t=h('td'); t.appendChild(x); tr.appendChild(t); }
+  function row(r,i){ var tr=h('tr'); if(embed&&r.auto&&!r.auto.split(',').some(function(k){ return ptsOf(D,k).some(function(p){return p.sel;}); })) tr.className='vazio'; function td(x){ var t=h('td'); t.appendChild(x); tr.appendChild(t); }
     var nt=h('td'); nt.appendChild(inp(r,'nome')); if(GRUPO_NOVOS[r.auto]) nt.appendChild(h('small',{class:'dono d-'+(r.auto.slice(-2)==='r2'?'mega_r2':'mega'),text:'interno: '+grupoPorK(r.auto).nome})); tr.appendChild(nt); var pi=inp(r,'pontos'); pi.className='pts'; td(pi); td(inp(r,'periodo')); td(inp(r,'insPor',{onchange:recalc})); var ti=h('td',{class:'calc ins'}); tr.appendChild(ti); if(ehEstatico(r)){ var tc=h('td',{class:'calc tabcalc'}); tr.appendChild(tc); } else td(inp(r,'tabela',{onchange:recalc})); td(inp(r,'desc',{onchange:recalc}));
     var cs=h('td',{class:'calc val'}); tr.appendChild(cs);
     if(!ME.admin){ td(h('span')); td(h('span')); return tr; }
-    td(h('button',{class:'mini',text:'↑',onclick:function(){ if(i>0){ D.precos.splice(i-1,0,D.precos.splice(i,1)[0]); dirty(); showTab('precos'); } }})); td(h('button',{class:'mini del',text:'×',onclick:function(){ askPin('Excluir linha de preço',r.nome).then(function(ok){ if(!ok) return; var k=D.precos.indexOf(r); if(k>=0) D.precos.splice(k,1); dirty(); showTab('precos'); }); }})); return tr; }
+    td(h('button',{class:'mini',text:'↑',onclick:function(){ if(i>0){ D.precos.splice(i-1,0,D.precos.splice(i,1)[0]); dirty(); showTab(curTab); } }})); td(h('button',{class:'mini del',text:'×',onclick:function(){ askPin('Excluir linha de preço',r.nome).then(function(ok){ if(!ok) return; var k=D.precos.indexOf(r); if(k>=0) D.precos.splice(k,1); dirty(); showTab(curTab); }); }})); return tr; }
   window.__recalcPrecos=recalc; var ROT=['Formato','Pontos','Período','Inserções por ativo/tela','Total inserções','Valor tabela (R$)','Desconto (%)','Valor negociado']; D.precos.forEach(function(r,i){ var tr=row(r,i); ROT.forEach(function(l,k){ if(tr.children[k]) tr.children[k].setAttribute('data-l',l); }); body.appendChild(tr); }); v.appendChild(h('div',{class:'tw'},[tb])); recalc();
   v.appendChild(blocoEnderecos());
-  if(!ME.admin) v.appendChild(h('button',{class:'btn',text:'Restaurar valores da tabela base',onclick:function(){ restorePrecos(); showTab('precos'); }}));
-  if(ME.admin) v.appendChild(h('button',{class:'btn',text:'+ Adicionar linha',onclick:function(){ D.precos.push({nome:'Nova linha',auto:'',pontos:'',periodo:'4 semanas',insercoes:'',insPor:'',v2:1,tabela:'',desc:'',modo:'geral'}); dirty(); showTab('precos'); }}));
+  if(!ME.admin) v.appendChild(h('button',{class:'btn',text:'Restaurar valores da tabela base',onclick:function(){ restorePrecos(); showTab(curTab); }}));
+  if(ME.admin) v.appendChild(h('button',{class:'btn',text:'+ Adicionar linha',onclick:function(){ D.precos.push({nome:'Nova linha',auto:'',pontos:'',periodo:'4 semanas',insercoes:'',insPor:'',v2:1,tabela:'',desc:'',modo:'geral'}); dirty(); showTab(curTab); }}));
 }
 
 function filtroDonoSel(onchg){ var s=h('select',{},[h('option',{value:'',text:'Todas as propriedades'})].concat(DONOS.map(function(d){ var o=h('option',{value:d[0],text:d[1]}); if(filtroDono===d[0]) o.selected=true; return o; }))); s.addEventListener('change',function(){ filtroDono=s.value; onchg(); }); return s; }
@@ -220,3 +220,47 @@ function viewGerar(v){
   v.appendChild(h('div',{id:'prev',class:'prev'}));
 }
 
+
+/* ---------- Fluxo guiado do comercial: 2 abas (Mídia Kit personalizado · Proposta) ---------- */
+var FLUXO={kitp:0,prop:0};
+function viewFluxo(v,tipo){
+  var prop=tipo==='prop', mode=prop?'proposta':'kit';
+  var passos=prop?[['cliente','Cliente'],['pontos','Pontos'],['precos','Preços'],['gerar','Gerar']]:[['cliente','Cliente'],['pontos','Pontos'],['gerar','Gerar']];
+  var i=Math.max(0,Math.min(FLUXO[tipo]||0,passos.length-1)), id=passos[i][0];
+  function ir(n){ FLUXO[tipo]=n; showTab(tipo); }
+  function nSel(){ return D.pontos.filter(function(p){return p.sel}).length; }
+  window.__onSel=null;
+  v.appendChild(h('h2',{text:prop?'Gerar proposta':'Gerar mídia kit personalizado'}));
+  v.appendChild(h('p',{class:'hint',text:prop?'Mídia kit com os pontos escolhidos mais a tabela de preços e o investimento.':'Mídia kit só com os pontos escolhidos, sem preços.'}));
+  var st=h('div',{class:'steps'}); passos.forEach(function(p,k){ st.appendChild(h('button',{type:'button',class:'step'+(k===i?' on':'')+(k<i?' ok':''),onclick:function(){ ir(k); }},[h('i',{text:k<i?'✓':String(k+1)}),h('span',{text:p[1]})])); }); v.appendChild(st);
+  var panel=h('div',{class:'fpanel'}); v.appendChild(panel);
+  var next=h('button',{type:'button',class:'btn pri big',text:'Continuar'});
+  if(id==='cliente'){
+    panel.appendChild(h('h3',{text:'Para quem é?'}));
+    panel.appendChild(field('Cliente / campanha (aparece na capa)',inp(D.kit,'cliente')));
+    panel.appendChild(h('p',{class:'hint',text:'Pode deixar em branco se ainda não tem o nome do cliente.'}));
+    if(!prop) panel.appendChild(h('button',{type:'button',class:'btn',text:'Quero o mídia kit completo (todos os pontos)',onclick:function(){ window.__completo=1; FLUXO[tipo]=passos.length-1; showTab(tipo); }}));
+  } else if(id==='pontos'){
+    panel.appendChild(h('h3',{text:'Quais pontos entram?'}));
+    window.__onSel=function(n){ next.disabled=!n; next.textContent=n?'Continuar · '+n+(n>1?' pontos':' ponto'):'Escolha um ponto'; };
+    viewSelecao(panel,true);
+  } else if(id==='precos'){
+    panel.appendChild(h('h3',{text:'Valores da proposta'}));
+    panel.appendChild(h('p',{class:'hint',text:'Aparecem só os formatos dos pontos que você escolheu. Preencha o valor de tabela e o desconto; o total é calculado sozinho.'}));
+    viewPrecos(panel,true);
+  } else {
+    var comp=!prop&&window.__completo, n=nSel(), tot=0;
+    if(prop) D.precos.forEach(function(r){ if(!r.auto||r.auto.split(',').some(function(k){ return ptsOf(D,k).some(function(p){return p.sel;}); })) tot+=calcPreco(D,r).final; });
+    var sm=h('div',{class:'resumo'},[h('div',{},[h('b',{text:D.kit.cliente||'(sem cliente)'}),h('span',{text:'cliente / campanha'})]),h('div',{},[h('b',{text:String(comp?D.pontos.length:n)}),h('span',{text:comp?'pontos (todos)':'pontos escolhidos'})])]);
+    if(prop) sm.appendChild(h('div',{},[h('b',{text:brl(tot)}),h('span',{text:'investimento ('+(D.modoGeral==='liquido'?'líquido':'bruto')+')'})]));
+    panel.appendChild(h('h3',{text:'Tudo pronto'})); panel.appendChild(sm);
+    var md=comp?'completo':mode, b=h('div',{class:'bar'});
+    b.appendChild(h('button',{class:'btn pri big',text:'⬇ PowerPoint',onclick:function(){ generate('pptx',md); }})); b.appendChild(h('button',{class:'btn big',text:'⬇ PDF',onclick:function(){ generate('pdf',md); }})); b.appendChild(h('button',{class:'btn',text:'Prévia',onclick:function(){ generate('prev',md); }})); panel.appendChild(b);
+    panel.appendChild(h('p',{class:'hint',text:'O PowerPoint sai editável; o PDF sai pronto para enviar. Fica salvo em "Minhas propostas".'}));
+    panel.appendChild(h('p',{id:'gstatus',class:'status'})); panel.appendChild(h('div',{id:'prev',class:'prev'}));
+  }
+  var nav=h('div',{class:'fnav'});
+  if(i>0) nav.appendChild(h('button',{type:'button',class:'btn big',text:'← Voltar',onclick:function(){ window.__completo=0; ir(i-1); }}));
+  if(i<passos.length-1){ next.onclick=function(){ ir(i+1); }; nav.appendChild(next); if(id==='pontos'&&window.__onSel) window.__onSel(nSel()); }
+  v.appendChild(nav);
+}
