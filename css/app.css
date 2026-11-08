@@ -394,12 +394,16 @@ details.novo{border:1.5px solid var(--pink);margin-bottom:18px}
 .fprev .faviso{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;text-align:center;padding:12px}
 .fprev .faviso[hidden]{display:none}
 
-/* boas-vindas */
-.gbox.wide{width:min(560px,100%)}
-.gbox .nt{font-size:15px;margin:22px 0 10px;color:var(--navy)}
-.news{display:grid;gap:10px;margin-bottom:20px}
-.ncard{display:block;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pink);border-radius:var(--r);padding:12px 16px;color:var(--ink);text-decoration:none}
-a.ncard:hover{border-color:var(--navy);border-left-color:var(--pink)}
-.ncard b{display:block;font-weight:500;font-size:14px;line-height:1.35;color:var(--navy);margin-bottom:3px}
-.ncard .nr{display:block;font-size:12.5px;line-height:1.5;color:var(--mid)}
-.ncard small{display:block;margin-top:6px;font-size:11px;color:var(--pink-d)}
+/* saudação */
+.welcome{position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,var(--navy2),var(--navy) 70%);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;animation:wIn .5s ease both;overflow:hidden}
+.welcome.out{opacity:0;transition:opacity .45s ease;pointer-events:none}
+.welcome .dots{position:absolute;inset:0;background:#ffffff14;-webkit-mask:radial-gradient(circle,#000 1.7px,transparent 2px) 0 0/16px 16px;mask:radial-gradient(circle,#000 1.7px,transparent 2px) 0 0/16px 16px}
+.wbody{position:relative;padding:24px;max-width:640px}
+.wlogo{height:34px;margin-bottom:44px;opacity:.95}
+.wsau{font:300 22px/1.2 var(--sans);letter-spacing:.02em;color:#ffffffcc;animation:wUp .7s .15s ease both}
+.wnome{font:500 clamp(44px,8vw,76px)/1.1 var(--sans);letter-spacing:-.03em;margin:4px 0 0;animation:wUp .7s .3s ease both}
+.wbar{width:64px;height:5px;border-radius:3px;background:var(--pink);margin:26px auto 22px;animation:wUp .7s .45s ease both}
+.wtxt{font:400 16px/1.5 var(--sans);color:#ffffffd9;animation:wUp .7s .55s ease both}
+.wdt{font:300 13px/1.5 var(--sans);color:#ffffff99;margin-top:6px;animation:wUp .7s .65s ease both}
+@keyframes wIn{from{opacity:0}to{opacity:1}}@keyframes wUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.welcome,.wsau,.wnome,.wbar,.wtxt,.wdt{animation:none}}

@@ -159,25 +159,17 @@ async function boot(){
 }
 
 
-/* ---- tela de boas-vindas (após o login) ---- */
+/* ---- saudação rápida após o login (~2,8 s; clique para pular) ---- */
 function boasVindas(){
   return new Promise(function(res){
     try{ if(sessionStorage.getItem('mk_bv')===ME.uid){ res(); return; } }catch(e){}
-    var h0=new Date().getHours(), sau=h0<12?'Bom dia':h0<18?'Boa tarde':'Boa noite', nome=String(ME.nome||ME.email||'').split(/[ @]/)[0]; nome=nome.replace(/^./,function(c){return c.toUpperCase();});
-    var box=gate(sau+', '+nome+'!','Bem-vindo(a) ao software de propostas da Mega OOH.',[],{h1:'Bem-vindo ao software de propostas da Mega OOH.',p:'Monte mídia kits e propostas com os pontos, preços e circuitos sempre atualizados.'});
-    box.classList.add('wide');
-    var lista=(D.noticias||[]).filter(function(n){ return n&&String(n.titulo||'').trim(); }).slice(0,3);
-    if(lista.length){
-      box.appendChild(h('h3',{class:'nt',text:'Mercado OOH em destaque'}));
-      var ul=h('div',{class:'news'});
-      lista.forEach(function(n){
-        var meta=[n.fonte,n.data].filter(Boolean).join(' · ');
-        var c=h(n.link?'a':'div',{class:'ncard'}); if(n.link){ c.href=n.link; c.target='_blank'; c.rel='noopener'; }
-        c.appendChild(h('b',{text:n.titulo})); if(n.resumo) c.appendChild(h('span',{class:'nr',text:n.resumo})); if(meta) c.appendChild(h('small',{text:meta}));
-        ul.appendChild(c);
-      });
-      box.appendChild(ul);
-    }
-    box.appendChild(h('button',{class:'btn pri big',type:'button',text:'Começar',onclick:function(){ try{ sessionStorage.setItem('mk_bv',ME.uid); }catch(e){} $('#gate').hidden=true; res(); }}));
+    var d=new Date(), h0=d.getHours(), sau=h0<12?'Bom dia':h0<18?'Boa tarde':'Boa noite';
+    var nome=String(ME.nome||ME.email||'').split(/[ @.]/)[0]; nome=nome.charAt(0).toUpperCase()+nome.slice(1).toLowerCase();
+    var dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'], meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    var quando=dias[d.getDay()].replace(/^./,function(c){return c.toUpperCase();})+', '+d.getDate()+' de '+meses[d.getMonth()]+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    var o=h('div',{class:'welcome',role:'status'},[h('div',{class:'dots'}),h('div',{class:'wbody'},[h('img',{src:ASSETS.logoW,alt:'MEGA OOH',class:'wlogo'}),h('div',{class:'wsau',text:sau+','}),h('div',{class:'wnome',text:nome}),h('div',{class:'wbar'}),h('div',{class:'wtxt',text:'Bem-vindo ao software de propostas da Mega OOH'}),h('div',{class:'wdt',text:quando})])]);
+    document.body.appendChild(o);
+    var feito=false; function fim(){ if(feito) return; feito=true; try{ sessionStorage.setItem('mk_bv',ME.uid); }catch(e){} o.classList.add('out'); setTimeout(function(){ o.remove(); },450); res(); }
+    o.addEventListener('click',fim); setTimeout(fim,2800);
   });
 }
